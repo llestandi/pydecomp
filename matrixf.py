@@ -12,7 +12,7 @@ in to a discretised domaine of a matrix, the input values are the vectors X and 
 of the domaine, the function pfunc is required inside this application"""
 
 def pfunc(x,y):
-    return 1/(1+(x*np.e**(y))) 
+    return np.sin(np.sqrt(x**2+y**2)) 
     #Fonctions tets à utiliser 
     # x*y                              #fonction test 1
     # 1/(1+(x*y))                      #fonction test 2

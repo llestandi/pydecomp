@@ -10,14 +10,15 @@ from scipy.linalg import norm
 from variables import gammax, gammay, betax, betay, alpha
 
 
-def fixpoint(X,Y,SS,RR,nx,ny,F):
+def fixpoint(X,Y,SS,RR,nx,ny,F,z):
     S=np.array([np.ones(Y.size)])                 #Creation du vecteur S0
     R=np.array([np.zeros(X.size)])                #Creation du vecteur R
     Sv=S
     k=0                                           #initialization de la fonction du point fixe
-    eppf=1*10**(-5)
+    eppf=1*10**(-10)
     epsilon=1                                     #Première valeure de epsilon pour comencer l'algorithme
-    while ((epsilon>=eppf) & (k<30)): 
+    itmax=30
+    while ((epsilon>=eppf) & (k<itmax)): 
         k=k+1
         print('k',k)
         Sv=S
@@ -41,9 +42,11 @@ def fixpoint(X,Y,SS,RR,nx,ny,F):
        
         if epsilon<eppf :
             print('convergence')
+        if k==itmax:
+            z=z+1
             
         
-    return  S,R
+    return  S,R,z
     
 
 

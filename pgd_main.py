@@ -10,14 +10,16 @@ from fixepoint import fixpoint
 from scipy.linalg import norm
 from matrixf import matfunc
 from new_iteration_result import new_iteration_result
+from grille import grille
+from orthogonality_verification import orthogonality_verification
 
 """This application will compute la solution of function in the form of a matrix with the PGD
 method, the programing of this application is based in the equations that can be founded in the 
 'Manuscript' of the Thesis of Lucas Lestandi in chapter 1"""
 #Definition of variables
 
-nx=200                            #definition de la quantité d'élements dans le domaine x
-ny=100                            #definition de la quantité d'élements dans le domaine y
+nx=5                            #definition de la quantité d'élements dans le domaine x
+ny=5                            #definition de la quantité d'élements dans le domaine y
 a=0                               #a et b sont les limites dans le domaine x
 b=1
 c=0                               #c et d sont les limites dans le domaine y 
@@ -27,7 +29,7 @@ d=1
 X=np.linspace(a,b,nx)             #Vecteur qui discretise le domaine X
 Y=np.linspace(c,d,ny)             #Vecteur qui discretise le domaine Y
 F=matfunc(X,Y)                    #Matrice de la fonction déjà discretisée a partir d'une
-F=A = np.random.randn(ny, nx)     #Definition de la matrice d'étude a partir des valeures
+#F=A = np.random.randn(ny, nx)     #Definition de la matrice d'étude a partir des valeures
                                   #aléatoires, il faut marquer comme commentaire si c'est
                                   #l'option à utiliser
                                                                     
@@ -43,6 +45,7 @@ p=0                               #Initialization du compteur du nombre d'iterat
 SS=np.array([np.zeros(ny)])       #Initialization de la matrice qui ajoute des valeures de S
                                   #(fonction de solution dans l'éspace Y) à la
                                   #sortie de chaque iteration du point fixe
+SSnorm=np.array([np.zeros(ny)])                                 
 
 RR=np.array([np.zeros(nx)])       #Initilization de la matrice qui ajoute des valeures de R 
                                   #(fonction de solution dans l'éspace X) à la 
@@ -50,6 +53,14 @@ RR=np.array([np.zeros(nx)])       #Initilization de la matrice qui ajoute des va
                                   
 U=np.zeros(np.shape(F))           #Creation de la matrice de Résultat dans l'espace solution                                  
 
+z=0                               #Variable créé pour counter des iterations dans la boucle du
+                                  #du point fixe qui n'arrivent pas a la convergence après un 
+                                  #nombre maximal d'iterations
+                                  
+Xgrid= grille(X,nx)               #Creation d'une grille pour l'integration a partir des valeurs
+                                  #du vecteur X
+Ygrid= grille(Y,ny)               #Creation d'une grille pour l'integration a partir des valeurs
+                                  #du vecteur Y  
 """"This is the principal loop of the application where the numerical solution 
 is calculated with the PGD method;
 - In the first line whe activate the iteration counter for the present iteration
@@ -66,8 +77,12 @@ to the fixpoint application
 
 while   ((epn>=epenri))  :
         p=p+1
-        S,R=fixpoint(X,Y,SS,RR,nx,ny,F)
+        S,R,z=fixpoint(X,Y,SS,RR,nx,ny,F,z)
+        Sn=S/norm(S)
+        OrthR=orthogonality_verification(Xgrid,R,RR)
+        OrthS=orthogonality_verification(Ygrid,S,SS)
         SS=np.append(SS,S,axis=0)
+        SSnorm=np.append(SSnorm,Sn,axis=0)
         RR=np.append(RR,R,axis=0)        
         Un=new_iteration_result(R,S)
         U=U+Un
@@ -81,7 +96,8 @@ while   ((epn>=epenri))  :
         if ((norm(F-U)/norm(F))<(1e-10)):
             break
         
-print('Numbers of iterations of enrichment=',p)        
+print('Numbers of iterations of enrichment=',p) 
+print('Numbers of iterations in point fix boucle with no convergence:',z)       
 print('Epsilon=',epn)
 print('Erreure relative=',(norm(F-U)/norm(F)))
         
