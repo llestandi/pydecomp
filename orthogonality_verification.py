@@ -8,4 +8,4 @@ import numpy as np
 def orthogonality_verification(w,R,RR):
     aux=np.transpose(np.multiply(w,RR))
     Orth=np.dot(R,aux)
-    return Orth
+    return Orth                                                                

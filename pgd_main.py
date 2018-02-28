@@ -12,14 +12,15 @@ from matrixf import matfunc
 from new_iteration_result import new_iteration_result
 from grille import grille
 from orthogonality_verification import orthogonality_verification
+import csv 
 
 """This application will compute la solution of function in the form of a matrix with the PGD
 method, the programing of this application is based in the equations that can be founded in the 
 'Manuscript' of the Thesis of Lucas Lestandi in chapter 1"""
 #Definition of variables
 
-nx=5                            #definition de la quantité d'élements dans le domaine x
-ny=5                            #definition de la quantité d'élements dans le domaine y
+nx=78                            #definition de la quantité d'élements dans le domaine x
+ny=78                             #definition de la quantité d'élements dans le domaine y
 a=0                               #a et b sont les limites dans le domaine x
 b=1
 c=0                               #c et d sont les limites dans le domaine y 
@@ -60,7 +61,10 @@ z=0                               #Variable créé pour counter des iterations d
 Xgrid= grille(X,nx)               #Creation d'une grille pour l'integration a partir des valeurs
                                   #du vecteur X
 Ygrid= grille(Y,ny)               #Creation d'une grille pour l'integration a partir des valeurs
-                                  #du vecteur Y  
+                                  #du vecteur Y 
+
+Verification=0                    #Variable qui séra utilisée pour éva-
+                                  #luer l'orthogonalitée                                
 """"This is the principal loop of the application where the numerical solution 
 is calculated with the PGD method;
 - In the first line whe activate the iteration counter for the present iteration
@@ -80,7 +84,25 @@ while   ((epn>=epenri))  :
         S,R,z=fixpoint(X,Y,SS,RR,nx,ny,F,z)
         Sn=S/norm(S)
         OrthR=orthogonality_verification(Xgrid,R,RR)
+        
+        #-------------------------------------------------------------
+        #Module  pour évaluer l'orthogonalité des vecteurs qui forment
+        #les différents modes
+        Verification=1
+        for i in range (p):
+              if (OrthR[0][i]>1e-10):
+                  print('Orthogonality is not verified at enrichment', p)
+                  print('Scalar product value of failure=', OrthR[0][i])
+                  Verification=0
+                  
         OrthS=orthogonality_verification(Ygrid,S,SS)
+        for i in range (p):
+            if (OrthS[0][i]>1e-10):
+                print('Orthogonality is not verified at enrichment', p)
+                print('Scalar product value of failure=', OrthS[0][i])
+                Verification=0
+                
+        #--------------------------------------------------------------        
         SS=np.append(SS,S,axis=0)
         SSnorm=np.append(SSnorm,Sn,axis=0)
         RR=np.append(RR,R,axis=0)        
@@ -96,14 +118,44 @@ while   ((epn>=epenri))  :
         if ((norm(F-U)/norm(F))<(1e-10)):
             break
         
+if (Verification==1):   
+    print('Orthogonality is verified') 
+       
 print('Numbers of iterations of enrichment=',p) 
-print('Numbers of iterations in point fix boucle with no convergence:',z)       
+print('Numbers of iterations in fixed-point boucle with no convergence:',z)       
 print('Epsilon=',epn)
 print('Erreure relative=',(norm(F-U)/norm(F)))
-        
 
 
-    
+##--------------------------------------------------------------------------
+#Orthogonality verification 
+"""
+This module will return the matrices of the scalar product between the         
+vectors that form the RR space and SS space. This is made in order to 
+prove the orthogonality between this vectors. If this module is not 
+desired, leave as commentary"""
+
+#Verification in the RR space (X)
+p=p+1
+Orthox=np.zeros(p*p).reshape(p,p)
+for i in range (p):
+        Orthox[i][:]=orthogonality_verification(Xgrid,RR[i][:],RR)
+#Verification in the SS space (X)    
+Orthoy=np.zeros(p*p).reshape(p,p)
+for i in range (p):
+    Orthoy[i][:]=orthogonality_verification(Ygrid,SS[i][:],SS)
+
+with open('Orthox.csv','w',newline='') as fp:
+     a=csv.writer(fp, delimiter=',')
+     a.writerows(Orthox)
+with open('Orthoy.csv','w',newline='') as fp:
+     a=csv.writer(fp, delimiter=',')
+     a.writerows(Orthoy)   
+
+"""To read the values, its necesary to activate the next line      
+ np.loadtxt("Orthox.csv",delimiter=",",dtype=float)
+ np.loadtxt("Orthoy.csv",delimiter=",",dtype=float) 
+"""    
     
     
 
