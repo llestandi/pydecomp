@@ -187,12 +187,13 @@ with open('Orthox.csv','w',newline='') as fp:
      a.writerows(Orthox)
 with open('Orthoy.csv','w',newline='') as fp:
      a=csv.writer(fp, delimiter=',')
-     a.writerows(Orthoy)   
-
-"""To read the values, its necesary to activate the next line      
- np.loadtxt("Orthox.csv",delimiter=",",dtype=float)
- np.loadtxt("Orthoy.csv",delimiter=",",dtype=float) 
-"""    
+     a.writerows(Orthoy)
+     
+     
+#To read the values, its necesary to activate the next line      
+np.loadtxt("Orthox.csv",delimiter=",",dtype=float)
+np.loadtxt("Orthoy.csv",delimiter=",",dtype=float) 
+ 
     
     
 
