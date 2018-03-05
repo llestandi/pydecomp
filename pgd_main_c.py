@@ -12,6 +12,8 @@ from matrixf import matfunc
 from new_iteration_result import new_iteration_result
 from grille import grille
 from orthogonality_verification import orthogonality_verification
+import Canonical
+import readfile
 import csv 
 
 """This application will compute la solution of function in the form of a matrix with the PGD
@@ -19,8 +21,8 @@ method, the programing of this application is based in the equations that can be
 'Manuscript' of the Thesis of Lucas Lestandi in chapter 1"""
 #Definition of variables
 
-nx=200                             #definition de la quantité d'élements dans le domaine x
-ny=200                             #definition de la quantité d'élements dans le domaine y
+nx=500                            #definition de la quantité d'élements dans le domaine x
+ny=500                            #definition de la quantité d'élements dans le domaine y
 a=0                               #a et b sont les limites dans le domaine x
 b=1
 c=0                               #c et d sont les limites dans le domaine y 
@@ -41,7 +43,6 @@ epenri=1*10**-12                  #Definition du critère d'arrêt pour la boucl
 
 epn=1                             #valeure de début pour entrer dans la boucle
 
-p=0                               #Initialization du compteur du nombre d'iterations du point fixe
 
 SS=np.array([np.zeros(ny)])       #Initialization de la matrice qui ajoute des valeures de S
                                   #(fonction de solution dans l'éspace Y) à la
@@ -65,38 +66,10 @@ Ygrid= grille(Y,ny)               #Creation d'une grille pour l'integration a pa
 
 Verification=0                    #Variable qui séra utilisée pour éva-
                                   #luer l'orthogonalitée
-class CanonicalForme:
-    def __init__(self):        
-        self._d=2                                             #Nombre de paramètres
-        self._p=0                                             #rank du tenseur
-        self._tshape=np.array([nx,ny])
-        self .X=np.linspace(0,1,self._tshape[0])
-        self._U=[[np.zeros(self._tshape[0])],[np.zeros(self._tshape[1])]]
-#------------------------------------------------------------------------
-#Méthode pour aquéririr la valeure de _p        
-    def _get_p(self):
-        return self._p
-#Methode qui permet changer la valeure de _p
-    def _set_p(self):
-        self._p=self._p+1
-#------------------------------------------------------------------------
-#Méthode pour aquéririr la valeure de _tshape
-    def _get_tshape(self):
-        return self._tshape
-#Méthode qui permet changer la valeure de _tshape
-    def _set_tshape(self,tshape):
-            self._tshape=tshape
-#------------------------------------------------------------------------
-            
-    def _get_U(self):
-        return self._U
-    def _set_U(self,newU):
-        self._U=newU
-        
-    def _add_enrich(self,R,S):
-        self._U[0]=np.append(self._U[0],R,axis=0)
-        self._U[1]=np.append(self._U[1],S,axis=0)
-#------------------------------------------------------------------------                                  
+
+               
+    
+    
 """"This is the principal loop of the application where the numerical solution 
 is calculated with the PGD method;
 - In the first line whe activate the iteration counter for the present iteration
@@ -108,12 +81,13 @@ to the fixpoint application
  calling to new_iteration_result application
 - The first vector S1 is soraged to be used for the stoping criteria"""
 
-C=CanonicalForme() 
-                    
-    
+C=Canonical.CanonicalForme(nx,ny)
+
+
+                        
 
 while   ((epn>=epenri))  :
-        C._set_p()
+        C._set_rank()
         RR=C._get_U()[0]
         SS=C._get_U()[1]
         S,R,z=fixpoint(X,Y,SS,RR,nx,ny,F,z)
@@ -124,42 +98,40 @@ while   ((epn>=epenri))  :
         #Module  pour évaluer l'orthogonalité des vecteurs qui forment
         #les différents modes
         Verification=1
-        for i in range (C._get_p()):
+        for i in range (C._get_rank()):
               if (OrthR[0][i]>1e-10):
-                  print('Orthogonality is not verified at mode', C._get_p())
+                  print('Orthogonality is not verified at mode', C._get_rank())
                   print('Scalar product value of failure=', OrthR[0][i])
                   Verification=0
                   
         OrthS=orthogonality_verification(Ygrid,S,SS)
-        for i in range (C._get_p()):
+        for i in range (C._get_rank()):
             if (OrthS[0][i]>1e-10):
-                print('Orthogonality is not verified at mode',C._get_p())
+                print('Orthogonality is not verified at mode',C._get_rank())
                 print('Scalar product value of failure=', OrthS[0][i])
                 Verification=0
                 
         #--------------------------------------------------------------        
-        C._add_enrich(R,S)                            #SS=np.append(SS,S,axis=0)
-                                                      # SSnorm=np.append(SSnorm,Sn,axis=0)
-                                                      #RR=np.append(RR,R,axis=0)        
-        Un=new_iteration_result(R,S)
-        U=U+Un
         
-                
-        if C._get_p()==1:
+        C._add_enrich(R,S)                                                                       
+        Sumn=new_iteration_result(R,S)
+        C._set_Sum(Sumn)
+        if C._get_rank()==1:
             S1=S
         epn=norm(S)/norm(S1)
         
         
-        if ((norm(F-U)/norm(F))<(1e-10)):
+        if ((norm(F-C._get_Sum())/norm(F))<(1e-10)):
             break
     
 if (Verification==1):   
     print('Orthogonality is verified') 
+print('--------------------------------------------------------------\n')
        
-print('Numbers of iterations of enrichment=',C._get_p()) 
+print('Numbers of iterations of enrichment=',C._get_rank()) 
 print('Numbers of iterations in fixed-point loop with no convergence:',z)       
 print('Epsilon=',epn)
-#print('Erreure relative=',(norm(F-U)/norm(F)))
+print('Erreure relative=',(norm(F-C._get_Sum())/norm(F)))
 
 
 ##--------------------------------------------------------------------------
@@ -171,13 +143,13 @@ prove the orthogonality between this vectors. If this module is not
 desired, leave as commentary"""
 
 #Verification in the RR space (X)
-
+p=C._get_rank()
 RR=np.delete(C._get_U()[0],0,axis=0)
 SS=np.delete(C._get_U()[1],0,axis=0)
 Orthox=np.zeros(p*p).reshape(p,p)
 for i in range (p):
         Orthox[i,:]=orthogonality_verification(Xgrid,RR[i,:],RR)
-#Verification in the SS space (X)    
+#Verification in the SS space (Y)    
 Orthoy=np.zeros(p*p).reshape(p,p)
 for i in range (p):
     Orthoy[i,:]=orthogonality_verification(Ygrid,SS[i,:],SS)
@@ -188,12 +160,34 @@ with open('Orthox.csv','w',newline='') as fp:
 with open('Orthoy.csv','w',newline='') as fp:
      a=csv.writer(fp, delimiter=',')
      a.writerows(Orthoy)
-     
-     
-#To read the values, its necesary to activate the next line      
-np.loadtxt("Orthox.csv",delimiter=",",dtype=float)
-np.loadtxt("Orthoy.csv",delimiter=",",dtype=float) 
+
+print('--------------------------------------------------------------\n')
+print('The file Orthox.csv has been created, to read it, type readfile.readOrthox()')
+print('--------------------------------------------------------------\n')
+print('The file Orthoy.csv has been created, to read it, type readfile.readOrthoy()')
+
+with open('RR.csv','w', newline='') as fp:
+    a=csv.writer(fp, delimiter=',')
+    a.writerows(C._U[0])
  
+print('--------------------------------------------------------------\n')    
+print('The file with the modes in X space has been created as RR.csv, \n to read it, type readfile.readRR()')
+
+ 
+     
+with open('SS.csv','w', newline='') as fp:
+    a=csv.writer(fp, delimiter=',')
+    a.writerows(C._U[1])
+
+print('--------------------------------------------------------------\n')
+print('The file with the modes in Y space has been created as SS.csv, \n to read it, type readfile.readSS()')    
+
+
+#np.loadtxt("file.csv",delimiter=",",dtype=float)     
+
+
+
+
     
     
 
