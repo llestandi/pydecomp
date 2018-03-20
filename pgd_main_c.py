@@ -10,60 +10,100 @@ from fixepoint import fixpoint
 from scipy.linalg import norm
 from matrixf import matfunc
 from new_iteration_result import new_iteration_result
-from grille import grille
 from orthogonality_verification import orthogonality_verification
+from Orthogonal import Orthogonal
+from IPython import get_ipython
 import Canonical
-import readfile
-import csv 
+import CartesianGrid
+import csv
+import integrationgrid
 
-"""This application will compute la solution of function in the form of a matrix with the PGD
-method, the programing of this application is based in the equations that can be founded in the 
-'Manuscript' of the Thesis of Lucas Lestandi in chapter 1"""
+
+ 
+
+"""This application will compute la solution of function in the form of 
+a matrix with the PGD method, the programing of this application is based
+ in the equations that can be founded in the  'Manuscript' of the Thesis
+ of Lucas Lestandi in chapter 1"""
+ 
 #Definition of variables
+dim=2
+#------------------------------------------------------------------------------
+#Definition of the number of divitions of each space 
+tshape=np.zeros(dim,dtype=int)
 
-nx=500                            #definition de la quantité d'élements dans le domaine x
-ny=500                            #definition de la quantité d'élements dans le domaine y
+
+#definition de la quantité d'élements dans le domaine x 
+tshape[0]=200                  
+#definition de la quantité d'élements dans le domaine y
+tshape[1]=200
+
+#If the study needs more dimetions have to be added. Ex: div_tshape[2]=55  
+
+#------------------------------------------------------------------------------
+#Declaration of the limits of integration
+                      
 a=0                               #a et b sont les limites dans le domaine x
 b=1
 c=0                               #c et d sont les limites dans le domaine y 
 d=1
-#-----------------------------------------------------------------------------------------
+
+#The limits can be specified direcly in the lower_limit and upper_limit arrays
+lower_limit=np.array([a,c])
+upper_limit =np.array([b,d])
+
+#Vector is the class where all the variables that define the space and the
+#vector is storage
+Vector = CartesianGrid.CartesianGrid(dim, tshape, lower_limit, upper_limit)
+
+# SpaceCreator is the method that creates the Cartesian grid to work
+X = Vector.SpaceCreator()
+
+#------------------------------------------------------------------------------
 #Creation of the matrix for study
-X=np.linspace(a,b,nx)             #Vecteur qui discretise le domaine X
-Y=np.linspace(c,d,ny)             #Vecteur qui discretise le domaine Y
-F=matfunc(X,Y)                    #Matrice de la fonction déjà discretisée a partir d'une
-#F=A = np.random.randn(ny, nx)     #Definition de la matrice d'étude a partir des valeures
-                                  #aléatoires, il faut marquer comme commentaire si c'est
-                                  #l'option à utiliser
+
+#matfunc is a function that will create the space of data to study from
+#a formule, de space defined by X. This function has to be changed for each
+#problem 
+F=matfunc(X, tshape) 
+
+#This loop serve to verify the uncompresed file with the final result
+#Remove the to allow the this function work
+"""
+with open ('F.csv', 'w', newline='') as file:
+    write= csv.writer(file)
+    for line in F:
+        write.writerow(line)
+"""
+
+#Definition de la matrice d'étude a partir des valeures
+#aléatoires, il faut marquer comme commentaire si c'est
+#l'option à utiliser
+
+         
+#F=A = np.random.randn(ny, nx)    
                                                                     
 #-----------------------------------------------------------------------------------------
-                                  #fonction à introduir dans le fichier matrixf 
+                                 
+#Stop criteria value for the enrichment loop                                  
+epenri=1*10**-12
+                 
+#Start value of epn that allows get in to the enrichment loop for the first
+#iteration
+epn=1                             
+                               
+#The variable z is created to count the number of iterations in the fixed-point
+#loop which don't arrive to the convergence after maximal times of iterations
+#declared as a stoping criteria.
+z=0                               
                                   
-epenri=1*10**-12                  #Definition du critère d'arrêt pour la boucle principal
+#Creation d'une grille pour l'integration a partir des valeurs
 
-epn=1                             #valeure de début pour entrer dans la boucle
-
-
-SS=np.array([np.zeros(ny)])       #Initialization de la matrice qui ajoute des valeures de S
-                                  #(fonction de solution dans l'éspace Y) à la
-                                  #sortie de chaque iteration du point fixe
-SSnorm=np.array([np.zeros(ny)])                                 
-
-RR=np.array([np.zeros(nx)])       #Initilization de la matrice qui ajoute des valeures de R 
-                                  #(fonction de solution dans l'éspace X) à la 
-                                  #sortie de chaque iteration du point fixe
-                                  
-U=np.zeros(np.shape(F))           #Creation de la matrice de Résultat dans l'espace solution                                  
-
-z=0                               #Variable créé pour counter des iterations dans la boucle du
-                                  #du point fixe qui n'arrivent pas a la convergence après un 
-                                  #nombre maximal d'iterations
-                                  
-Xgrid= grille(X,nx)               #Creation d'une grille pour l'integration a partir des valeurs
-                                  #du vecteur X
-Ygrid= grille(Y,ny)               #Creation d'une grille pour l'integration a partir des valeurs
-                                  #du vecteur Y 
-
+Xgrid=integrationgrid.IntegrationGrid(X,dim,tshape)   
+Xgrid=Xgrid.IntegrationGridCreation()
+                                                             
+#La variable Verification is going to be used to evaluate the orthogonality
+#bet                                      
 Verification=0                    #Variable qui séra utilisée pour éva-
                                   #luer l'orthogonalitée
 
@@ -81,20 +121,28 @@ to the fixpoint application
  calling to new_iteration_result application
 - The first vector S1 is soraged to be used for the stoping criteria"""
 
-C=Canonical.CanonicalForme(nx,ny)
-
+C=Canonical.CanonicalForme(tshape,dim)
+C._solution_initialization()
 
                         
 
 while   ((epn>=epenri))  :
         C._set_rank()
+            
+            
         RR=C._get_U()[0]
         SS=C._get_U()[1]
-        S,R,z=fixpoint(X,Y,SS,RR,nx,ny,F,z)
+        if (C._rank==1 ):
+          print('Number of iterations in fixed-point routine for each enrichment')
+          print('--------------------------------------------------------------\n')  
+        S,R,z=fixpoint(X[0],X[1],SS,RR,C._tshape[0],C._tshape[1],F,z,C._rank)
         Sn=S/norm(S)
-        OrthR=orthogonality_verification(Xgrid,R,RR)
-        
         #-------------------------------------------------------------
+        
+        OrthR=orthogonality_verification(Xgrid[0],R,RR)
+        
+        
+       
         #Module  pour évaluer l'orthogonalité des vecteurs qui forment
         #les différents modes
         Verification=1
@@ -104,7 +152,7 @@ while   ((epn>=epenri))  :
                   print('Scalar product value of failure=', OrthR[0][i])
                   Verification=0
                   
-        OrthS=orthogonality_verification(Ygrid,S,SS)
+        OrthS=orthogonality_verification(Xgrid[1],S,SS)
         for i in range (C._get_rank()):
             if (OrthS[0][i]>1e-10):
                 print('Orthogonality is not verified at mode',C._get_rank())
@@ -114,76 +162,61 @@ while   ((epn>=epenri))  :
         #--------------------------------------------------------------        
         
         C._add_enrich(R,S)                                                                       
-        Sumn=new_iteration_result(R,S)
-        C._set_Sum(Sumn)
+        New_Result=new_iteration_result(C._U[0],C._U[1])
+        
         if C._get_rank()==1:
             S1=S
         epn=norm(S)/norm(S1)
         
         
-        if ((norm(F-C._get_Sum())/norm(F))<(1e-10)):
+        if (((norm(F-New_Result)/norm(F)))<(1e-10)):
+            print('--------------------------------------------------------------\n') 
+            if (Verification==1):   
+                print('Orthogonality between modes was verified') 
+                print('----------------------------------------\n') 
+            print('Max. Relative error criteria was verified')
+            print('Relative error=',(norm(F-New_Result)/norm(F)),'< 1e-10' )
             break
     
-if (Verification==1):   
-    print('Orthogonality is verified') 
-print('--------------------------------------------------------------\n')
-       
+
+    
+print('--------------------------------------------------------------\n')      
 print('Numbers of iterations of enrichment=',C._get_rank()) 
 print('Numbers of iterations in fixed-point loop with no convergence:',z)       
 print('Epsilon=',epn)
-print('Erreure relative=',(norm(F-C._get_Sum())/norm(F)))
+
 
 
 ##--------------------------------------------------------------------------
-#Orthogonality verification 
+#For the simplicity in the code we name p to the number of iterations
+p=C._get_rank()
+
+#_final_result method is called to remove the first mode of zeros created
+#at the begining to initiate the enrichment process.
+C._final_result()
 """
 This module will return the matrices of the scalar product between the         
 vectors that form the RR space and SS space. This is made in order to 
 prove the orthogonality between this vectors. If this module is not 
-desired, leave as commentary"""
+desired, leave as commentary
+"""
+Orthogonal(C._U,Xgrid,C._dim,p)  
+"""
+Creation of the files with each mode of the solution in independent files
+"""
+C._writeU() 
 
-#Verification in the RR space (X)
-p=C._get_rank()
-RR=np.delete(C._get_U()[0],0,axis=0)
-SS=np.delete(C._get_U()[1],0,axis=0)
-Orthox=np.zeros(p*p).reshape(p,p)
-for i in range (p):
-        Orthox[i,:]=orthogonality_verification(Xgrid,RR[i,:],RR)
-#Verification in the SS space (Y)    
-Orthoy=np.zeros(p*p).reshape(p,p)
-for i in range (p):
-    Orthoy[i,:]=orthogonality_verification(Ygrid,SS[i,:],SS)
-
-with open('Orthox.csv','w',newline='') as fp:
-     a=csv.writer(fp, delimiter=',')
-     a.writerows(Orthox)
-with open('Orthoy.csv','w',newline='') as fp:
-     a=csv.writer(fp, delimiter=',')
-     a.writerows(Orthoy)
-
-print('--------------------------------------------------------------\n')
-print('The file Orthox.csv has been created, to read it, type readfile.readOrthox()')
-print('--------------------------------------------------------------\n')
-print('The file Orthoy.csv has been created, to read it, type readfile.readOrthoy()')
-
-with open('RR.csv','w', newline='') as fp:
-    a=csv.writer(fp, delimiter=',')
-    a.writerows(C._U[0])
- 
-print('--------------------------------------------------------------\n')    
-print('The file with the modes in X space has been created as RR.csv, \n to read it, type readfile.readRR()')
+"""
+With the folowing command  all variables are going to be erased and the 
+solution modes could have have acces by the files that were created
+"""   
+get_ipython().magic('reset -sf') 
 
  
+
+
+
      
-with open('SS.csv','w', newline='') as fp:
-    a=csv.writer(fp, delimiter=',')
-    a.writerows(C._U[1])
-
-print('--------------------------------------------------------------\n')
-print('The file with the modes in Y space has been created as SS.csv, \n to read it, type readfile.readSS()')    
-
-
-#np.loadtxt("file.csv",delimiter=",",dtype=float)     
 
 
 

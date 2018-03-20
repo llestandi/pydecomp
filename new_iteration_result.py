@@ -7,6 +7,20 @@ Created on Tue Feb 20 09:17:40 2018
 
 import numpy as np
 
-def new_iteration_result(R,S):
-     Fres=np.transpose(S).dot(R)
-     return Fres 
+def new_iteration_result(R, tshape, Resultat):
+     
+     NewModeResultat=(np.transpose(np.array([R[0]])).dot(np.array([R[1]])))
+     
+     if len(R)>2:
+         for i in range(2,len(R[0])):
+             NewModeResultat=np.kron(NewModeResultat,R[0][i])
+             
+         NewModeResultat=NewModeResultat.reshape(tshape)
+     
+     Resultat=np.add(Resultat,NewModeResultat)
+        
+        
+        
+     return Resultat 
+ 
+
