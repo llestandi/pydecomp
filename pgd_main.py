@@ -109,7 +109,7 @@ Xgrid=Xgrid.IntegrationGridCreation()
                                                              
 #La variable Verification is going to be used to evaluate the orthogonality
                                      
-Verification=0                   
+Verification=1                   
 
                
     
@@ -132,6 +132,18 @@ while   (epn>=epenri):
         
         #Sn=S/norm(S)
         #-------------------------------------------------------------
+        for i in range(dim):
+            
+            Orth=orthogonality_verification(Xgrid[i],R[i],C._U[i])
+            for j in range(C._get_rank()):
+                if (Orth[j]>1e-10):
+                    print('--------------------------------------------------------------\n')
+                    print('Orthogonality is not verified at mode:', C._get_rank())
+                    print('Variable of failure= U(',i,')')
+                    print('Value of the scalar product of failure=', Orth[j])
+                    Verification=0
+                
+                    
         """
         OrthR=orthogonality_verification(Xgrid[0],R,RR)
         
@@ -163,7 +175,7 @@ while   (epn>=epenri):
            
         epn=norm(R[dim-1])/norm(REF)
                
-        
+        """
         if (((norm(F-Resultat)/norm(F)))<(1e-10)):
             print('--------------------------------------------------------------\n') 
             if (Verification==1):   
@@ -172,12 +184,12 @@ while   (epn>=epenri):
             print('Max. Relative error criteria was verified')
             print('Relative error=',(norm(F-Resultat)/norm(F)),'< 1e-10' )
             break
-        
+        """
 
     
 print('--------------------------------------------------------------\n')      
-print('Numbers of iterations of enrichment=',C._get_rank()) 
-print('Numbers of iterations in fixed-point loop with no convergence:',z)       
+print("Iteration's enrichment loops=",C._get_rank()) 
+print("Iteration's enrichment loops in fixed-point loop with no convergence:",z)       
 print('Epsilon=',epn)
 
 
