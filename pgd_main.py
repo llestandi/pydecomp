@@ -8,23 +8,25 @@ Created on Wed Feb 14 15:35:41 2018
 import numpy as np
 from fixepoint import fixpoint
 from scipy.linalg import norm
+import matplotlib.pyplot as plt
 from matrixf import matfunc
 from new_iteration_result import new_iteration_result
 from orthogonality_verification import orthogonality_verification
 from Orthogonal import Orthogonal
 from IPython import get_ipython
 from Canonical import CanonicalForme
+from evolution_error import evolution_error
+from tensor3d import tensorfunc3
+from tensor4d import tensorfunc4
 import CartesianGrid
 import csv
 import integrationgrid
 
 
- 
 
-"""This application will compute la solution of function in the form of 
-a matrix with the PGD method, the programing of this application is based
- in the equations that can be founded in the  'Manuscript' of the Thesis
- of Lucas Lestandi in chapter 1"""
+
+
+
  
 #Definition of variables n dimention
 dim=2
@@ -34,9 +36,13 @@ tshape=np.zeros(dim,dtype=int)
 
 
 #definition de la quantité d'élements dans le domaine x 
-tshape[0]=200                 
+tshape[0]=5               
 #definition de la quantité d'élements dans le domaine y
-tshape[1]=300
+tshape[1]=6
+
+#tshape[2]=50
+
+#tshape[3]=60
 
 #If the study needs more dimetions have to be added. Ex: div_tshape[2]=55  
 
@@ -51,8 +57,8 @@ c=0
 d=1
 
 #The limits can be specified direcly in the lower_limit and upper_limit arrays
-lower_limit=np.array([a,c])
-upper_limit =np.array([b,d])
+lower_limit=np.array([0,0])
+upper_limit =np.array([1,1])
 
 #Vector is the class where all the variables that define the space and the
 #vector is storage
@@ -70,6 +76,21 @@ X = Vector.SpaceCreator()
 
 F=matfunc(X, tshape)
 
+#If the function is in 3d the file tensorfunc will help to generate
+#the tensor from a equeation, the next line should be left as a 
+#commentary if not working in a 3d approach
+
+#F=tensorfunc3(X, tshape)
+
+#If the function is in 4d the file tensorfunc will help to generate
+#the tensor from a equeation, the next line should be left as a 
+#commentary if not working in a 3d approach
+
+#F=tensorfunc4(X, tshape)
+
+
+
+
 
 #Definition de la matrice d'étude a partir des valeures
 #aléatoires, il faut marquer comme commentaire si c'est
@@ -79,17 +100,17 @@ F=matfunc(X, tshape)
 #F=np.random.randn(tshape[0], tshape[1])  
 
   
-#This loop print the uncompresed solution and it will serve to 
-#verify the uncompresed file with the final result.
-#Remove the to allow the this function work
+  
 """
-with open ('F.csv', 'w', newline='') as file:
-    write= csv.writer(file)
-    for line in F:
-        write.writerow(line)
-"""                                                                            
+This code use the PGD method to create the modes decoposition of a field of
+data in n dimentions, creating n files, one file for each dimention.
+The description of the PGD method as well each variable used in this code
+can be found in the manuscrip of Lucas Lestandi's  doctoral thesis at
+Chapter 3 (Multivariate problem decomosition).
+"""                                                                         
 #------------------------------------------------------------------------------
                                  
+
 #Stop criteria value for the enrichment loop                                  
 epenri=1*10**-12
                  
@@ -115,6 +136,7 @@ Verification=1
     
 
 C=CanonicalForme(tshape,dim)
+evaluation=evolution_error()
 C._solution_initialization()
 Resultat=np.zeros(tshape)
                         
@@ -143,28 +165,7 @@ while   (epn>=epenri):
                     print('Value of the scalar product of failure=', Orth[j])
                     Verification=0
                 
-                    
-        """
-        OrthR=orthogonality_verification(Xgrid[0],R,RR)
         
-        
-       
-        #Module  pour évaluer l'orthogonalité des vecteurs qui forment
-        #les différents modes
-        Verification=1
-        for i in range (C._get_rank()):
-              if (OrthR[0][i]>1e-10):
-                  print('Orthogonality is not verified at mode', C._get_rank())
-                  print('Scalar product value of failure=', OrthR[0][i])
-                  Verification=0
-                  
-        OrthS=orthogonality_verification(Xgrid[1],S,SS)
-        for i in range (C._get_rank()):
-            if (OrthS[0][i]>1e-10):
-                print('Orthogonality is not verified at mode',C._get_rank())
-                print('Scalar product value of failure=', OrthS[0][i])
-                Verification=0
-        """       
         #--------------------------------------------------------------        
         
         C._add_enrich(R)                                                                       
@@ -174,9 +175,19 @@ while   (epn>=epenri):
             REF=R[dim-1]
            
         epn=norm(R[dim-1])/norm(REF)
-               
+        
+        
+        ERROR=norm(F-Resultat)/norm(F)
         """
-        if (((norm(F-Resultat)/norm(F)))<(1e-10)):
+        This routine serve to evaluate the evolution of the value of 
+        error for each enrichment loop, if the evaluation is not desired,
+        leave this section as a comentary
+        """
+        
+        evaluation._new_loop_evaluation(C._rank,ERROR)
+        
+        
+        if (((norm(F-Resultat)/norm(F)))<(1e-12)):
             print('--------------------------------------------------------------\n') 
             if (Verification==1):   
                 print('Orthogonality between modes was verified') 
@@ -184,7 +195,7 @@ while   (epn>=epenri):
             print('Max. Relative error criteria was verified')
             print('Relative error=',(norm(F-Resultat)/norm(F)),'< 1e-10' )
             break
-        """
+        
 
     
 print('--------------------------------------------------------------\n')      
@@ -224,7 +235,7 @@ C._writeU()
 With the folowing command  all variables are going to be erased and the 
 solution modes could have have acces by the files that were created
 """   
-
+evaluation._plot_error()
 get_ipython().magic('reset -sf') 
 
  

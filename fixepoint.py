@@ -12,7 +12,7 @@ from Iteration_solution import IterationSolution
 
             
     
-def fixpoint(X,tshape,U,F,z,r):
+def fixpoint(X,tshape,U,F,z,r,maxfix):
     dim=np.size(tshape)
     New_Solution=IterationSolution(tshape,dim)
     New_Solution._current_solution_initialization()
@@ -21,10 +21,10 @@ def fixpoint(X,tshape,U,F,z,r):
     
     
     Old_Solution=New_Solution
-    k=0                                           #initialization de la fonction du point fixe
-    eppf=1*10**(-10)
-    epsilon=1                                     #Première valeure de epsilon pour comencer l'algorithme
-    itmax=30
+    k=0                                     #initialization de la fonction du point fixe
+    eppf=1e-8
+    epsilon=1              #Première valeure de epsilon pour comencer l'algorithme
+    itmax=maxfix
     
     while ((epsilon>=eppf) & (k<itmax)): 
        
@@ -44,6 +44,7 @@ def fixpoint(X,tshape,U,F,z,r):
             R[i]=(-aux+Gamma)/Alpha
             
             if (i<(dim-1)):
+               
                 R[i]=R[i]/(norm(R[i]))
                 
         epsilon=norm(R[dim-1]-Old_Solution)/norm(Old_Solution)
@@ -62,31 +63,6 @@ def fixpoint(X,tshape,U,F,z,r):
             
         
     return  R,z
-    
-"""
-Gammax=gammax(F,S,nx,ny,Y)
-        Bethax=betax(SS,S,Y)
-        #print('shape bethax', np.shape(Bethax))
-        #print(Bethax)
-        #print('shape RR', np.shape(RR))
-        #print(RR)
-        aux=np.dot(np.transpose(RR),Bethax)
-        aux=np.transpose(aux)
-        R=(-aux+Gammax)/Alphax      
-        R=R/(norm(R))
-      
-        
-        #Partie 2
-        Alphay=alpha(R,X)
-        Gammay=gammay(F,R,nx,ny,X)
-        Bethay=betay(RR,R,X)
-        aux=np.dot(np.transpose(SS),Bethay)
-        aux=np.transpose(aux)
-        S=(-aux+Gammay)/(Alphay)
-        epsilon=norm(S-Sv)/norm(Sv)
-"""
 
-
-    
 
 
