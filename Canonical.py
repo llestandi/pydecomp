@@ -21,7 +21,6 @@ class CanonicalForme(TensorDescriptor):
     def __init__(self,_tshape,dim):                                                                  
         TensorDescriptor.__init__(self,_tshape,dim)
         self._rank=0                                      #Tensor rank
-        #self._U=[[np.zeros(self._tshape[0])],[np.zeros(self._tshape[1])]]
         self._U=[]
 #------------------------------------------------------------------------
     def _solution_initialization(self):
@@ -92,7 +91,10 @@ class CanonicalForme(TensorDescriptor):
             with open(aux,'w',newline='') as fp:
                 a=csv.writer(fp, delimiter=',')
                 a.writerows(self._U[i]) 
-                    
+            
+            with open('tshape.csv','w', newline='') as file:
+                b=csv.writer(file, delimiter=',')
+                b.writerow(self._tshape)
             
     
 #----------------------------------------------------------------------------
