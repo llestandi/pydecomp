@@ -20,7 +20,7 @@ class CanonicalForme(TensorDescriptor):
     
     def __init__(self,_tshape,dim):                                                                  
         TensorDescriptor.__init__(self,_tshape,dim)
-        self._rank=0                                      #Tensor rank
+        self._rank=0                                      
         self._U=[]
 #------------------------------------------------------------------------
     def _solution_initialization(self):

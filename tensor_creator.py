@@ -22,9 +22,8 @@ def funcx(V):
         # np.sqrt(1-x*y)                   #fonction test 4
         # 1/(1+(x*np.e**(y)))              #fonction test 5
 """
-This code serve to create a tensor of any dimention from a function. 
-In the first part of the code the grid that represent each sub-espace of 
-the tensor is created 
+This code serve to create a tensor with its grid of any dimention from 
+a function. 
 """
 
 class TensorCreator():
@@ -68,7 +67,7 @@ class TensorCreator():
     """
     tshape=is an array that contains the information of the number of divitions
     of each sub-space. The number of elements have to coincide with the number
-    of subspaces. 
+        of subspaces. 
     """
     
     def _CartesianGrid(self):
@@ -76,7 +75,7 @@ class TensorCreator():
         """
         _CartesianGrid: is the mode that calls the class with the same name.
         CartesianGrid: is the class where all the variables that define 
-        the space and the vector is storage. 
+        the space grid is storage. 
         SpaceCreator: is a mode in CartesianGrid class that creates the vectors 
         hat represent the discretized domaine.
         """
@@ -120,37 +119,18 @@ class TensorCreator():
         return self.X,self.F
     
     def help():
-        print("HELP")
-        print("====")
-        print("First one object class has to be created")
-        print("EX: Function1=TensorCreator()")
-        print("The class initiates with empty values, so the values of tshape,\
-              lower_limit,")
-        print("upper_limit are expected as an input (input as numpy.ndarray \
-                                                     type expected)")
-        print("Function1.tshape=np.array([56,38])")
-        print("Function1.lower_limit=np.array([0,0])")
-        print("Function1.upper_limit=np.array([1,1])")
-        print("After this three elements of the objects were introduced the\
-              element dim is")
-        print("going to be created inside Grid function, this mode is also\
-              used to evaluate")
-        print("the coherence and type of data introduced in the first part.")
-        print("So once all this data where introduced the mode Generator()\
-              has to be called.")
-        print("This  mode use the function in the funcx function to generate\
-              te Tensor.")
-        print("EX:F=Function1.Generator()")
+        print(a)
+    
         
         
         
-        
-        
-"""
+a="""        
+
 HELP
 ====
 
 First one object class has to be created
+
 EX: Function1=TensorCreator1()
 
 The class initiates with empty values, so the values of tshape, lower_limit,
@@ -164,9 +144,11 @@ After this three elements of the objects were introduced the element dim is
 going to be created inside Grid function, this mode is also used to evaluate 
 the coherence and type of data introduced in the first part. 
 
-So once all this data where introduced the mode Generator() has to be called.
+So, once all this data where introduced the mode Generator() has to be called.
 This  mode use the function in the funcx function to generate te Tensor.
 
-EX:F=Function1.Generator()
+EX:X, F=Function1._Generator()
 
+where X is a list containing the grid in each dimention and
+F is the Tensor created.
 """
