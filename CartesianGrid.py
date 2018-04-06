@@ -17,6 +17,7 @@ upper_limit --> is the upper limit value of each space
 """
 
 class CartesianGrid:
+    
 
     def __init__(self, dim, tshape, lower_limit, upper_limit):
         

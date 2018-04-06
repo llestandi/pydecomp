@@ -13,17 +13,22 @@ from Iteration_solution import IterationSolution
             
     
 def fixpoint(X,tshape,U,F,z,r,maxfix):
+    """
+    This function calculates the solution mode for each iteration in the 
+    enrichment loop. The definition of each variable (such as alpha, betha,  
+    etc). that it's used herecould be found in detail in the manuscript of 
+    Lucas Lestandi doctoral thesis.
+    """
     dim=np.size(tshape)
     New_Solution=IterationSolution(tshape,dim)
     New_Solution._current_solution_initialization()
     R=New_Solution.R
-
     
     
     Old_Solution=New_Solution
-    k=0                                     #initialization de la fonction du point fixe
+    k=0                                    
     eppf=1e-8
-    epsilon=1              #Première valeure de epsilon pour comencer l'algorithme
+    epsilon=1              
     itmax=maxfix
     
     while ((epsilon>=eppf) & (k<itmax)): 
@@ -33,6 +38,7 @@ def fixpoint(X,tshape,U,F,z,r,maxfix):
         Old_Solution=R[dim-1]
         Gamma=[]
         Alpha=np.zeros(dim)
+        
         for i in range(dim):
             
             Alpha=alpha(R,X,i,dim)

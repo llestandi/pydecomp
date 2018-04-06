@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+
 """
 Created on Mon Mar  5 09:30:04 2018
 
@@ -6,19 +6,19 @@ Created on Mon Mar  5 09:30:04 2018
 """
 import numpy as np
 import csv
-
+"""
 def read(file):
     with open(file, newline=""):
         lecture=csv.reader(file)
         
     return lecture        
-        
+"""        
 
-"""
+
 def read(file):
     
     return np.loadtxt(file,delimiter=",",dtype=float)
-"""    
+    
 
 
 

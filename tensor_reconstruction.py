@@ -35,10 +35,28 @@ def reconstruction():
         R=[]
         
     return Resultat
-help(reconstruction)
-reconstruction()
-"this is a test"
 
+#------------------------------------------------------------------------------
+def reconstruction2(C):
+    
+    try:
+        tshape=C._tshape
+        dim=len(C._U)
+        U=C._U
+        rank=C._rank
+        Resultat=np.zeros(shape=tshape)
+        R=[]
+        for i in range(rank):
+            for j in range(dim):
+               r=U[j][i][:]
+               R.append(r)
+            Resultat=new_iteration_result(R, tshape, Resultat)
+            R=[]
+        return Resultat
+    
+    except:
+        print("Variable has to be an object of CanonicalForme Class")
+    
 
 
 
