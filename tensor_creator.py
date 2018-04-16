@@ -8,23 +8,36 @@ Created on Tue Mar 27 17:24:54 2018
 import numpy as np
 import CartesianGrid
 
-
 """
-    funcx: This function will create the tensor that represents the the desired 
-    function. The variables has to be named as V[0],V[1]....,V[n]
+This code serve to create a tensor with its grid of any dimention from 
+a function. 
+Parameters:
+    - The equation of the function that is going to be found in the first 
+    function of this code. The variables must be introduced as 
+    V[0],V[1]....,V[n].
+    - tshape: will be a list or an ndarray with the information of how many
+    values ar going to be taken in each dimention for the discretization 
+    process.
+    - lower_limit: The values of the inferior limits of the domain for the 
+    discretization process.
+    - upper_limit: The values of the superior limits of the domain for the 
+    discretization process.
+Returns:
+    Tensor creator will return de grid that represent the domaine and the 
+    desired tensor.
+
+For more information how to use this code just type TensorCreator.help()
+      
 """
 def funcx(V): 
         return 1/(1+(V[0]*np.e**(V[1])))
         #Fonctions tets à utiliser 
-        # x*y                              #fonction test 1
-        # 1/(1+(x*y))                      #fonction test 2
-        # np.sin(np.sqrt(x**2+y**2))       #fonction test 3
-        # np.sqrt(1-x*y)                   #fonction test 4
-        # 1/(1+(x*np.e**(y)))              #fonction test 5
-"""
-This code serve to create a tensor with its grid of any dimention from 
-a function. 
-"""
+        # V[0]*V[1]                              #fonction test 1
+        # 1/(1+(V[0]*V[1]))                      #fonction test 2
+        # np.sin(np.sqrt(V[0]**2+V[1]**2))       #fonction test 3
+        # np.sqrt(1-V[0]*V[1])                   #fonction test 4
+        # 1/(1+(V[0]*np.e**(V[1])))              #fonction test 5
+
 
 class TensorCreator():
     def __init__(self):
@@ -49,16 +62,22 @@ class TensorCreator():
     problem. It must be introduced by the user as  the initialisation is empty.
     """        
     def _dim(self):
+        if type(self.lower_limit)==list:
+            self.lower_limit=np.asarray(self.lower_limit)
+            
         if type(self.lower_limit) != np.ndarray :
-            print('lower_limit input must be numpy.array type')
-            if type(self.tshape) != np.ndarray :
+            print('lower_limit input must be numpy.ndarray or list type')
+        
+        if type(self.tshape) == list:
+            self.tshape=np.asarray(self.tshape)
+        if type(self.tshape) != np.ndarray :
+            print('tshape input must be numpy.ndarray or list type')
                 
-                print('tshape input must be numpy.array type')
-                
-       
-            if type(self.upper_limit) != np.ndarray :
+        if type(self.upper_limit) ==  list:
+            self.upper_limit=np.asarray(self.upper_limit)
+        if type(self.upper_limit) != np.ndarray :
                 print('lower_limit input must be numpy.array type')
-            if self.lower_limit.size != self.upper_limit.size:
+        if self.lower_limit.size != self.upper_limit.size:
                 print("The number of dimetions used in lower and upper limits \
                       are not equals")
                        
@@ -131,14 +150,17 @@ HELP
 
 First one object class has to be created
 
-EX: Function1=TensorCreator1()
+EX: Function1=TensorCreator()
 
 The class initiates with empty values, so the values of tshape, lower_limit,
-upper_limit are expected as an input (input as numpy.ndarray type expected)
+upper_limit are expected as an input (input as numpy.ndarray or list
+type expected)
 
-Function1.tshape=np.array([56,38])
-Function1.lower_limit=np.array([0,0])
-Function1.upper_limit=np.array([1,1])
+Function1.tshape=[56,38]
+
+Function1.lower_limit=[0,0]
+
+Function1.upper_limit=[1,1]
 
 After this three elements of the objects were introduced the element dim is 
 going to be created inside Grid function, this mode is also used to evaluate 
