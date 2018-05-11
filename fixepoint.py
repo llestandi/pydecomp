@@ -14,10 +14,23 @@ from Iteration_solution import IterationSolution
     
 def fixpoint(X,tshape,U,F,z,r,maxfix):
     """
-    This function calculates the solution mode for each iteration in the 
-    enrichment loop. The definition of each variable (such as alpha, betha,  
-    etc). that it's used herecould be found in detail in the manuscript of 
-    Lucas Lestandi doctoral thesis.
+    This function calculates the n mode for each iteration in the 
+    enrichment loop for the PGD method. The definition of each variable   
+    (such as alpha, betha, etc) that it's used here could be found in detail 
+    in the manuscript of  Lucas Lestandi doctoral thesis.\n
+    **Parameters** \n
+    X= Cartesian Grid.\n
+    tshape= Tensor shape. \n
+    U= (n-1) modes of the decomposition. \n 
+    F= Tensor to be decomposed. \n
+    z= No convergence times counter variable. \n
+    r= Actual rank in the decomposition. \n
+    maxfix= maximun number of iterations in point fix algorithm.\n
+    **Returns**
+    R = n mode of the decomposition in the PGD decomposition method.\n
+    z = actualized number of iteration that did not converge, so: \n
+    :math:`z_{n}=z_{n-1}+1` if the actual mode does not converge or \n
+    :math:`z_{n}=z_{n-1}`if it had converged.
     """
     dim=np.size(tshape)
     New_Solution=IterationSolution(tshape,dim)
@@ -31,6 +44,16 @@ def fixpoint(X,tshape,U,F,z,r,maxfix):
     epsilon=1              
     itmax=maxfix
     
+    #Eliminate the commentary if the impresion in screen about the 
+    #the information of convergence at each iteration is desired
+    """
+    if r==1: 
+        
+        o='''Number of iterations in fix point routine for each enrichment'''
+        g='''-------------------------------------------------------------'''
+        print(o)
+        print(g)
+    """
     while ((epsilon>=eppf) & (k<itmax)): 
        
         k=k+1
@@ -54,17 +77,22 @@ def fixpoint(X,tshape,U,F,z,r,maxfix):
                 R[i]=R[i]/(norm(R[i]))
                 
         epsilon=norm(R[dim-1]-Old_Solution)/norm(Old_Solution)
-            
+        
+        
+        #Eliminate the comentary if the impresion in screen about the 
+        #the information of convergence at each iteration is desired
+        
+        
+        """   
         if epsilon<eppf :
             print('k(',r,')=',k)
             print('convergence')
-            """
-            print('R0',R[0])
-            print('shapeR0',np.shape(R[0]))
-            """
+            
         if k==itmax:
             print('k(',r,')=',k)
             print('No convergence')
+        """
+        if k==itmax:
             z=z+1
             
         

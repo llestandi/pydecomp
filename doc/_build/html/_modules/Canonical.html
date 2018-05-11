@@ -1,0 +1,215 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>Canonical &#8212; python decomposition library 0.1 documentation</title>
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script type="text/javascript" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.1/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head><body>
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for Canonical</h1><div class="highlight"><pre>
+<span></span><span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Created on Thu Mar  1 15:43:55 2018</span>
+
+<span class="sd">@author: Diego Britez</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">tensor_descriptor_class</span> <span class="k">import</span> <span class="n">TensorDescriptor</span>
+<span class="kn">import</span> <span class="nn">csv</span>
+<span class="c1">#------------------------------------------------------------------------</span>
+        
+
+<div class="viewcode-block" id="CanonicalForme"><a class="viewcode-back" href="../classes.html#Canonical.CanonicalForme">[docs]</a><span class="k">class</span> <span class="nc">CanonicalForme</span><span class="p">(</span><span class="n">TensorDescriptor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;        </span>
+<span class="sd">    This module is the code where  the atributs and methodes of the </span>
+<span class="sd">    class CanonicalForme are defined. CanonicalForme is the class where all  the  </span>
+<span class="sd">    information relative to the variables of te PGD method are storaged, </span>
+<span class="sd">    such as the modes, the number of  dimentions, the</span>
+<span class="sd">    rank (number of enrichment or modes)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">_tshape</span><span class="p">,</span><span class="n">dim</span><span class="p">):</span>                                                                  
+        <span class="n">TensorDescriptor</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">_tshape</span><span class="p">,</span><span class="n">dim</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rank</span><span class="o">=</span><span class="mi">0</span>                                      
+        <span class="bp">self</span><span class="o">.</span><span class="n">_U</span><span class="o">=</span><span class="p">[]</span>
+<span class="c1">#------------------------------------------------------------------------</span>
+    <span class="k">def</span> <span class="nf">_solution_initialization</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_U</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tshape</span><span class="p">[</span><span class="n">i</span><span class="p">]))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">]])</span>
+<span class="c1">#------------------------------------------------------------------------</span>
+<span class="c1">#This method is defined to delete the zeros rows that were used to initiate</span>
+<span class="c1">#the list of solutions _U</span>
+    
+    <span class="k">def</span> <span class="nf">_final_result</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">delete</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            
+        
+<span class="c1">#Method to get   _rank value       </span>
+    <span class="k">def</span> <span class="nf">_get_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rank</span>
+<span class="c1">#Method to set a new _rank value</span>
+    <span class="k">def</span> <span class="nf">_set_rank</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rank</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rank</span><span class="o">+</span><span class="mi">1</span>
+        
+<span class="c1">#------------------------------------------------------------------------</span>
+<span class="c1">#Method to get _tshape value</span>
+    <span class="k">def</span> <span class="nf">_get_tshape</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tshape</span>
+<span class="c1">#Method to set a new _tshape value</span>
+    <span class="k">def</span> <span class="nf">_set_tshape</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">tshape</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tshape</span><span class="o">=</span><span class="n">tshape</span>
+<span class="c1">#------------------------------------------------------------------------           </span>
+
+
+<span class="c1">#_U is the tensor  such as _U=[RR,SS] where RR is the tensor with the </span>
+<span class="c1">#solutions modes vectors (aranged in rows) in X (called also R)space </span>
+<span class="c1">#and SS is the tensor with te solutions modes vectors in Y (called also S).</span>
+<span class="c1">#_get_U is the methode to call and get _U</span>
+<span class="c1">#_set_U is the methode to call and get _U</span>
+<span class="c1">#_add_enrich is the method to add a new mode in RR and SS in each enrichmet </span>
+<span class="c1">#loop   </span>
+  
+    <span class="k">def</span> <span class="nf">_get_U</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_U</span>
+    <span class="k">def</span> <span class="nf">_set_U</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">newU</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_U</span><span class="o">=</span><span class="n">newU</span>
+        
+    <span class="k">def</span> <span class="nf">_add_enrich</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span><span class="n">R</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">):</span>
+            <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            print(&#39;i&#39;,i)</span>
+<span class="sd">            print(&#39;U&#39;,i,self._U[i])</span>
+<span class="sd">            &quot;&quot;&quot;</span>
+            
+           
+            <span class="bp">self</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">]]),</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+           <span class="c1"># self._U[1]=np.append(self._U[1],S,axis=0)</span>
+
+<span class="c1">#--------------------------------------------------------------------------</span>
+<span class="c1">#The methode writeU serve to write the solution modes  into a file .csv (coma </span>
+<span class="c1">#separated values) </span>
+    <span class="k">def</span> <span class="nf">_writeU</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_dim</span><span class="p">):</span>
+            <span class="n">aux</span><span class="o">=</span><span class="s2">&quot;U(&quot;</span><span class="o">+</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">+</span><span class="s2">&quot;).csv&quot;</span>
+            <span class="n">aux2</span><span class="o">=</span><span class="s1">&#39;readfile.read(&quot;&#39;</span><span class="o">+</span><span class="n">aux</span><span class="o">+</span><span class="s1">&#39;&quot;)&#39;</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;--------------------------------------------------------------</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;The file&#39;</span><span class="p">,</span> <span class="n">aux</span> <span class="p">,</span> <span class="s1">&#39;has been created,to read it, type:</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">,</span>
+                    <span class="n">aux2</span><span class="p">)</span>
+            
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">aux</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">,</span><span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">fp</span><span class="p">:</span>
+                <span class="n">a</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">fp</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                <span class="n">a</span><span class="o">.</span><span class="n">writerows</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> 
+            
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s1">&#39;tshape.csv&#39;</span><span class="p">,</span><span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">newline</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">file</span><span class="p">:</span>
+                <span class="n">b</span><span class="o">=</span><span class="n">csv</span><span class="o">.</span><span class="n">writer</span><span class="p">(</span><span class="n">file</span><span class="p">,</span> <span class="n">delimiter</span><span class="o">=</span><span class="s1">&#39;,&#39;</span><span class="p">)</span>
+                <span class="n">b</span><span class="o">.</span><span class="n">writerow</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tshape</span><span class="p">)</span>
+            
+    
+<span class="c1">#----------------------------------------------------------------------------</span>
+        
+<span class="c1">#Redefining the substractions for objects with Canonical forme   </span>
+    
+    <span class="k">def</span> <span class="nf">__sub__</span><span class="p">(</span><span class="n">C</span><span class="p">,</span><span class="n">object2</span><span class="p">):</span>
+        
+        <span class="k">if</span> <span class="p">(</span><span class="nb">isinstance</span><span class="p">(</span><span class="n">object2</span><span class="p">,</span><span class="n">CanonicalForme</span><span class="p">)</span><span class="o">==</span><span class="kc">False</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;New object has not the correct canonical forme&#39;</span><span class="p">)</span>
+           
+        <span class="k">if</span> <span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">_d</span><span class="o">!=</span><span class="n">object2</span><span class="o">.</span><span class="n">_d</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fatal error!, Objects dimentions are not equals!&#39;</span><span class="p">)</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">_d</span><span class="p">):</span>    
+            <span class="k">if</span> <span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">_tshape</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">!=</span><span class="n">object2</span><span class="o">.</span><span class="n">_tshape</span><span class="p">[</span><span class="n">i</span><span class="p">]):</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Fatal error!, shapes of spaces are not compatibles!&#39;</span><span class="p">)</span>
+        <span class="c1">#if (C._tshape[1]!=object2._tshape[1]):</span>
+        <span class="c1">#    print(&#39;Fatal error!, shapes of spaces are not compatibles!&#39;)</span>
+        
+        
+        <span class="n">New_Value</span><span class="o">=</span><span class="n">CanonicalForme</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">_tshape</span><span class="p">,</span><span class="n">C</span><span class="o">.</span><span class="n">_dim</span><span class="p">)</span> 
+        <span class="n">New_Value</span><span class="o">.</span><span class="n">_rank</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">_rank</span><span class="o">+</span><span class="n">object2</span><span class="o">.</span><span class="n">_rank</span>
+        <span class="n">New_Value</span><span class="o">.</span><span class="n">_d</span><span class="o">=</span><span class="n">C</span><span class="o">.</span><span class="n">_d</span>
+        
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">_dim</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">object2</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span><span class="n">object2</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">])</span>
+     
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">_dim</span><span class="o">-</span><span class="mi">1</span><span class="p">):</span>
+            <span class="n">New_Value</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">C</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">object2</span><span class="o">.</span><span class="n">_U</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        
+        
+        </div>
+        <span class="k">return</span> <span class="n">New_Value</span>     
+    
+
+
+
+
+    
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper"><div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2018, Diego Britez.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.7.1</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.10</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
