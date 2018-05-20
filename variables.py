@@ -6,54 +6,86 @@ Created on Thu Feb 15 10:47:32 2018
 """
 
 import numpy as np
-from integration import integration_1dtrap
+
 """In this module many variables are going to be calculated such as Gammax, Gammay, Betax, Betay"""
 
-def alpha(R,X, i, dim):
-    """Cette fonction calcule la valeur du module alpha a partir du vecteur S ou R 
-    en étude et son chap de domaine X ou Y"""
+def alpha(R,M, i, dim):
+    
+    """This function calculates the value of the 
+    :math:`\\alpha`
+    variable in the fix point algorithm:  \n
+    
+    :math:`\\alpha^{s}=\int_{\Omega/\Omega_{s}}\prod_{i=1}^{s-1}(X_{i}^{k+1})^
+    {2}\prod_{i=s+1}^{d}(X_{i}^{k})^{2}`, which could be expressed also as: \n
+    :math:`\\alpha^{s}=\prod_{i=1}^{s-1}\int_{\Omega_{i}}(X_{i}^{k+1})^
+    {2}dx_{i}\prod_{i=s+1}^{d}\int_{\Omega_{i}}(X_{i}^{k})^{2}	dx_{i}`
+    
+    
+    """
     R1=R[:]
     alpha=1
-    if (i>0):
-        for j in range(i):
-            R1[j]=np.multiply(R1[j],R1[j])    
-            aux=integration_1dtrap(R1[j],X[j])
+    R1[0],R1[i]=R1[i],R1[0]
+    M1=M[:]
+    M1[0],M1[i]=M1[i],M1[0]
+    
+    for j in range(dim-1,0,-1):
+            R1[j]=np.multiply(R1[j],R1[j])
+            
+            
+            aux=R1[j]@M[j]
+            
+            #aux=integration_1dtrap(R1[j],X[j])
             alpha=alpha*aux
             
         
-    if (i<dim-1):
-        for j in range(i+1,dim):
-            R1[j]=np.multiply(R1[j],R1[j])   
-            aux=integration_1dtrap(R1[j],X[j])
-            alpha=alpha*aux
+    
        
    
     return alpha
     
 
-def gamma(R,F,X,i,dim):
+def gamma(R,F,M,i,dim):
+    """
+    This function will return the value of the 
+    :math:`gamma
+    variable for each iteration in the fix poitn algorithm.
+    :math:`\gamma^{s}(x_{s})= \int_{\Omega/\Omega_{s}}(\prod_{i=1}^{s-1}
+    X_{i}^{k+1}\prod_{i=s+1}^{D}X_{i}^{k}).F`
+    """
     F2=F
     F2=np.swapaxes(F2,0,i)        
     R1=R[:]
     R1[0],R1[i]=R1[i],R1[0]
-    X1=X[:]
-    X1[0],X1[i]=X1[i],X1[0]
+    M1=M[:]
+    M1[0],M1[i]=M1[i],M1[0]
     
     
     for j in range(dim-1,0,-1):
         
         F2=np.multiply(F2,R1[j])
         
-        F2=integration_1dtrap(F2,X1[j])  
-  
+        #F2=integration_1dtrap(F2,M1[j])  
+        F2=F2@M1[j]
     return F2
 
 
 
-def betha(X,R,U,i,dim):
+def betha(M,R,U,i,dim):
+    
+     """
+     This function calculates the value of the 
+     :math:`\\beta`
+     variable in the fix point algorithm:  \n
      
-     X1=X[:]
-     X1[0],X1[i]=X1[i],X1[0]  
+     :math:`\\beta^{s}(j)=\int_{\Omega/\Omega_{s}}\prod_{i=1}^{s-1}(X_{i}^{k+1}
+     X_{i}^{j})\prod_{i=s+1}^{d}(X_{i}^{k}X_{i}^{j})`, which  could be expressed
+     as, \n
+     :math:`\\beta^{s}(j)=\prod_{i=1}^{s-1}\int_{\Omega}(X_{i}^{k+1}X_{i}^{j})
+     \prod_{i=s+1}^{d}\int_{\Omega_{s}}\prod_{i=s+1}^{d}(X_{i}^{k}
+     X_{i}^{j})dx_{i}`
+     """
+     M1=M[:]
+     M1[0],M1[i]=M1[i],M1[0]  
      U1=U[:]
      U1[0],U1[i]=U1[i],U1[0]
      R1=R[:]    
@@ -64,9 +96,12 @@ def betha(X,R,U,i,dim):
      for j in range(1,dim):
          
          aux2=np.multiply(U1[j],R1[j])
-         aux2=integration_1dtrap(aux2,X1[j])
+         
+         aux2=aux2@M[j]
+         
+         #aux2=integration_1dtrap(aux2,X1[j])
          Betha=Betha*aux2
-     
+         
              
      return Betha    
      
@@ -99,3 +134,4 @@ if __name__=="__main__":
         F2=np.multiply(F2,R2[j])
         F2=integration_1dtrap(F2,X2[j]) 
 """
+

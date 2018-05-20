@@ -79,13 +79,16 @@ class Tucker(TensorDescriptor):
             ret = ret * self.shape[i];
         return ret;
     
-    def dimsize(self, ind):
-        return self.shape[ind];
+    def dimsize(self):
+        return len(self.u)
     
     def copy(self):
         return Tucker(self.core, self.u);
         
-   
+    def destructor(self):
+        self.u=[]
+        self.core=0
+        self.shape=[]
     
     def reconstruction(self):
         """returns a FullFormat object that is represented by the 

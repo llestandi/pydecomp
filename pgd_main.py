@@ -4,28 +4,26 @@ Created on Wed Feb 14 15:35:41 2018
 
 @author: Diego Britez
 """
- 
 import numpy as np
 from fixepoint import fixpoint
 from scipy.linalg import norm
 import high_order_decomposition_method_functions as hf
 from Canonical import CanonicalForme
 import timeit
-import integrationgrid
 
 
 
 
-def PGD(X,F, epenri=1e-10, maxfix=15):
+
+def PGD(M,F, epenri=1e-10, maxfix=15):
     #start = timeit.default_timer()
     """
     This function use the PGD method for a multivariate problem decomposition,
     returning an Canonical class objet.
     \n
     **Parameters**:\n
-    **X**: This parameter is the list with all the vectors (as 1 dimention
-     array). It is the cartesian grid that describes the distribution of F
-     in the space.\n
+    **M**:list of mass matrices (integration points for trapeze integration 
+    method) as sparse.diag type elements\n
     **F**: ndarray type, it's the tensor that its decomposition is wanted.\n
     **epenri**: Stop criteria value for the enrichment loop, default value=1e-10.
     This value is obtained by the divition  of the first mode with the 
@@ -53,6 +51,16 @@ def PGD(X,F, epenri=1e-10, maxfix=15):
     :math:`\int_{\Omega}[\prod_{i=1}^{s-1}X_{i}^{k+1}(x_{i})X^{*}(x_{s})
     \prod_{i=s+1}^{D}X_{i}^{k}(x_{i})(u^{p-1}+\prod_{i=1}^{s}X_{i}^{k+1}
     (x_{i})\prod_{i=s+1}^{D}X_{i}^{k}(x_{i})-F)]=0` \n
+    \n
+    
+    that for convenience it could be expressed like; \n 
+    \n
+    :math:`\\alpha^{s}\int_{\Omega_{s}}X^{*}(x_{s})X_{s}^{k+1}(x_{s})dx_{s}=
+    -\int_{\Omega_{s}}X^{*}\sum_{j=1}^{p-1}(\\beta^{s}(j)X_{s}^{j})
+    dx_{s}+\int_{\Omega_{s}}X^{*}\gamma^{s}(x_{s})dx_{s}`\n
+    where 
+    :math:`\\alpha , \\beta , \gamma` are variables deduced from the precedent
+    equation and that are expoded in the fix point variables section.
                                     
     """
     
@@ -74,15 +82,16 @@ def PGD(X,F, epenri=1e-10, maxfix=15):
     z=0                               
     
                                 
-    #Xgrid is a variable that is used for integration functions
-    Xgrid=integrationgrid.IntegrationGrid(X,dim,tshape)   
-    Xgrid=Xgrid.IntegrationGridCreation()
+   
     
+    M=[x.toarray() for x in M]
+    M=[np.diag(x) for x in M]
                                                             
     #The Verification variable is going to be used to evaluate the orthogonality
     #Verification=1 ----> Orthogonality verified
     #Verification=0 ----> Non Orthogonality found
-                                     
+     
+                                
     Verification=1
     C=CanonicalForme(tshape,dim)
     
@@ -91,10 +100,8 @@ def PGD(X,F, epenri=1e-10, maxfix=15):
 
     while   (epn>=epenri):
         C.set_rank()
-            
-        
-        
-        R,z=fixpoint(X,C._tshape,C._U,F,z ,C._rank,maxfix)        
+                           
+        R,z=fixpoint(M,C._tshape,C._U,F,z ,C._rank,maxfix)        
         C.add_enrich(R)                                                                       
         
         #Unmark  next line if the orthogonality verification is desired
@@ -122,8 +129,6 @@ def PGD(X,F, epenri=1e-10, maxfix=15):
     #C.writeU() 
     #stop=timeit.default_timer()
     return C
-
-
       
         
   

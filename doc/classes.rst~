@@ -1,5 +1,14 @@
-Classes Documentation
-=====================
+Classes  Documentation
+======================
+.. toctree::
+   :glob:
+   :caption: Contents:
+   
+   Tensor_Descriptor
+   Canonical
+   Tucker
+   
+    
 
-.. automodule:: Canonical
-	:members:
+
+

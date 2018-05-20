@@ -31,7 +31,7 @@ class IntegrationGrid:
             w=self.grille(self.X[i],self.tshape[i])
             self.Xgrid.append(w)
         return self.Xgrid    
-    
+"""    
 if __name__=="__main__":
     #X=[]
     #x1=np.linspace(0,1,3)
@@ -41,4 +41,5 @@ if __name__=="__main__":
     #tshape=np.array([3,5])
     Xgrid=IntegrationGrid(X,np.size(tshape),tshape)
     Xgrid=Xgrid.IntegrationGridCreation()
-    print(Xgrid)        
+    print(Xgrid)
+"""        

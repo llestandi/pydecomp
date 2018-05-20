@@ -239,3 +239,31 @@ def mass_matrices_creator(X):
  
     
     return M
+#------------------------------------------------------------------------------
+    
+def orth(dim,Xgrid,R,C): 
+    """
+    This function serves to verify the orthogonality in L_{2} between the modes
+    in the canonical class.
+    """
+       
+    for i in range(dim):
+            
+            Orth=orthogonality_verification(Xgrid[i],R[i],C._U[i])
+            Verification=1
+            for j in range(C.get_rank()):
+                if (Orth[j]>1e-10):
+                    print('------------------------------------------------\n')
+                    print('Orthogonality is not verified at mode:', C.get_rank())
+                    print('Variable of failure= U(',i,')')
+                    print('Value of the scalar product of failure=', Orth[j])
+                    Verification=0
+    return Verification 
+
+def orthogonality_verification(w,R,RR):
+    """
+    Auxiliar sub function of orth
+    """
+    aux=np.transpose(np.multiply(w,RR))
+    Orth=np.dot(R,aux)
+    return Orth     

@@ -1,0 +1,11 @@
+High Order Decomposition Methods Documentation
+==============================================
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+   
+   PGD
+   THO-SVD
+   STHO-SVD
+   

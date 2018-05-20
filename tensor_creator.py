@@ -29,16 +29,22 @@ Returns:
 For more information how to use this code just type TensorCreator.help()
       
 """
+
 def funcx(V): 
-        return 1/(1+(V[0]*np.e**(V[1])))
+        return np.sin(np.sqrt(V[0]**2+V[1]**2+V[2]**2))
         #Fonctions tets à utiliser 
         # V[0]*V[1]                              #fonction test 1
         # 1/(1+(V[0]*V[1]))                      #fonction test 2
         # np.sin(np.sqrt(V[0]**2+V[1]**2))       #fonction test 3
         # np.sqrt(1-V[0]*V[1])                   #fonction test 4
         # 1/(1+(V[0]*np.e**(V[1])))              #fonction test 5
-
-
+       
+        
+        #3D Functions
+        #1/(1+V[0]**2+V[1]**2+V[2]**2)
+        #np.sin(np.sqrt(V[0]**2+V[1]**2+V[2]**2))
+        #V[0]*V[1]*V[2]
+        
 class TensorCreator():
     def __init__(self):
         self.tshape=[]
@@ -140,6 +146,14 @@ class TensorCreator():
     def help():
         print(a)
     
+    def _Generator2(self, equation):
+        self._CartesianGrid()
+        self._meshgrid()
+        self.F=func2(self.Grid,equation)
+        return self.X, self.F
+    
+def func2(V,equation): 
+    return eval(equation)   
         
         
         

@@ -1,0 +1,11 @@
+PGD Decomposition Documentation 
+-------------------------------
+
+.. automodule:: pgd_main
+	:members:
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
+   FIX-POINT
+   FIX-POINT_VARIABLES

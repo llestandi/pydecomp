@@ -10,9 +10,10 @@ from scipy.linalg import norm
 from variables import gamma, betha, alpha
 from Iteration_solution import IterationSolution
 
+
             
     
-def fixpoint(X,tshape,U,F,z,r,maxfix):
+def fixpoint(M,tshape,U,F,z,r,maxfix):
     """
     This function calculates the n mode for each iteration in the 
     enrichment loop for the PGD method. The definition of each variable   
@@ -26,11 +27,12 @@ def fixpoint(X,tshape,U,F,z,r,maxfix):
     z= No convergence times counter variable. \n
     r= Actual rank in the decomposition. \n
     maxfix= maximun number of iterations in point fix algorithm.\n
-    **Returns**
+    **Returns** \n
     R = n mode of the decomposition in the PGD decomposition method.\n
     z = actualized number of iteration that did not converge, so: \n
     :math:`z_{n}=z_{n-1}+1` if the actual mode does not converge or \n
-    :math:`z_{n}=z_{n-1}`if it had converged.
+    :math:`z_{n}=z_{n-1}`
+    if it has converged.
     """
     dim=np.size(tshape)
     New_Solution=IterationSolution(tshape,dim)
@@ -62,13 +64,15 @@ def fixpoint(X,tshape,U,F,z,r,maxfix):
         Gamma=[]
         Alpha=np.zeros(dim)
         
+        
+        
         for i in range(dim):
             
-            Alpha=alpha(R,X,i,dim)
-            Gamma=gamma(R,F,X,i,dim)
-            Betha=betha(X,R,U,i,dim)
+            Alpha=alpha(R,M,i,dim)
+            Gamma=gamma(R,F,M,i,dim)
+            Betha=betha(M,R,U,i,dim)
             
-            aux=np.dot(np.swapaxes(U[i],0,1),Betha)
+            aux=np.dot(U[i].T,Betha)
             aux=np.transpose(aux)
             R[i]=(-aux+Gamma)/Alpha
             

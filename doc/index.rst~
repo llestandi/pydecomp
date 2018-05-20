@@ -5,14 +5,16 @@
 
 Welcome to python decomposition library's documentation!
 ========================================================
- blablablaqskjfmqksdjfml
+Python Decomposition library's is the code for diferents reduction models
+methods that could be applied to n-dimension tensorised type of data.
  
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
    
+   Decomposition_Functions
    classes
-
+   
 
 
 Indices and tables

@@ -1,0 +1,5 @@
+THO-SVD Decomposition Documentation
+-----------------------------------
+
+.. automodule:: THOSVD
+	:members:
