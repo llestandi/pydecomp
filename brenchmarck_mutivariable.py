@@ -14,13 +14,55 @@ from SHOPOD import SHOPOD
 from plot_error_canonical import plot_error_canonical
 from plot_error_tucker import plot_error_tucker
 
-def brenchmark_multivariable(reduction_method,integration_method,
+def brenchmarck_multivariable(reduction_method, integration_method,
                               dim, shape,test_function=1, plot="no", 
                               output_variable_file='yes',
                               output_variable_name='variable'):
+                              
                              
                             
-                             
+    """
+    This function allows to see how the differents functions in the python
+    decomposition library work. Differents equations (1 to 3) are avaible 
+    in order to create synthetic data. \n
+    Between the outputs option are offered=  plot of evolution of error vs
+    relative  compression indice, binary file of the compressed object and 
+    the compressed object itself. \n
+    **Parameters** \n
+     
+    reduction_method--> string type. 
+    Options expected: 'PGD','THOSVD','STHOSVD','HOPOD' or 'SHOPOD' . 
+    If neither of this options are selected, and error messge will appear. \n
+    
+     
+    integration_method--> string type. Options expected: 'trapezes' or 'SVD'.
+    If the integration method is not compatible with the previous 
+    reduction_method selected, an automatic change of method is going to be
+    applied with a message informing this action. \n
+     
+    dim-->Integer type. Number if dimentions or variables in the problem.\n
+    test_function--> Ingeger type. Values expected: 1,2 or 3. \n
+    Option 1: 1/(1+X1^2+X2^2....+Xn^2)        \n
+    Option 2: sin((X1^2+X2^2+...+Xn^2)^(0.5)) \n
+    Option 3: X1xX2x...xXn                    \n
+     
+    shape--> List type with integers as elements. Each element will indicate
+    the numbers of elements to divide de subspace domain. The number of
+    elements must coincide with "dim" parameter value. \n
+    Example= [32,50,80]  (for a 3d case) \n
+     
+    plot--> String type. Expected input= 'yes' or 'no'.
+    Ables and unables the  error vs relative compression indice  graphic  
+    output.  \n
+   
+     
+    output_variable_file--> String type. Expected input= 'yes' or 'no'.
+    Ables and unables the creation of a binary file with the compressed object
+    created. \n
+    
+    output_variable_name--> string type. Its the name of the file created to 
+    contain the binary information of the object created.     
+    """                        
     domain=[0,1]
     
     acepted_shape_type=[numpy.ndarray, list]
@@ -69,6 +111,26 @@ def brenchmark_multivariable(reduction_method,integration_method,
          Number of elements of shape and "dim" value must be equals
          """
          raise ValueError(error)
+         
+         
+    plot_options=['yes', 'no']
+    if plot not in plot_options:
+        plot_error="""
+        Error!! wrong plot argument. plot='yes' or plot='no' expected.
+        """
+        raise ValueError(plot_error)
+        
+        
+    output_variable_file_options=['yes', 'no']
+    if output_variable_file not in output_variable_file_options:
+        output_variable_file_error="""
+        Error!! wrong plot argument. output_variable_file='yes' or
+        output_variable_file='no' expected.
+        """
+        raise ValueError(output_variable_file_error)
+        
+    if type(output_variable_name)!= str:
+        raise ValueError('output_variable_name must be a string variable')
     
     
     if reduction_method=="THOSVD":
@@ -77,6 +139,9 @@ def brenchmark_multivariable(reduction_method,integration_method,
             For THOSVD reduction method, integration method must be 'SVD',
             this change is automatically applied.
             """
+            print(note_print1)
+            integration_method='SVD'
+            
     if reduction_method=='PGD':
         if integration_method=='SVD':
             note_error_integration_method="""
@@ -86,8 +151,7 @@ def brenchmark_multivariable(reduction_method,integration_method,
             print(note_error_integration_method)
             integration_method='trapezes'
     
-            print(note_print1)
-            integration_method="SVD"
+            
     
     if reduction_method=="STHOSVD":
         if integration_method != "SVD":
@@ -107,9 +171,12 @@ def brenchmark_multivariable(reduction_method,integration_method,
         M=hf.mass_matrices_creator(X)
     if integration_method=='SVD':
         M=[diags(x) for x in X]
+    
+    
         
     if reduction_method=='PGD':
         Result=PGD(M,F)
+        
         if plot=='yes':
             plot_error_canonical(Result,F)
     
@@ -133,7 +200,8 @@ def brenchmark_multivariable(reduction_method,integration_method,
         if plot=='yes':
             plot_error_tucker(Result,F)
         
-        
+    if  output_variable_file=='yes':
+        hf.save(Result,output_variable_name)
     
         
     

@@ -11,7 +11,7 @@ import high_order_decomposition_method_functions as hf
 from Tucker import Tucker
 
 
-def HOPOD(F,X):
+def HOPOD(F,M):
     """
     
     Returns a decomposed tensor in the tucker format class.\n
@@ -22,12 +22,12 @@ def HOPOD(F,X):
     thanks to this apparent 2D problem in each step. \n
     
     **Parameters:**\n
-        **F:** Tensor  of n dimentions. Array type.\n
-        **X:** Cartesian grid which describes data distribution of F in space.
-        List of array type elements.\n
+    **F**: Tensor  of n dimentions. Array type.\n
+    **M**:list of mass matrices (integration points for trapeze integration 
+    method) as sparse.diag type elements\n
         
     **Returns:** \n
-        Tucker class element\n
+    Tucker class element\n
         
         
     """
@@ -35,7 +35,6 @@ def HOPOD(F,X):
     
     tshape=F.shape
     dim=len(tshape)
-    M=hf.mass_matrices_creator(X)
     PHI=[]
     
     for i in range(dim):

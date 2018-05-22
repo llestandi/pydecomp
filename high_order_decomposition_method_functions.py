@@ -11,6 +11,7 @@ import scipy.sparse
 import operator
 from scipy.sparse import diags
 import integrationgrid
+import pickle
 
 def multilinear_multiplication(phi,F,dim):
     """
@@ -212,7 +213,8 @@ def mass_matrices_creator(X):
     X: list of Cartesian grids vectors. \n
     
     **Return**
-    M:list of mass matrices (integration points) as sparse.diag type elements   
+    M:list of mass matrices (integration points for trapeze integration method) 
+    as sparse.diag type elements   
     """
     
     dim=len(X)
@@ -266,4 +268,43 @@ def orthogonality_verification(w,R,RR):
     """
     aux=np.transpose(np.multiply(w,RR))
     Orth=np.dot(R,aux)
-    return Orth     
+    return Orth  
+#------------------------------------------------------------------------------
+    
+def load(file_name):
+    """
+    This function will load a file (variable, classe object, etc) in pickle 
+    format in to its python orinal variable format.\n
+    **Parameters**:\n
+    file_name: string type, containg the name of the file to load.\n
+    **Returns**\n
+    Variable: could be an python variable, class object, list, ndarray 
+    contained in the binary file.
+    """
+    if file_name != str:
+        file_name_error="""
+        The parameter file_name must be a string type variable
+        """
+        raise ValueError(file_name_error)
+    file_in=open(file_name,'rb')
+    Object=pickle.load(file_in)
+    file_in.close()
+    return Object
+#-----------------------------------------------------------------------------
+def save(variable, file_name):
+    """
+        This function will save a python variable (list, ndarray, classe  
+    object, etc)  in a pickle file format .\n
+        **Parameters**:\n
+            Variable= list, ndarray, class object etc.\n
+            file_name= String type. Name of the file that is going to be 
+            storage. \n
+        **Returns**:\n
+            File= Binary file that will reproduce the object class when 
+            reloaded.
+    """
+    if type(file_name)!=str:
+        raise ValueError('Variable file_name must be a string')
+    pickle_out=open(file_name,"wb")
+    pickle.dump(variable, pickle_out)
+    pickle_out.close()

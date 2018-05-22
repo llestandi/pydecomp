@@ -24,23 +24,15 @@ def alpha(R,M, i, dim):
     """
     R1=R[:]
     alpha=1
-    R1[0],R1[i]=R1[i],R1[0]
+    R1[0],R1[i]=R1[i],R1[0] 
     M1=M[:]
     M1[0],M1[i]=M1[i],M1[0]
-    
-    for j in range(dim-1,0,-1):
-            R1[j]=np.multiply(R1[j],R1[j])
-            
-            
-            aux=R1[j]@M[j]
-            
-            #aux=integration_1dtrap(R1[j],X[j])
-            alpha=alpha*aux
-            
-        
-    
-       
    
+    for j in range(dim-1,0,-1):
+            
+            R1[j]=np.multiply(R1[j],R1[j])
+            aux=R1[j]@M1[j]
+            alpha=alpha*aux
     return alpha
     
 
@@ -63,8 +55,6 @@ def gamma(R,F,M,i,dim):
     for j in range(dim-1,0,-1):
         
         F2=np.multiply(F2,R1[j])
-        
-        #F2=integration_1dtrap(F2,M1[j])  
         F2=F2@M1[j]
     return F2
 
@@ -96,10 +86,7 @@ def betha(M,R,U,i,dim):
      for j in range(1,dim):
          
          aux2=np.multiply(U1[j],R1[j])
-         
-         aux2=aux2@M[j]
-         
-         #aux2=integration_1dtrap(aux2,X1[j])
+         aux2=aux2@M1[j]
          Betha=Betha*aux2
          
              
