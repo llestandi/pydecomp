@@ -9,11 +9,13 @@ Python Decomposition library's is the code for diferents reduction models
 methods that could be applied to n-dimension tensorised type of data.
  
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 4
    :caption: Contents:
+   
    
    Decomposition_Functions
    classes
+   benchmark_multivariable
    high_order_subfunctions1
    
 

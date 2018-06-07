@@ -50,14 +50,14 @@
 <p>&#64;author: Diego Britez</p>
 <dl class="function">
 <dt id="SHOPOD.SHOPOD">
-<code class="descclassname">SHOPOD.</code><code class="descname">SHOPOD</code><span class="sig-paren">(</span><em>F</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SHOPOD.html#SHOPOD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SHOPOD.SHOPOD" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">SHOPOD.</code><code class="descname">SHOPOD</code><span class="sig-paren">(</span><em>F</em>, <em>M</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/SHOPOD.html#SHOPOD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#SHOPOD.SHOPOD" title="Permalink to this definition">¶</a></dt>
 <dd><p>This method decomposes a ndarray type data (multivariable) in a Tucker 
 class element by using the Secuentialy  High Order Proper Orthogonal 
 Decomposition method.</p>
 <p><strong>Paramameter</strong></p>
 <p>F: ndarray type element.</p>
-<p>X: Cartesian grid which describes data distribution of F in space.
-List of array type elements.</p>
+<p><strong>M</strong>:list of mass matrices (integration points for trapeze integration 
+method) as sparse.diag type elements</p>
 <p><strong>Returns</strong>
 Decomposed_Tensor: Tucker class type object. To read more information about
 this object type, more information could be found in Tucker class

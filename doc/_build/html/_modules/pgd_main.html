@@ -45,28 +45,26 @@
 
 <span class="sd">@author: Diego Britez</span>
 <span class="sd">&quot;&quot;&quot;</span>
- 
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">fixepoint</span> <span class="k">import</span> <span class="n">fixpoint</span>
 <span class="kn">from</span> <span class="nn">scipy.linalg</span> <span class="k">import</span> <span class="n">norm</span>
 <span class="kn">import</span> <span class="nn">high_order_decomposition_method_functions</span> <span class="k">as</span> <span class="nn">hf</span>
 <span class="kn">from</span> <span class="nn">Canonical</span> <span class="k">import</span> <span class="n">CanonicalForme</span>
 <span class="kn">import</span> <span class="nn">timeit</span>
-<span class="kn">import</span> <span class="nn">integrationgrid</span>
 
 
 
 
-<div class="viewcode-block" id="PGD"><a class="viewcode-back" href="../PGD.html#pgd_main.PGD">[docs]</a><span class="k">def</span> <span class="nf">PGD</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">F</span><span class="p">,</span> <span class="n">epenri</span><span class="o">=</span><span class="mf">1e-10</span><span class="p">,</span> <span class="n">maxfix</span><span class="o">=</span><span class="mi">15</span><span class="p">):</span>
+
+<div class="viewcode-block" id="PGD"><a class="viewcode-back" href="../PGD.html#pgd_main.PGD">[docs]</a><span class="k">def</span> <span class="nf">PGD</span><span class="p">(</span><span class="n">M</span><span class="p">,</span><span class="n">F</span><span class="p">,</span> <span class="n">epenri</span><span class="o">=</span><span class="mf">1e-12</span><span class="p">,</span> <span class="n">maxfix</span><span class="o">=</span><span class="mi">15</span><span class="p">):</span>
     <span class="c1">#start = timeit.default_timer()</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function use the PGD method for a multivariate problem decomposition,</span>
 <span class="sd">    returning an Canonical class objet.</span>
 <span class="sd">    \n</span>
 <span class="sd">    **Parameters**:\n</span>
-<span class="sd">    **X**: This parameter is the list with all the vectors (as 1 dimention</span>
-<span class="sd">     array). It is the cartesian grid that describes the distribution of F</span>
-<span class="sd">     in the space.\n</span>
+<span class="sd">    **M**:list of mass matrices (integration points for trapeze integration </span>
+<span class="sd">    method) as sparse.diag type elements\n</span>
 <span class="sd">    **F**: ndarray type, it&#39;s the tensor that its decomposition is wanted.\n</span>
 <span class="sd">    **epenri**: Stop criteria value for the enrichment loop, default value=1e-10.</span>
 <span class="sd">    This value is obtained by the divition  of the first mode with the </span>
@@ -125,15 +123,16 @@
     <span class="n">z</span><span class="o">=</span><span class="mi">0</span>                               
     
                                 
-    <span class="c1">#Xgrid is a variable that is used for integration functions</span>
-    <span class="n">Xgrid</span><span class="o">=</span><span class="n">integrationgrid</span><span class="o">.</span><span class="n">IntegrationGrid</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">dim</span><span class="p">,</span><span class="n">tshape</span><span class="p">)</span>   
-    <span class="n">Xgrid</span><span class="o">=</span><span class="n">Xgrid</span><span class="o">.</span><span class="n">IntegrationGridCreation</span><span class="p">()</span>
+   
     
+    <span class="n">M</span><span class="o">=</span><span class="p">[</span><span class="n">x</span><span class="o">.</span><span class="n">toarray</span><span class="p">()</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">M</span><span class="p">]</span>
+    <span class="n">M</span><span class="o">=</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">diag</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">M</span><span class="p">]</span>
                                                             
     <span class="c1">#The Verification variable is going to be used to evaluate the orthogonality</span>
     <span class="c1">#Verification=1 ----&gt; Orthogonality verified</span>
     <span class="c1">#Verification=0 ----&gt; Non Orthogonality found</span>
-                                     
+     
+                                
     <span class="n">Verification</span><span class="o">=</span><span class="mi">1</span>
     <span class="n">C</span><span class="o">=</span><span class="n">CanonicalForme</span><span class="p">(</span><span class="n">tshape</span><span class="p">,</span><span class="n">dim</span><span class="p">)</span>
     
@@ -142,10 +141,8 @@
 
     <span class="k">while</span>   <span class="p">(</span><span class="n">epn</span><span class="o">&gt;=</span><span class="n">epenri</span><span class="p">):</span>
         <span class="n">C</span><span class="o">.</span><span class="n">set_rank</span><span class="p">()</span>
-            
-        
-        
-        <span class="n">R</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="n">fixpoint</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">C</span><span class="o">.</span><span class="n">_tshape</span><span class="p">,</span><span class="n">C</span><span class="o">.</span><span class="n">_U</span><span class="p">,</span><span class="n">F</span><span class="p">,</span><span class="n">z</span> <span class="p">,</span><span class="n">C</span><span class="o">.</span><span class="n">_rank</span><span class="p">,</span><span class="n">maxfix</span><span class="p">)</span>        
+                           
+        <span class="n">R</span><span class="p">,</span><span class="n">z</span><span class="o">=</span><span class="n">fixpoint</span><span class="p">(</span><span class="n">M</span><span class="p">,</span><span class="n">C</span><span class="o">.</span><span class="n">_tshape</span><span class="p">,</span><span class="n">C</span><span class="o">.</span><span class="n">_U</span><span class="p">,</span><span class="n">F</span><span class="p">,</span><span class="n">z</span> <span class="p">,</span><span class="n">C</span><span class="o">.</span><span class="n">_rank</span><span class="p">,</span><span class="n">maxfix</span><span class="p">)</span>        
         <span class="n">C</span><span class="o">.</span><span class="n">add_enrich</span><span class="p">(</span><span class="n">R</span><span class="p">)</span>                                                                       
         
         <span class="c1">#Unmark  next line if the orthogonality verification is desired</span>
@@ -173,8 +170,6 @@
     <span class="c1">#C.writeU() </span>
     <span class="c1">#stop=timeit.default_timer()</span></div>
     <span class="k">return</span> <span class="n">C</span>
-
-
       
         
   
@@ -207,6 +202,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Decomposition_Functions.html">High Order Decomposition Methods Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes.html">Classes  Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmark_multivariable.html">BENCHMARK_MULTIVARIABLE</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../high_order_subfunctions1.html">High Order Decomposition sub Functions</a></li>
 </ul>
 

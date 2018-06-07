@@ -13,9 +13,9 @@ import numpy as np
 def POD2(F, Mx, Mt, tol=1e-17, rank=-1):
     
     """
-    This function factors the matrix as phi * diag(sigma) * A^t  excuting the  
-    POD method. Here the problem is treated as an apparent 2 dimentions 
-    problem. 
+    This function decompose a matrix as the productphi * diag(sigma) * A^t  
+    excuting the  POD method. Here the problem is treated as an apparent 2 
+    dimentions problem. 
     Parameters:
         Mx=scipy.sparse diagonal matrix with the integration points as the 
         diagonal elements for the trapezoidal method. 

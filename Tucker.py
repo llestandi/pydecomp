@@ -101,23 +101,7 @@ class Tucker(TensorDescriptor):
     
         return Result
 #-----------------------------------------------------------------------------
-    def save(self, file_name):
-        """
-        This method has the function to save a Tucker class object as a 
-        binary file. \n
-        **Parameters**:\n
-            Object= A Tucker class object.\n
-            file_name= String type. Name of the file that is going to be 
-            storage. \n
-        **Returns**:\n
-            File= Binary file that will reproduce the object class when 
-            reloaded.
-        """
-        if type(file_name)!=str:
-            raise ValueError('Variable file_name must be a string')
-        pickle_out=open(file_name,"wb")
-        pickle.dump(self,pickle_out)
-        pickle_out.close()
+    
 #-----------------------------------------------------------------------------           
     def __str__(self):
         ret = "ttensor of size {0}\n".format(self.shape);

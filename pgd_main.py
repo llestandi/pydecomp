@@ -15,7 +15,7 @@ import timeit
 
 
 
-def PGD(M,F, epenri=1e-10, maxfix=15):
+def PGD(M,F, epenri=1e-12, maxfix=15):
     #start = timeit.default_timer()
     """
     This function use the PGD method for a multivariate problem decomposition,

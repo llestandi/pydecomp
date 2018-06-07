@@ -52,7 +52,7 @@
 <span class="kn">from</span> <span class="nn">Tucker</span> <span class="k">import</span> <span class="n">Tucker</span>
 
 
-<div class="viewcode-block" id="HOPOD"><a class="viewcode-back" href="../HO-POD.html#HOPOD.HOPOD">[docs]</a><span class="k">def</span> <span class="nf">HOPOD</span><span class="p">(</span><span class="n">F</span><span class="p">,</span><span class="n">X</span><span class="p">):</span>
+<div class="viewcode-block" id="HOPOD"><a class="viewcode-back" href="../HO-POD.html#HOPOD.HOPOD">[docs]</a><span class="k">def</span> <span class="nf">HOPOD</span><span class="p">(</span><span class="n">F</span><span class="p">,</span><span class="n">M</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    </span>
 <span class="sd">    Returns a decomposed tensor in the tucker format class.\n</span>
@@ -63,12 +63,12 @@
 <span class="sd">    thanks to this apparent 2D problem in each step. \n</span>
 <span class="sd">    </span>
 <span class="sd">    **Parameters:**\n</span>
-<span class="sd">        **F:** Tensor  of n dimentions. Array type.\n</span>
-<span class="sd">        **X:** Cartesian grid which describes data distribution of F in space.</span>
-<span class="sd">        List of array type elements.\n</span>
+<span class="sd">    **F**: Tensor  of n dimentions. Array type.\n</span>
+<span class="sd">    **M**:list of mass matrices (integration points for trapeze integration </span>
+<span class="sd">    method) as sparse.diag type elements\n</span>
 <span class="sd">        </span>
 <span class="sd">    **Returns:** \n</span>
-<span class="sd">        Tucker class element\n</span>
+<span class="sd">    Tucker class element\n</span>
 <span class="sd">        </span>
 <span class="sd">        </span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -76,7 +76,6 @@
     
     <span class="n">tshape</span><span class="o">=</span><span class="n">F</span><span class="o">.</span><span class="n">shape</span>
     <span class="n">dim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">tshape</span><span class="p">)</span>
-    <span class="n">M</span><span class="o">=</span><span class="n">hf</span><span class="o">.</span><span class="n">mass_matrices_creator</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
     <span class="n">PHI</span><span class="o">=</span><span class="p">[]</span>
     
     <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim</span><span class="p">):</span>
@@ -116,6 +115,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Decomposition_Functions.html">High Order Decomposition Methods Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes.html">Classes  Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmark_multivariable.html">BENCHMARK_MULTIVARIABLE</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../high_order_subfunctions1.html">High Order Decomposition sub Functions</a></li>
 </ul>
 

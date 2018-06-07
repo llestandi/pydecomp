@@ -10,7 +10,7 @@ from Tucker import Tucker
 from scipy.sparse import diags
 import numpy as np
 
-def SHOPOD(F,M):
+def SHOPOD(F,M, tol=1e-5):
     """
     This method decomposes a ndarray type data (multivariable) in a Tucker 
     class element by using the Secuentialy  High Order Proper Orthogonal 
@@ -33,7 +33,7 @@ def SHOPOD(F,M):
         Wshape=[x for x in W.shape]
         Wmat=hf.matricize(W,dim,0)
         Mx,Mt = hf.matricize_mass_matrix(dim,0,M)
-        phi,sigma,A=POD(Wmat.T,Mt,Mx)
+        phi,sigma,A=POD(Wmat.T,Mt,Mx,tol=tol)
         W=sigma@phi.T
         
                

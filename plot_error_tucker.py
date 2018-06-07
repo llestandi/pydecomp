@@ -10,32 +10,59 @@ import matplotlib.pyplot as plt
 from scipy.linalg import norm
 import Tucker
 import sys
+from matplotlib.backends.backend_pdf import PdfPages
 
-def plot_error_tucker(A,F):
+def plot_error_tucker(A,F,number_plot,label_line,
+                      output_variable_name='variable'):
     """
-    This function will calculate the error in each mode from a decomposed
-    form  of an object in the tucker class and plot it in funtion to the
-    number of modes.\n
+    This function will reconstruct and calculate the error for each mode from 
+    a decomposed form  of an object in the tucker class and plot it in 
+    function to the  compression rate (%).\n
     
     **Parameters**
    
     A--> Data to be evaluated, it should be an Tucker class object. \n 
-    
-    
     F--> mxk original matrix or data Matrix, numpy array type of data.\n
-    
+    number_plot--> integer type (from 1 to 5) that will define the figure 
+    properties (line style, color, markers). \n
+    label_line--> string type, label to characterise the curve 
     **Returns**
-    Plot of Relative Error vs Average Rank
+    Plot of Relative Error vs compression rate(%).
     
     """
+    if number_plot==1:
+        color_code='r'
+        marker_code='+'
+        linestyle_code= '-'        
+    if number_plot==2:
+        color_code='b'
+        marker_code='*'
+        linestyle_code='--'
+    if number_plot==3:
+        color_code='k'
+        marker_code='o'
+        linestyle_code='-.'
+    if number_plot==4:
+        color_code='g'
+        marker_code='h'
+        linestyle_code=':'
+    if number_plot==5:
+        color_code='m'
+        marker_code='h'
+        linestyle_code='--'
+    
+        
+        
+        
     #We are going to calculate one average value of ranks
     dim=len(A.u)
-    average_rank=1
+    #average_rank=1
     data_compression=[]
     F_volume=fvolume(F)
     #In n_u we storage the number of elements in each subspace
     n_u=F.shape
    
+    """
     for i in range(dim):
         average_rank=average_rank*np.shape(A.u[i][1])[0]
     
@@ -43,6 +70,8 @@ def plot_error_tucker(A,F):
     average_rank=np.round_(average_rank)
     average_rank=average_rank.astype(int)
     #print(average_rank)
+    """
+    maxrank=max(A.core.shape)
     
     #Creating a list with the maximal rank for each subspace
     r=[]
@@ -55,25 +84,25 @@ def plot_error_tucker(A,F):
    
     for i in range(dim):
         aux=np.shape(A.u[i][1])[0]
-        if aux<average_rank:
+        if aux<maxrank:
             r.append(aux)
         else:
-            r.append(average_rank)
+            r.append(maxrank)   #substituted for average_rank
     
     
     #Calculating the error in each enrichment
-    #Creating the projections for each enrichment
-    for i in range(average_rank):
+    #Creating the projections for each enrichment 
+    for i in range(maxrank):
         shape_core=np.zeros(dim)
-        
         projections=[]
+        
         for j in range(dim):            
             if r[j]>=i:
                 aux=A.u[j][::,:i+1]
                 projections.append(aux)
                
             else:
-                aux=A.u[j][::,:r[j+1]]
+                aux=A.u[j][::,:r[j]]
                 projections.append(aux)
                 
             if r[j]>i:
@@ -108,26 +137,21 @@ def plot_error_tucker(A,F):
         AUX_CORE=eval(Cutting_core_shape_complet)
         
         #Creating a tucker object from the truncated data
-        
         AUX_TUCKER=Tucker.Tucker(AUX_CORE,projections)
         
         #Finding the solution for the actual truncated Tucker object
-        
         Fparcial=AUX_TUCKER.reconstruction()
         
         #Fparcial is a FullFormat class object, the tensor is stored in _Var
         #element of this class
-        
         Fparcial=Fparcial._Var
         
         actual_error=norm(F-Fparcial)/norm(F)
         error.append(actual_error)
-        modes=np.arange(1,average_rank+1)
+        modes=np.arange(1,maxrank+1)
         
     #Evaluating data compression    
-    data_compression=[x/F_volume*100 for x in storage_weight]    
-        
-        
+    data_compression=[(1-x/F_volume)*100 for x in storage_weight]      
     """  
     #plotting the results error vs rank
     
@@ -143,17 +167,38 @@ def plot_error_tucker(A,F):
     plt.show()
     """
     
+    
+    if plt.fignum_exists(1):
+        if data_compression[-1]<plt.axis()[1]:           
+            plt.xlim(0,(data_compression[-1]-1))
+            
+   
+                  
+    #else:
+    fig=plt.figure()
+    ax=fig.add_subplot(111)
+    ax.set_xlim(data_compression[0]+1,data_compression[-1]-1)
+    ax.set_ylim([1e-16,0.15])
+        
+        
     #ploting the results error vs relative weight
-    plt.ylim(1e-16, 0.15)
-    plt.xlim(0,150)
-    plt.plot(data_compression, error ,color='b', marker='^',linestyle='-',
-             label='Relative error F1_3D \n with STHOSVD method')
+    
+    plt.plot(data_compression, error ,color=color_code, marker=marker_code,
+             linestyle=linestyle_code,
+             label=label_line)
         
     plt.yscale('log')
-    plt.xlabel("Data volume in %")
+    plt.xlabel("Compression rate")
     plt.ylabel('Relative Error')
     plt.grid()
     plt.show()
+    plt.legend()
+    
+    #saving to pdf
+    pp = PdfPages(output_variable_name+'.pdf')
+    plt.savefig(pp, format='pdf')
+    pp.savefig()
+    pp.close()
     
     
 def actual_weight(dim, projections, core):

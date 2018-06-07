@@ -8,6 +8,7 @@ import numpy as np
 from tensor_descriptor_class import TensorDescriptor
 import csv
 import pickle
+import full_format_class
 #------------------------------------------------------------------------
         
 
@@ -183,6 +184,10 @@ class CanonicalForme(TensorDescriptor):
 #------------------------------------------------------------------------------
         
     def reconstruction(self):
+        """
+        This function returns a full format class object from the Canonical 
+        object introduced. \n
+        """
         tshape=self._tshape
         #tshape=tshape.astype(int)
         dim=len(tshape)
@@ -216,6 +221,8 @@ def new_iteration_result(R, tshape, Resultat):
         
                 
      return Resultat 
+ 
+    
 
 
 

@@ -51,9 +51,10 @@
 <span class="kn">from</span> <span class="nn">variables</span> <span class="k">import</span> <span class="n">gamma</span><span class="p">,</span> <span class="n">betha</span><span class="p">,</span> <span class="n">alpha</span>
 <span class="kn">from</span> <span class="nn">Iteration_solution</span> <span class="k">import</span> <span class="n">IterationSolution</span>
 
+
             
     
-<div class="viewcode-block" id="fixpoint"><a class="viewcode-back" href="../FIX-POINT.html#fixepoint.fixpoint">[docs]</a><span class="k">def</span> <span class="nf">fixpoint</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">tshape</span><span class="p">,</span><span class="n">U</span><span class="p">,</span><span class="n">F</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">maxfix</span><span class="p">):</span>
+<div class="viewcode-block" id="fixpoint"><a class="viewcode-back" href="../FIX-POINT.html#fixepoint.fixpoint">[docs]</a><span class="k">def</span> <span class="nf">fixpoint</span><span class="p">(</span><span class="n">M</span><span class="p">,</span><span class="n">tshape</span><span class="p">,</span><span class="n">U</span><span class="p">,</span><span class="n">F</span><span class="p">,</span><span class="n">z</span><span class="p">,</span><span class="n">r</span><span class="p">,</span><span class="n">maxfix</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    This function calculates the n mode for each iteration in the </span>
 <span class="sd">    enrichment loop for the PGD method. The definition of each variable   </span>
@@ -104,13 +105,15 @@
         <span class="n">Gamma</span><span class="o">=</span><span class="p">[]</span>
         <span class="n">Alpha</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">dim</span><span class="p">)</span>
         
+        
+        
         <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">dim</span><span class="p">):</span>
             
-            <span class="n">Alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">dim</span><span class="p">)</span>
-            <span class="n">Gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">F</span><span class="p">,</span><span class="n">X</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">dim</span><span class="p">)</span>
-            <span class="n">Betha</span><span class="o">=</span><span class="n">betha</span><span class="p">(</span><span class="n">X</span><span class="p">,</span><span class="n">R</span><span class="p">,</span><span class="n">U</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">dim</span><span class="p">)</span>
+            <span class="n">Alpha</span><span class="o">=</span><span class="n">alpha</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">dim</span><span class="p">)</span>
+            <span class="n">Gamma</span><span class="o">=</span><span class="n">gamma</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">F</span><span class="p">,</span><span class="n">M</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">dim</span><span class="p">)</span>
+            <span class="n">Betha</span><span class="o">=</span><span class="n">betha</span><span class="p">(</span><span class="n">M</span><span class="p">,</span><span class="n">R</span><span class="p">,</span><span class="n">U</span><span class="p">,</span><span class="n">i</span><span class="p">,</span><span class="n">dim</span><span class="p">)</span>
             
-            <span class="n">aux</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">swapaxes</span><span class="p">(</span><span class="n">U</span><span class="p">[</span><span class="n">i</span><span class="p">],</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span><span class="n">Betha</span><span class="p">)</span>
+            <span class="n">aux</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">U</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">.</span><span class="n">T</span><span class="p">,</span><span class="n">Betha</span><span class="p">)</span>
             <span class="n">aux</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">aux</span><span class="p">)</span>
             <span class="n">R</span><span class="p">[</span><span class="n">i</span><span class="p">]</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="n">aux</span><span class="o">+</span><span class="n">Gamma</span><span class="p">)</span><span class="o">/</span><span class="n">Alpha</span>
             
@@ -154,6 +157,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Decomposition_Functions.html">High Order Decomposition Methods Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes.html">Classes  Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmark_multivariable.html">BENCHMARK_MULTIVARIABLE</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../high_order_subfunctions1.html">High Order Decomposition sub Functions</a></li>
 </ul>
 

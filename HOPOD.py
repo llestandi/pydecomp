@@ -11,7 +11,7 @@ import high_order_decomposition_method_functions as hf
 from Tucker import Tucker
 
 
-def HOPOD(F,M):
+def HOPOD(F,M, tol=1e-5):
     """
     
     Returns a decomposed tensor in the tucker format class.\n
@@ -40,7 +40,7 @@ def HOPOD(F,M):
     for i in range(dim):
         Fmat=hf.matricize(F,dim,i)   
         Mx,Mt = hf.matricize_mass_matrix(dim,i,M)
-        phi,sigma,A= POD(Fmat.T,Mt,Mx)
+        phi,sigma,A= POD(Fmat.T,Mt,Mx, tol=tol)
         PHI.append(A) 
     PHIT=hf.list_transpose(PHI)
     PHIT=hf.integrationphi(PHIT,M) 

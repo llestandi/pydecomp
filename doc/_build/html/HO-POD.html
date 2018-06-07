@@ -50,21 +50,18 @@
 <p>&#64;author: Diego Britez</p>
 <dl class="function">
 <dt id="HOPOD.HOPOD">
-<code class="descclassname">HOPOD.</code><code class="descname">HOPOD</code><span class="sig-paren">(</span><em>F</em>, <em>X</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/HOPOD.html#HOPOD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#HOPOD.HOPOD" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">HOPOD.</code><code class="descname">HOPOD</code><span class="sig-paren">(</span><em>F</em>, <em>M</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/HOPOD.html#HOPOD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#HOPOD.HOPOD" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a decomposed tensor in the tucker format class.</p>
 <p>The projection of a tensor in each dimention is calculated with the 
 POD method, to achieve this operation a matricitization of the tensor is 
 carried out for each dimention, so the orthogonal projection is found
 thanks to this apparent 2D problem in each step.</p>
 <p><strong>Parameters:</strong></p>
-<blockquote>
-<div><p><strong>F:</strong> Tensor  of n dimentions. Array type.</p>
-<p><strong>X:</strong> Cartesian grid which describes data distribution of F in space.
-List of array type elements.</p>
-</div></blockquote>
+<p><strong>F</strong>: Tensor  of n dimentions. Array type.</p>
+<p><strong>M</strong>:list of mass matrices (integration points for trapeze integration 
+method) as sparse.diag type elements</p>
 <p><strong>Returns:</strong></p>
-<blockquote>
-<div>Tucker class element</div></blockquote>
+<p>Tucker class element</p>
 </dd></dl>
 
 </div>

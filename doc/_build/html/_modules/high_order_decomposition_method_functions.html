@@ -52,6 +52,7 @@
 <span class="kn">import</span> <span class="nn">operator</span>
 <span class="kn">from</span> <span class="nn">scipy.sparse</span> <span class="k">import</span> <span class="n">diags</span>
 <span class="kn">import</span> <span class="nn">integrationgrid</span>
+<span class="kn">import</span> <span class="nn">pickle</span>
 
 <div class="viewcode-block" id="multilinear_multiplication"><a class="viewcode-back" href="../high_order_subfunctions1.html#high_order_decomposition_method_functions.multilinear_multiplication">[docs]</a><span class="k">def</span> <span class="nf">multilinear_multiplication</span><span class="p">(</span><span class="n">phi</span><span class="p">,</span><span class="n">F</span><span class="p">,</span><span class="n">dim</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -253,7 +254,27 @@
 <span class="sd">    X: list of Cartesian grids vectors. \n</span>
 <span class="sd">    </span>
 <span class="sd">    **Return**</span>
-<span class="sd">    M:list of mass matrices (integration points) as sparse.diag type elements   </span>
+<span class="sd">    M:list of mass matrices (integration points for trapeze integration method) </span>
+<span class="sd">    as sparse.diag type elements. \n </span>
+<span class="sd">    </span>
+<span class="sd">    **Example**</span>
+<span class="sd">    import high_order_decomposition_method_functions as hf \n</span>
+<span class="sd">    import numpy as np \n</span>
+<span class="sd">    X1=np.array([ 0.  ,  0.25,  0.5 ,  0.75,  1.  ]) \n</span>
+<span class="sd">    X2=np.array([ 0. ,  0.2,  0.4,  0.6,  0.8,  1. ]) \n</span>
+<span class="sd">    X3=np.array([ 0.        ,  0.33333333,  0.66666667,  1.        ]) \n</span>
+<span class="sd">    X=[] \n</span>
+<span class="sd">    X.append(X1) \n</span>
+<span class="sd">    X.append(X2) \n</span>
+<span class="sd">    X.append(X3) \n</span>
+<span class="sd">    M=hf.mass_matrices_creator(X) \n</span>
+<span class="sd">    print(M) \n</span>
+<span class="sd">        [&lt;5x5 sparse matrix of type &#39;&lt;class &#39;numpy.float64&#39;&gt;&#39; \n</span>
+<span class="sd">        with 5 stored elements (1 diagonals) in DIAgonal format&gt;, \n</span>
+<span class="sd">        &lt;6x6 sparse matrix of type &#39;&lt;class &#39;numpy.float64&#39;&gt;&#39; \n</span>
+<span class="sd">        with 6 stored elements (1 diagonals) in DIAgonal format&gt;, \n</span>
+<span class="sd">        &lt;4x4 sparse matrix of type &#39;&lt;class &#39;numpy.float64&#39;&gt;&#39; \n</span>
+<span class="sd">        with 4 stored elements (1 diagonals) in DIAgonal format&gt;] \n</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     
     <span class="n">dim</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
@@ -307,7 +328,67 @@
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">aux</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">transpose</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">multiply</span><span class="p">(</span><span class="n">w</span><span class="p">,</span><span class="n">RR</span><span class="p">))</span>
     <span class="n">Orth</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">dot</span><span class="p">(</span><span class="n">R</span><span class="p">,</span><span class="n">aux</span><span class="p">)</span></div>
-    <span class="k">return</span> <span class="n">Orth</span>     
+    <span class="k">return</span> <span class="n">Orth</span>  
+<span class="c1">#------------------------------------------------------------------------------</span>
+    
+<div class="viewcode-block" id="load"><a class="viewcode-back" href="../high_order_subfunctions1.html#high_order_decomposition_method_functions.load">[docs]</a><span class="k">def</span> <span class="nf">load</span><span class="p">(</span><span class="n">file_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This function will load a file (variable, classe object, etc) in pickle </span>
+<span class="sd">    format in to its python orinal variable format.\n</span>
+<span class="sd">    **Parameters**:\n</span>
+<span class="sd">    file_name: string type, containg the name of the file to load.\n</span>
+<span class="sd">    directory_path= is the adreess of the folder where the desired file is </span>
+<span class="sd">    located.</span>
+<span class="sd">    **Returns**\n</span>
+<span class="sd">    </span>
+<span class="sd">    Variable: could be an python variable, class object, list, ndarray </span>
+<span class="sd">    contained in the binary file. \n</span>
+<span class="sd">    </span>
+<span class="sd">    **Example** \n</span>
+<span class="sd">    import high_order_decomposition_method_functions as hf  \n</span>
+
+<span class="sd">    FF=hf.load(&#39;example_file&#39;)</span>
+<span class="sd">    </span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="n">file_name_error</span><span class="o">=</span><span class="s2">&quot;&quot;&quot;</span>
+<span class="s2">        The parameter file_name must be a string type variable</span>
+<span class="s2">        &quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="n">file_name_error</span><span class="p">)</span>
+    <span class="n">file_in</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span><span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+    <span class="n">Object</span><span class="o">=</span><span class="n">pickle</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">file_in</span><span class="p">)</span>
+    <span class="n">file_in</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+    <span class="k">return</span> <span class="n">Object</span>
+<span class="c1">#-----------------------------------------------------------------------------</span>
+<div class="viewcode-block" id="save"><a class="viewcode-back" href="../high_order_subfunctions1.html#high_order_decomposition_method_functions.save">[docs]</a><span class="k">def</span> <span class="nf">save</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">file_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This function will save a python variable (list, ndarray, classe  </span>
+<span class="sd">    object, etc)  in a pickle file format .\n</span>
+<span class="sd">        **Parameters**:\n</span>
+<span class="sd">            Variable= list, ndarray, class object etc.\n</span>
+<span class="sd">            file_name= String type. Name of the file that is going to be </span>
+<span class="sd">            storage. \n</span>
+<span class="sd">            directory_path=string type. Is the directory adress if the file </span>
+<span class="sd">            is going to be saved in a desired folder.</span>
+<span class="sd">        **Returns**:\n</span>
+<span class="sd">            File= Binary file that will reproduce the object class when </span>
+<span class="sd">            reloaded. \n</span>
+<span class="sd">    **Example**\n</span>
+<span class="sd">    import high_order_decomposition_method_functions as hf</span>
+
+<span class="sd">    hf.save(F,&#39;example_file&#39;) \n</span>
+<span class="sd">    </span>
+<span class="sd">    Binary file saved as&#39;example_file&#39;</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+   
+        
+    <span class="k">if</span> <span class="nb">type</span><span class="p">(</span><span class="n">file_name</span><span class="p">)</span><span class="o">!=</span><span class="nb">str</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Variable file_name must be a string&#39;</span><span class="p">)</span>
+    <span class="n">pickle_out</span><span class="o">=</span><span class="nb">open</span><span class="p">(</span><span class="n">file_name</span><span class="p">,</span><span class="s2">&quot;wb&quot;</span><span class="p">)</span>
+    <span class="n">pickle</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="n">variable</span><span class="p">,</span> <span class="n">pickle_out</span><span class="p">)</span>
+    <span class="n">pickle_out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;Binary file saved as&#39;</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="o">+</span><span class="n">file_name</span><span class="o">+</span><span class="s2">&quot;&#39;&quot;</span><span class="p">)</span>
 </pre></div>
 
           </div>
@@ -320,6 +401,7 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../Decomposition_Functions.html">High Order Decomposition Methods Documentation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../classes.html">Classes  Documentation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmark_multivariable.html">BENCHMARK_MULTIVARIABLE</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../high_order_subfunctions1.html">High Order Decomposition sub Functions</a></li>
 </ul>
 

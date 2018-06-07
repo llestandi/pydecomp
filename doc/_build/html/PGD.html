@@ -50,15 +50,12 @@
 <p>&#64;author: Diego Britez</p>
 <dl class="function">
 <dt id="pgd_main.PGD">
-<code class="descclassname">pgd_main.</code><code class="descname">PGD</code><span class="sig-paren">(</span><em>X</em>, <em>F</em>, <em>epenri=1e-10</em>, <em>maxfix=15</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pgd_main.html#PGD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pgd_main.PGD" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">pgd_main.</code><code class="descname">PGD</code><span class="sig-paren">(</span><em>M</em>, <em>F</em>, <em>epenri=1e-12</em>, <em>maxfix=15</em><span class="sig-paren">)</span><a class="reference internal" href="_modules/pgd_main.html#PGD"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#pgd_main.PGD" title="Permalink to this definition">¶</a></dt>
 <dd><p>This function use the PGD method for a multivariate problem decomposition,
 returning an Canonical class objet.</p>
 <p><strong>Parameters</strong>:</p>
-<dl class="docutils">
-<dt><strong>X</strong>: This parameter is the list with all the vectors (as 1 dimention</dt>
-<dd>array). It is the cartesian grid that describes the distribution of F
-in the space.</dd>
-</dl>
+<p><strong>M</strong>:list of mass matrices (integration points for trapeze integration 
+method) as sparse.diag type elements</p>
 <p><strong>F</strong>: ndarray type, it’s the tensor that its decomposition is wanted.</p>
 <p><strong>epenri</strong>: Stop criteria value for the enrichment loop, default value=1e-10.
 This value is obtained by the divition  of the first mode with the 

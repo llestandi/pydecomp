@@ -31,7 +31,7 @@ For more information how to use this code just type TensorCreator.help()
 """
 
 def funcx(V): 
-        return np.sin(np.sqrt(V[0]**2+V[1]**2+V[2]**2))
+        return 1/(1+V[0]**2+V[1]**2+V[2]**2)
         #Fonctions tets à utiliser 
         # V[0]*V[1]                              #fonction test 1
         # 1/(1+(V[0]*V[1]))                      #fonction test 2
