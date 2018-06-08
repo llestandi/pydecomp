@@ -8,7 +8,7 @@ Created on Thu Apr 12 14:42:18 2018
 from scipy.sparse import diags
 import scipy.sparse
 import numpy as np
-
+from scipy.linalg import norm
 
 def POD2(F, Mx, Mt, tol=1e-17, rank=-1):
     
@@ -65,7 +65,6 @@ def POD2(F, Mx, Mt, tol=1e-17, rank=-1):
             aux=1
     
     C=build_correlation(F, Mx, Mt)
-    
     Lambda , U =np.linalg.eigh(C)
     #To order the values from higher to lower in lambda vector
     Lambda = Lambda[::-1]
@@ -85,7 +84,20 @@ def POD2(F, Mx, Mt, tol=1e-17, rank=-1):
     
     if aux==1:
         A,phi=phi,A
-        
+    """
+    if tol!=1e-17:
+        diag=sigma.diagonal()
+        suma=0
+        counter=0
+        i=-1
+        while suma<=tol:
+            suma=suma+diag[i]
+            i=i-1
+            counter=counter+1
+        phi=phi[::,:counter]
+        A=A[::,:counter]
+        sigma=diags(diag[:(counter+1)])
+    """  
     return phi, sigma, A
 #------------------------------------------------------------------------------
 
@@ -116,11 +128,22 @@ def test_lambda(Lambda,tol,rank,U):
     tolerance or the maximal number of rank(modes) in order to avoid nan values 
     and unnecesary calcul, the final number of modes will be reduced.
     """
+    i=0
+    imax=len(Lambda)
+    Lambda1=Lambda[0]
+    stop_criteria=1
+    while (stop_criteria>tol) & (i<imax):
+       stop_criteria=norm(Lambda[i]/Lambda1)
+       i+=1
+       srank=i 
+    Lambda=Lambda[:srank]
+    U=U[::,:srank]
+    
+    """
     if rank==-1:
         rank=np.size(Lambda)
     i=0
     lam=[]
-    
     while (Lambda[i]>tol):
         lam.append(Lambda[i])
         i+=1
@@ -128,6 +151,7 @@ def test_lambda(Lambda,tol,rank,U):
             break           
     Lambda=lam
     U=U[::,:i]
+    """      
     return Lambda, U
         
     

@@ -1,0 +1,98 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Wed Jun  6 14:41:36 2018
+
+@author: diego
+"""
+
+import numpy as np
+from glob import glob
+import adios as ad
+
+def bp_reader(  Variable):
+    """
+    This functions serts to read data from a bp folder for a specific
+    variable.
+    """
+    #reading all files in folder
+    files_list=glob('*.bp')
+    #Taking only the names
+    files_list2=[x.split('/')[-1] for x in files_list]
+    #Detecting the first criteria
+    first_criteria=[]
+    for i in range(len(files_list2)):
+        splited_variable=files_list2[i].split('_')
+        if splited_variable[1] not in first_criteria:
+            first_criteria.append(splited_variable[1])
+    #files will contain all the files of the folder
+    #files=[]
+    first_criteria=sorted(first_criteria)
+    print(first_criteria)
+    '''
+    for i in range(len(files_list)):
+        f=ad.File(files_list[i])
+        files.append(f)
+    '''    
+    #Here family will go to its family according first criteria
+    Tensor=[]
+    for i in range(len(first_criteria)):
+        Tensor.append([])
+    
+    """
+    for i in range(len(files_list2)):
+        for j in range(len(first_criteria)):        
+            if files_list2[i].split('_')[1]==first_criteria[j]:
+               if Tensor[j]==[]:  
+                   f=ad.File(files_list[i])
+                   Tensor[j]=f[Variable].read()
+                   a=Tensor[j].shape[0]
+                   b=Tensor[j].shape[1]
+                   Tensor[j]=Tensor[j].reshape([1,(a*b)])
+               else:
+                   f=ad.File(files_list[i])
+                   aux=f[Variable].read()                   
+                   a=aux.shape[0]
+                   b=aux.shape[1]
+                   aux=aux.reshape([1,(a*b)])
+                   Tensor[j]=np.append(Tensor[j],aux,axis=0)
+    """
+    #he we clasify each file name in their first criteria    
+    for i in range(len(files_list2)):
+        for j in range(len(first_criteria)):  
+           if files_list2[i].split('_')[1]==first_criteria[j]:
+               if Tensor[j]==[]:
+                  Tensor[j]=[files_list2[i]]
+               else:
+                   Tensor[j].append(files_list2[i])  
+    
+    #Looking the time step we re arange in increasing order
+    for i in range(len(Tensor)):
+        Tensor[i]=sorted(Tensor[i])
+    
+    #We replace each element of Tensor for the variable contained in 
+    #the file with the same name.
+    FinalTensor=[]
+    
+    for i in range(len(Tensor)):
+        FinalTensor.append([])
+        for j in range(len(Tensor[i])):
+            if j==0:
+                f=ad.File(Tensor[i][j])
+                aux=f[Variable].read()
+                a=aux.shape[0]
+                b=aux.shape[1]
+                aux=aux.reshape([1,(a*b)])
+                FinalTensor[i]=aux
+    
+    
+            else:
+                f=ad.File(Tensor[i][j])
+                aux=f[Variable].read()
+                a=aux.shape[0]
+                b=aux.shape[1]
+                aux=aux.reshape([1,(a*b)])
+                FinalTensor[i]=np.append(FinalTensor[i],aux,axis=0)
+    
+    
+    return  FinalTensor

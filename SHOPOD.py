@@ -10,21 +10,21 @@ from Tucker import Tucker
 from scipy.sparse import diags
 import numpy as np
 
-def SHOPOD(F,M, tol=1e-5):
+def SHOPOD(F,MM, tol=1e-5):
     """
     This method decomposes a ndarray type data (multivariable) in a Tucker 
     class element by using the Secuentialy  High Order Proper Orthogonal 
     Decomposition method.\n
     **Paramameter**\n
     F: ndarray type element.\n
-    **M**:list of mass matrices (integration points for trapeze integration 
+    **MM**:list of mass matrices (integration points for trapeze integration 
     method) as sparse.diag type elements\n
     **Returns**
     Decomposed_Tensor: Tucker class type object. To read more information about
     this object type, more information could be found in Tucker class
     documentation.
     """
-    
+    M=MM[:]
     tshape=F.shape
     dim=len(tshape)
     PHI=[]
