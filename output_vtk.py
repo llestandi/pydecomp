@@ -31,7 +31,7 @@ def vtk_known_2dfunction_test(nx,ny):
     return
 
 def load_bp(file,dir):
-    source=ad.File(filename)
+    source=ad.File(dir+filename)
     X=source['X'].read()
     Y=source['Y'].read()
     pressure=source['pressure'].read()
@@ -43,28 +43,42 @@ def load_bp(file,dir):
     ny=Y.size-1
     nz=1
     z=np.asarray([0.])
-    dx=X[1]-X[0]
-    dy=Y[1]-Y[0]
-    x=X[1:]-dx/2
-    y=Y[1:]-dy/2
-    return nx,ny,nz, x,y,z, pressure,u,v,rho,vort
+    # dx=X[1]-X[0]
+    # dy=Y[1]-Y[0]
+    # x=X[1:]-dx/2
+    # y=Y[1:]-dy/2
+    return nx,ny,nz, X,Y,z, pressure,u,v,rho,vort
 
 
 if __name__=="__main__":
-    vtk_known_2dfunction_test(9,3)
+    # vtk_known_2dfunction_test(9,3)
 
     out_dir="output/"
     in_dir="data_notus_wave/"
-    filename=in_dir+'Lucas_HL0095_dL010_002700.bp'
-    nx,ny,nz,x,y,z,pressure, U,V, density,vort=load_bp(filename,out_dir)
+
+    filename='Lucas_HL009_dL010_000500.bp'
+    nx,ny,nz,x,y,z,pressure, U,V, density,vort=load_bp(filename,in_dir)
 
     p=np.reshape(pressure.T ,(nx,ny,1),order='F')
     print(np.isfortran(p))
     u=np.reshape(U.T,(nx,ny,1),order='F')
     v=np.reshape(V.T,(nx,ny,1),order='F')
-    rho=np.reshape(density.T,(nx,ny,1),order='F')
     vort=np.reshape(vort.T,(nx,ny,1),order='F')
 
+
+    import matplotlib.cm as cm
+    import matplotlib.pyplot as plt
+    im = plt.imshow(density, interpolation='nearest',
+                origin='lower', extent=[-0, 0.6, -0, 0.6],
+                vmax=abs(density).max(), vmin=-abs(density).max())
+
+    plt.show()
+
+    print(density)
+    rho=np.copy(np.reshape(density.T,(nx,ny,1)),order='C')
+    print(density)
+
     var_dic={"pressure" : p,"velocity_u" : u,"velocity_v" : v,'density' : rho,'vorticity':vort}
+    # var_dic={'density':rho}
 
     gridToVTK(out_dir+"bpIOtest",x,y,z, cellData = var_dic)
