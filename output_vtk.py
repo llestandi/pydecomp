@@ -69,3 +69,7 @@ if __name__=="__main__":
 
 
     gridToVTK(out_dir+"bpIOtest",x,y,z, cellData = var_dic)
+
+
+    from bp_reader import bp_reader
+    bp_reader(['pressure'],in_dir)
