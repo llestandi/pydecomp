@@ -98,7 +98,7 @@ def POD2(F, Mx, Mt, tol=1e-17, rank=-1):
         phi=phi[::,:counter]
         A=A[::,:counter]
         sigma=diags(diag[:(counter+1)])
-    """  
+    """
     return phi, sigma, A
 #------------------------------------------------------------------------------
 
@@ -130,16 +130,20 @@ def test_lambda(Lambda,tol,rank,U):
     and unnecesary calcul, the final number of modes will be reduced.
     """
     i=0
-    imax=len(Lambda)
+    if rank<0:
+        imax=min(len(Lambda),rank)
+    else:
+        imax=len(Lambda)
+    print(imax)
     Lambda1=Lambda[0]
     stop_criteria=1
-    while (stop_criteria>tol) & (i<imax):
+    while (stop_criteria>tol) & (i<imax) :
        stop_criteria=norm(Lambda[i]/Lambda1)
        i+=1
-       srank=i 
+       srank=i
     Lambda=Lambda[:srank]
     U=U[::,:srank]
-    
+
     """
     if rank==-1:
         rank=np.size(Lambda)
@@ -152,5 +156,5 @@ def test_lambda(Lambda,tol,rank,U):
             break
     Lambda=lam
     U=U[::,:i]
-    """      
+    """
     return Lambda, U

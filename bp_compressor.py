@@ -11,7 +11,7 @@ from SHOPOD import SHOPOD
 import high_order_decomposition_method_functions as hf
 import numpy as np
 
-def bp_compressor(Variable,data_dir, Sim_list=0, tol=1e-7):
+def bp_compressor(Variable,data_dir, Sim_list=0, tol=1e-7,rank=-1):
     """
     In this code we are going to compress the variable data
     contained in a bp folder using the SHOPOD as a reduction method
@@ -46,13 +46,17 @@ def bp_compressor(Variable,data_dir, Sim_list=0, tol=1e-7):
 if __name__=='__main__':
     from evtk.hl import gridToVTK
     from output_vtk import *
+    from plot_error_tucker import plot_error_tucker
+
     var_list="density"
     data_dir="data_notus_wave/"
     out_dir='output/'
     base_name="Lucas_HL009_dL010_"
-    field,Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list=bp_compressor(var_list,data_dir)
+    field,Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list=bp_compressor(var_list,data_dir, tol=1e-5 )
     print(Reduced.core.shape)
     Approx_FF=Reduced.reconstruction()
+    plot_error_tucker(Reduced,field,1, 'Error vs compression rate',
+                      output_variable_name='Matlab_compression_file')
     field_approx=np.copy(np.transpose(Approx_FF.tondarray()),order='F')
     var_dict={var_list:field.T,var_list+'Compressed':field_approx, "diff":field.T-field_approx}
 
