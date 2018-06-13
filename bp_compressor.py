@@ -38,7 +38,7 @@ def bp_compressor(Variable,data_dir, Sim_list=0, tol=1e-7,rank=-1):
 
     field, nxC,nyC,nx_glob,ny_glob, X,Y,time_list=bp_reader(Variable,data_dir)
     Mass=hf.unit_mass_matrix_creator(field[Sim_list])
-    Reduced=SHOPOD(field[Sim_list],Mass,tol=tol,rank=10)
+    Reduced=SHOPOD(field[Sim_list],Mass,tol=tol,rank=rank)
 
     return field[Sim_list], Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list
 
@@ -52,13 +52,20 @@ if __name__=='__main__':
     data_dir="data_notus_wave/"
     out_dir='output/'
     base_name="Lucas_HL009_dL010_"
-    field,Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list=bp_compressor(var_list,data_dir, tol=1e-5 )
-    print(Reduced.core.shape)
+    field,Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list=bp_compressor(var_list,data_dir, tol=1e-16,rank=10 )
+    print(Reduced.u[0].shape)
+    print(Reduced.u[1].shape)
     Approx_FF=Reduced.reconstruction()
-    plot_error_tucker(Reduced,field,1, 'Error vs compression rate',
-                      output_variable_name='Matlab_compression_file')
+    # plot_error_tucker(Reduced,field,1, 'Error vs compression rate',
+    #                   output_variable_name='bp_compression')
     field_approx=np.copy(np.transpose(Approx_FF.tondarray()),order='F')
     var_dict={var_list:field.T,var_list+'Compressed':field_approx, "diff":field.T-field_approx}
 
     VTK_save_space_time_field(var_dict,X,Y,out_dir+base_name,time_list)
-    print(np.linalg.norm(var_dict["diff"])/np.linalg.norm(var_dict["density"]))
+    print(np.linalg.norm(var_dict["diff"])/np.linalg.norm(var_dict[var_list]))
+    modes={}
+    for i in range(Reduced.core.shape[1]):
+        modes[var_list+'_mode_'+str(i)]=Reduced.u[1][:,i]
+    prepare_dic_for_vtk(modes,nxC,nyC)
+    z=np.asarray([0])
+    gridToVTK(out_dir+"modes",X,Y,z, cellData = modes)

@@ -129,8 +129,9 @@ def test_lambda(Lambda,tol,rank,U):
     tolerance or the maximal number of rank(modes) in order to avoid nan values
     and unnecesary calcul, the final number of modes will be reduced.
     """
+    print(rank)
     i=0
-    if rank<0:
+    if rank>=0:
         imax=min(len(Lambda),rank)
     else:
         imax=len(Lambda)
