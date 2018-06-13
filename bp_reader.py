@@ -34,7 +34,9 @@ def bp_reader(  Variable):
         f=ad.File(files_list[i])
         files.append(f)
     '''    
-    #Here family will go to its family according first criteria
+    #Here each file will go to its family according first criteria, so Tensor
+    #is a list of list with the names of the files organized according to 
+    #first criteria.
     Tensor=[]
     for i in range(len(first_criteria)):
         Tensor.append([])
@@ -57,7 +59,7 @@ def bp_reader(  Variable):
                    aux=aux.reshape([1,(a*b)])
                    Tensor[j]=np.append(Tensor[j],aux,axis=0)
     """
-    #he we clasify each file name in their first criteria    
+    #he we clasify each file name by their first criteria    
     for i in range(len(files_list2)):
         for j in range(len(first_criteria)):  
            if files_list2[i].split('_')[1]==first_criteria[j]:
@@ -73,6 +75,13 @@ def bp_reader(  Variable):
     #We replace each element of Tensor for the variable contained in 
     #the file with the same name.
     FinalTensor=[]
+    a=0
+    b=0
+    nx_global=0
+    ny_global=0
+    X=0
+    Y=0
+    
     
     for i in range(len(Tensor)):
         FinalTensor.append([])
@@ -84,7 +93,11 @@ def bp_reader(  Variable):
                 b=aux.shape[1]
                 aux=aux.reshape([1,(a*b)])
                 FinalTensor[i]=aux
-    
+                if i==0:
+                    nx_global=f['nx_global'].read()
+                    ny_global=f['ny_global'].read()
+                    X=f['X'].read()
+                    Y=f['Y'].read()
     
             else:
                 f=ad.File(Tensor[i][j])
@@ -95,4 +108,4 @@ def bp_reader(  Variable):
                 FinalTensor[i]=np.append(FinalTensor[i],aux,axis=0)
     
     
-    return  FinalTensor
+    return   FinalTensor, a, b, nx_global, ny_global, X, Y
