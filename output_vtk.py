@@ -30,55 +30,42 @@ def vtk_known_2dfunction_test(nx,ny):
 
     return
 
-def load_bp(file,dir):
+def load_bp(file,dir,var_list):
     source=ad.File(dir+filename)
     X=source['X'].read()
     Y=source['Y'].read()
-    pressure=source['pressure'].read()
-    u=source['velocity_u'].read()
-    v=source['velocity_v'].read()
-    rho=source['density'].read()
-    vort=source['vorticity'].read()
-    nx=X.size-1
-    ny=Y.size-1
-    nz=1
-    z=np.asarray([0.])
+    Z=np.asarray([0.])
+    var_dic={}
+    for var in var_list:
+        var_dic[var]=source[var].read()
+    # pressure=source['pressure'].read()
+    # u=source['velocity_u'].read()
+    # v=source['velocity_v'].read()
+    # rho=source['density'].read()
+    # vort=source['vorticity'].read()
     # dx=X[1]-X[0]
     # dy=Y[1]-Y[0]
     # x=X[1:]-dx/2
     # y=Y[1:]-dy/2
-    return nx,ny,nz, X,Y,z, pressure,u,v,rho,vort
+    return X,Y,Z, var_dic
 
+def prepare_dic_for_vtk(var_dic,nx,ny):
+    """ This function reorders data inside arrays for vtk output """
+    for field in var_dic:
+        var_dic[field]=np.reshape(var_dic[field].T,(nx,ny,1),order='F')
+    return
 
 if __name__=="__main__":
     # vtk_known_2dfunction_test(9,3)
 
     out_dir="output/"
     in_dir="data_notus_wave/"
-
+    var_list=["pressure","density",'velocity_u','velocity_v','vorticity']
     filename='Lucas_HL009_dL010_000500.bp'
-    nx,ny,nz,x,y,z,pressure, U,V, density,vort=load_bp(filename,in_dir)
+    x,y,z,var_dic=load_bp(filename,in_dir,var_list)
+    nxC=x.size-1
+    nyC=y.size-1
+    prepare_dic_for_vtk(var_dic,nxC,nyC)
 
-    p=np.reshape(pressure.T ,(nx,ny,1),order='F')
-    print(np.isfortran(p))
-    u=np.reshape(U.T,(nx,ny,1),order='F')
-    v=np.reshape(V.T,(nx,ny,1),order='F')
-    vort=np.reshape(vort.T,(nx,ny,1),order='F')
-
-
-    import matplotlib.cm as cm
-    import matplotlib.pyplot as plt
-    im = plt.imshow(density, interpolation='nearest',
-                origin='lower', extent=[-0, 0.6, -0, 0.6],
-                vmax=abs(density).max(), vmin=-abs(density).max())
-
-    plt.show()
-
-    print(density)
-    rho=np.copy(np.reshape(density.T,(nx,ny,1)),order='C')
-    print(density)
-
-    var_dic={"pressure" : p,"velocity_u" : u,"velocity_v" : v,'density' : rho,'vorticity':vort}
-    # var_dic={'density':rho}
 
     gridToVTK(out_dir+"bpIOtest",x,y,z, cellData = var_dic)
