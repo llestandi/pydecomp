@@ -38,15 +38,6 @@ def load_bp(file,dir,var_list):
     var_dic={}
     for var in var_list:
         var_dic[var]=source[var].read()
-    # pressure=source['pressure'].read()
-    # u=source['velocity_u'].read()
-    # v=source['velocity_v'].read()
-    # rho=source['density'].read()
-    # vort=source['vorticity'].read()
-    # dx=X[1]-X[0]
-    # dy=Y[1]-Y[0]
-    # x=X[1:]-dx/2
-    # y=Y[1:]-dy/2
     return X,Y,Z, var_dic
 
 def prepare_dic_for_vtk(var_dic,nx,ny):
@@ -54,6 +45,32 @@ def prepare_dic_for_vtk(var_dic,nx,ny):
     for field in var_dic:
         var_dic[field]=np.reshape(var_dic[field].T,(nx,ny,1),order='F')
     return
+
+def VTK_save_space_time_field(var_dic,X,Y,base_name,time_list):
+    """ This function saves a space time field (stored a a N*nt matrix)
+    to vtk using a common base_name and time stamps
+    *field* is expected to be a 2 way array of size (nxC*nyC)*nt"""
+    z=np.asarray([0])
+    nxC=X.size-1
+    nyC=Y.size-1
+    var_list=list(var_dic.keys())
+    v0=var_list[0]
+    print(var_dic[v0])
+    if nxC*nyC != var_dic[v0].shape[0]:
+        raise AttributeError('Shape do not matc h'+ str(nxC*nyC)
+                             +" "+str(var_dic[v0].shape[0]))
+    nt= len(time_list)
+    if nt != var_dic[v0].shape[1]:
+        raise AttributeError('Shape do not match '+ str(nt)
+                             +" "+str(var_dic[v0].shape[1]))
+    for i in range(len(time_list)):
+        print("writing "+base_name+time_list[i])
+        snapshot={}
+        for var in var_list:
+            snapshot[var]=var_dic[var][:,i]
+        prepare_dic_for_vtk(snapshot,nxC,nyC)
+        gridToVTK(base_name+time_list[i]+".compr",X,Y,z, cellData = snapshot)
+
 
 if __name__=="__main__":
     # vtk_known_2dfunction_test(9,3)
@@ -69,7 +86,3 @@ if __name__=="__main__":
 
 
     gridToVTK(out_dir+"bpIOtest",x,y,z, cellData = var_dic)
-
-
-    from bp_reader import bp_reader
-    bp_reader(['pressure'],in_dir)
