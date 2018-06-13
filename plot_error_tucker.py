@@ -12,7 +12,7 @@ import Tucker
 import sys
 from matplotlib.backends.backend_pdf import PdfPages
 
-def plot_error_tucker(A,F,number_plot,label_line,
+def plot_error_tucker(A,F,number_plot=1,label_line="",
                       output_variable_name='variable'):
     """
     This function will reconstruct and calculate the error for each mode from 
@@ -151,7 +151,8 @@ def plot_error_tucker(A,F,number_plot,label_line,
         modes=np.arange(1,maxrank+1)
         
     #Evaluating data compression    
-    data_compression=[(1-x/F_volume)*100 for x in storage_weight]      
+    data_compression=[(x/F_volume)*100 for x in storage_weight] 
+       
     """  
     #plotting the results error vs rank
     
@@ -169,16 +170,16 @@ def plot_error_tucker(A,F,number_plot,label_line,
     
     
     if plt.fignum_exists(1):
-        if data_compression[-1]<plt.axis()[1]:           
-            plt.xlim(0,(data_compression[-1]-1))
+        if data_compression[-1]>plt.axis()[1]:           
+            plt.xlim((0,data_compression[-1]+10))
             
    
                   
-    #else:
-    fig=plt.figure()
-    ax=fig.add_subplot(111)
-    ax.set_xlim(data_compression[0]+1,data_compression[-1]-1)
-    ax.set_ylim([1e-16,0.15])
+    else:
+       fig=plt.figure()
+       ax=fig.add_subplot(111)
+       ax.set_xlim(0,data_compression[-1]+10)
+       ax.set_ylim([1e-16,0.2])
         
         
     #ploting the results error vs relative weight

@@ -10,7 +10,7 @@ from scipy.linalg import norm
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
     
-def plot_error_canonical(A,F, number_plot, label_line='PGD',
+def plot_error_canonical(A,F, number_plot=1, label_line='PGD',
                          output_variable_name='variable'):    
     """
     This function will reconstruct and calculate the error for each mode from 
@@ -32,7 +32,12 @@ def plot_error_canonical(A,F, number_plot, label_line='PGD',
     
     dim=A._dim
     rank_max=A._rank
-    
+    if type(number_plot)!=int:
+        number_plot=4
+    if number_plot<1:
+        number_plot=2
+    if number_plot>5:
+        number_plot=1
     if number_plot==1:
         color_code='r'
         marker_code='+'
@@ -53,6 +58,7 @@ def plot_error_canonical(A,F, number_plot, label_line='PGD',
         color_code='m'
         marker_code='h'
         linestyle_code='--'
+    
     
         
     #Creating a list where the errors obtained in each iteration will be 
