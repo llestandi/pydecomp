@@ -46,11 +46,11 @@ def bp_reader(Variable,datadir):
 
     return   FinalTensor, nxC, nyC, nx_global, ny_global, X, Y,time_list,first_criteria
 
-def parse_notus_files(path):
+def parse_notus_files(path,ext=".bp"):
     """ This function parses the list of .bp files in path and Returns
     an ordered list (with 2 parameters)"""
     #reading all files in folder
-    files_list=glob(path+'*.bp')
+    files_list=glob(path+'*'+ext)
     #Taking only the names
     files_list2=[x.split('/')[-1] for x in files_list]
     #Detecting the first criteria
