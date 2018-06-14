@@ -15,8 +15,42 @@ def bp_reader(Variable,datadir):
     This functions serts to read data from a bp folder for a specific
     variable.
     """
+    name_Tensor,first_criteria=parse_notus_files(datadir)
+    #We replace each element of name_Tensor for the variable contained in
+    #the file with the same name.
+    f=ad.File(datadir+name_Tensor[0][0])
+    nx_global=f['nx_global'].read()
+    ny_global=f['ny_global'].read()
+    X=f['X'].read()
+    Y=f['Y'].read()
+
+    FinalTensor=[]
+    time_list=[] #storing time stamps
+    for i in range(len(name_Tensor)):
+        FinalTensor.append([])
+        for j in range(len(name_Tensor[i])):
+            time_list.append(name_Tensor[i][j][-9:-3])
+            f=ad.File(datadir+name_Tensor[i][j])
+            aux=f[Variable].read()
+            nxC=aux.shape[0]
+            nyC=aux.shape[1]
+            aux=aux.reshape([1,(nyC*nxC)])
+            if j==0:
+                FinalTensor[i]=aux
+            else:
+                FinalTensor[i]=np.append(FinalTensor[i],aux,axis=0)
+    for t in FinalTensor:
+        if t.shape != FinalTensor[0].shape:
+            raise AttributeError('bp Shapes differ',t.shape,FinalTensor[0].shape)
+    FinalTensor=np.stack(FinalTensor,axis=0)
+
+    return   FinalTensor, nxC, nyC, nx_global, ny_global, X, Y,time_list,first_criteria
+
+def parse_notus_files(path):
+    """ This function parses the list of .bp files in path and Returns
+    an ordered list (with 2 parameters)"""
     #reading all files in folder
-    files_list=glob(datadir+'*.bp')
+    files_list=glob(path+'*.bp')
     #Taking only the names
     files_list2=[x.split('/')[-1] for x in files_list]
     #Detecting the first criteria
@@ -27,67 +61,26 @@ def bp_reader(Variable,datadir):
             first_criteria.append(splited_variable[1])
     #files will contain all the files of the folder
     first_criteria=sorted(first_criteria)
-    #Here each file will go to its family according first criteria, so Tensor
+    #Here each file will go to its family according first criteria, so name_Tensor
     #is a list of list with the names of the files organized according to
     #first criteria.
-    Tensor=[]
+    name_Tensor=[]
     for i in range(len(first_criteria)):
-        Tensor.append([])
-
-
+        name_Tensor.append([])
     #he we clasify each file name by their first criteria
     for i in range(len(files_list2)):
         for j in range(len(first_criteria)):
            if files_list2[i].split('_')[1]==first_criteria[j]:
-               if Tensor[j]==[]:
-                   Tensor[j]=[files_list2[i]]
+               if name_Tensor[j]==[]:
+                   name_Tensor[j]=[files_list2[i]]
                else:
-                   Tensor[j].append(files_list2[i])
+                   name_Tensor[j].append(files_list2[i])
 
     #Looking the time step we re arange in increasing order
-    for i in range(len(Tensor)):
-        Tensor[i]=sorted(Tensor[i])
+    for i in range(len(name_Tensor)):
+        name_Tensor[i]=sorted(name_Tensor[i])
 
-    #We replace each element of Tensor for the variable contained in
-    #the file with the same name.
-    FinalTensor=[]
-    a=0
-    b=0
-    nx_global=0
-    ny_global=0
-    X=0
-    Y=0
-
-    time_list=[]
-    for i in range(len(Tensor)):
-        FinalTensor.append([])
-        for j in range(len(Tensor[i])):
-            time_list.append(Tensor[i][j][-9:-3])
-            print(i,j,Tensor[i][j])
-            if j==0:
-                f=ad.File(datadir+Tensor[i][j])
-                aux=f[Variable].read()
-                a=aux.shape[0]
-                b=aux.shape[1]
-                aux=aux.reshape([1,(a*b)])
-                FinalTensor[i]=aux
-                if i==0:
-                    nx_global=f['nx_global'].read()
-                    ny_global=f['ny_global'].read()
-                    X=f['X'].read()
-                    Y=f['Y'].read()
-
-            else:
-                f=ad.File(datadir+Tensor[i][j])
-                aux=f[Variable].read()
-                nxC=aux.shape[0]
-                nyC=aux.shape[1]
-                aux=aux.reshape([1,(a*b)])
-                FinalTensor[i]=np.append(FinalTensor[i],aux,axis=0)
-
-
-    return   FinalTensor, nxC, nyC, nx_global, ny_global, X, Y,time_list
-
+    return name_Tensor, first_criteria
 if __name__=='__main__':
     datadir='data_notus_wave/'
     FinalTensor, nxC, nyC, nx_global, ny_global, X, Y,time_list=bp_reader('density',datadir)
