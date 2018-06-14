@@ -8,6 +8,7 @@ Created on Fri May 25 15:54:55 2018
 
 import numpy as np
 from TSVD import TSVD
+from TensorTrain import TensorTrain
 
 def TT_SVD(F, eps=1e-10, rank=100):
     """
@@ -57,37 +58,5 @@ def TT_SVD(F, eps=1e-10, rank=100):
     Gdshape.append(1)
     
     G[dim-1]=G[dim-1].reshape(Gdshape)
-    return G
+    return TensorTrain(G)
 
-def reconstruction(G):
-    GG=G[:]
-    ranks=[]
-    dim=len(GG)
-
-    tshape=[]
-    for i in range(dim):
-        tshape.append(GG[i].shape[1])
-        ranks.append(GG[i].shape[2])
-    
-    Reconstructor=GG[0].reshape([tshape[0],ranks[0]])
-    for i in range(1,dim-1):
-        
-        GG[i]=GG[i].reshape([ranks[i-1],tshape[i]*ranks[i]])
-        Reconstructor=Reconstructor@GG[i]
-        size_reconstructor=Reconstructor.size
-        Reconstructor=Reconstructor.reshape([int(size_reconstructor/ranks[i]),ranks[i]])
-    
-    GG[dim-1]=GG[dim-1].reshape([ranks[dim-2],tshape[dim-1]])
-    Reconstructor=Reconstructor@GG[dim-1]
-    Reconstructor=Reconstructor.reshape(tshape)
-    
-    return Reconstructor  
-
-def TTmultiplication(TT,A,axe=0):
-    G=TT[:]
-    Gprincipal=G[axe]
-    
-      
-    
-    
-    

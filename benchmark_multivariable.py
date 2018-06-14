@@ -13,8 +13,10 @@ from HOPOD import HOPOD
 from SHOPOD import SHOPOD
 from THOSVD import THOSVD
 from STHOSVD import STHOSVD
+from TT_SVD import TT_SVD
 from plot_error_canonical import plot_error_canonical
 from plot_error_tucker import plot_error_tucker
+from plot_error_tt import plot_error_tt
 
 def benchmark_multivariable(list_reduction_method, integration_method,
                               dim, shape,test_function=1, plot="no", 
@@ -33,7 +35,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
     **Parameters** \n
      
     reduction_method--> string type or list with string type elements.  \n
-    Options expected: 'PGD','THO_SVD','STHO_SVD','HO_POD' or 'SHO_POD'. 
+    Options expected: 'PGD','THO_SVD','STHO_SVD','HO_POD',TT_SVD or 'SHO_POD'. 
     Example= 'PGD'     \n
     If an evaluation to compare two differents methods is wanted, this variable
     should be introduced as a list, with the methods to evaluate as the 
@@ -172,11 +174,12 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             """
             raise ValueError(error_output_variable_name)
         
-        acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD','SHO_POD']
+        acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD',
+                                  'SHO_POD','TT_SVD']
         if reduction_method not in acepted_reduction_method:
             error_reduction_method="""
             The acepted reduction methods are: 'PGD',THO_SVD','STHO_SVD',
-            'HO_POD','SHO_POD'. \n 
+            'HO_POD','SHO_POD', 'TT_SVD'. \n 
             Please verify and choose one value method correcly.
             """
             raise ValueError(error_reduction_method)
@@ -221,6 +224,15 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             if integration_method != "SVD":
                 note_print1="""
                 For THO_SVD reduction method, integration method must be 'SVD',
+                this change is automatically applied.
+                """
+                print(note_print1)
+                integration_method='SVD'
+        
+        if  reduction_method=='TT_SVD':
+             if integration_method != "SVD":   
+                note_print1="""
+                For TT_SVD reduction method, integration method must be 'SVD',
                 this change is automatically applied.
                 """
                 print(note_print1)
@@ -298,6 +310,17 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 label_line=reduction_method
                 plot_error_tucker(Result,F,number_plot,label_line,
                                   output_variable_name='variable')
+        
+        if reduction_method=='TT_SVD':
+            Result=TT_SVD(F, eps=1e-10, rank=100)
+            if plot=='yes':
+                number_plot=number_plot+1
+                label_line=reduction_method
+                plot_error_tt(Result, F, number_plot=number_plot, 
+                               label_line=label_line,
+                               output_variable_name='variable') 
+                            
+                
             
         if  output_variable_file=='yes':
             hf.save(Result,output_variable_name)
