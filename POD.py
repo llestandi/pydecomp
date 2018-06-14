@@ -58,47 +58,29 @@ def POD2(F, Mx, Mt, tol=1e-17, rank=-1):
         raise ValueError(print(c))
 
     tshape=F.shape
-    aux=0
+    Transposed_POD=False
     if tshape[1]>tshape[0]:
             F=F.T
             Mx, Mt = Mt, Mx
-            aux=1
+            Transposed_POD=True
 
     C=build_correlation(F, Mx, Mt)
 
     Lambda , U =np.linalg.eigh(C)
-    #To order the values from higher to lower in lambda vector
+    # Reversing order
     Lambda = Lambda[::-1]
-    #To order the values from higher to lower in U matrix
     U=U[::,::-1]
 
-    Lambda, U=test_lambda(Lambda,tol,rank,U)
-
+    Lambda, U=truncate_POD(Lambda,tol,rank,U)
     sigma=diags(np.sqrt(Lambda))
 
-    Mtsq=np.sqrt(Mt)
-    Mtsqinv=inv(Mtsq)
+    Mtsqinv=inv(np.sqrt(Mt))
     A=Mtsqinv.T@U
-    phi=F@Mt@A
-    phi=phi@inv(sigma)
+    phi=(F@Mt@A)@inv(sigma)
 
-
-    if aux==1:
+    if Transposed_POD:
         A,phi=phi,A
-    """
-    if tol!=1e-17:
-        diag=sigma.diagonal()
-        suma=0
-        counter=0
-        i=-1
-        while suma<=tol:
-            suma=suma+diag[i]
-            i=i-1
-            counter=counter+1
-        phi=phi[::,:counter]
-        A=A[::,:counter]
-        sigma=diags(diag[:(counter+1)])
-    """
+
     return phi, sigma, A
 #------------------------------------------------------------------------------
 
@@ -123,39 +105,22 @@ def inv(Mtsq):
     Mtsqinv=diags(Mtsqinv)
     return Mtsqinv
 
-def test_lambda(Lambda,tol,rank,U):
+def truncate_POD(Lambda,tol,rank,U):
     """
     This function evaluates the values of eingenvalues comparing to the maximal
     tolerance or the maximal number of rank(modes) in order to avoid nan values
     and unnecesary calcul, the final number of modes will be reduced.
     """
-    print(rank)
-    i=0
+    imax=len(Lambda)
     if rank>=0:
         imax=min(len(Lambda),rank)
-    else:
-        imax=len(Lambda)
-    print(imax)
+
     Lambda1=Lambda[0]
+    i=0
     stop_criteria=1
     while (stop_criteria>tol) & (i<imax) :
        stop_criteria=norm(Lambda[i]/Lambda1)
        i+=1
-       srank=i
-    Lambda=Lambda[:srank]
-    U=U[::,:srank]
-
-    """
-    if rank==-1:
-        rank=np.size(Lambda)
-    i=0
-    lam=[]
-    while (Lambda[i]>tol):
-        lam.append(Lambda[i])
-        i+=1
-        if i==rank:
-            break
-    Lambda=lam
+    Lambda=Lambda[:i]
     U=U[::,:i]
-    """
     return Lambda, U
