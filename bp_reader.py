@@ -10,7 +10,7 @@ import numpy as np
 from glob import glob
 import adios as ad
 
-def bp_reader(Variable,datadir):
+def bp_reader(Variables,datadir):
     """
     This functions serts to read data from a bp folder for a specific
     variable.
@@ -23,28 +23,34 @@ def bp_reader(Variable,datadir):
     ny_global=f['ny_global'].read()
     X=f['X'].read()
     Y=f['Y'].read()
-
-    FinalTensor=[]
-    time_list=[] #storing time stamps
-    for i in range(len(name_Tensor)):
-        FinalTensor.append([])
-        for j in range(len(name_Tensor[i])):
-            time_list.append(name_Tensor[i][j][-9:-3])
-            f=ad.File(datadir+name_Tensor[i][j])
-            aux=f[Variable].read()
-            nxC=aux.shape[0]
-            nyC=aux.shape[1]
-            aux=aux.reshape([1,(nyC*nxC)])
-            if j==0:
-                FinalTensor[i]=aux
-            else:
-                FinalTensor[i]=np.append(FinalTensor[i],aux,axis=0)
-    for t in FinalTensor:
-        if t.shape != FinalTensor[0].shape:
-            raise AttributeError('bp Shapes differ',t.shape,FinalTensor[0].shape)
-    FinalTensor=np.stack(FinalTensor,axis=0)
-
-    return   FinalTensor, nxC, nyC, nx_global, ny_global, X, Y,time_list,first_criteria
+    Tensor_dict={}
+    for var in Variables:
+        try:
+            FinalTensor=[]
+            time_list=[] #storing time stamps
+            for i in range(len(name_Tensor)):
+                FinalTensor.append([])
+                for j in range(len(name_Tensor[i])):
+                    f=ad.File(datadir+name_Tensor[i][j])
+                    aux=f[var].read()
+                    nxC=aux.shape[0]
+                    nyC=aux.shape[1]
+                    aux=aux.reshape([1,(nyC*nxC)])
+                    if i==0:
+                        time_list.append(name_Tensor[i][j][-9:-3])
+                    if j==0:
+                        FinalTensor[i]=aux
+                    else:
+                        FinalTensor[i]=np.append(FinalTensor[i],aux,axis=0)
+            for t in FinalTensor:
+                if t.shape != FinalTensor[0].shape:
+                    raise AttributeError('bp Shapes differ',t.shape,FinalTensor[0].shape)
+            FinalTensor=np.stack(FinalTensor,axis=0)
+            Tensor_dict[var]=FinalTensor
+        except:
+            raise Exception('bp_reader was enable to find Variable:'+var)
+        print(".bp reading successful")
+    return   Tensor_dict, nxC, nyC, nx_global, ny_global, X, Y,time_list,first_criteria
 
 def parse_notus_files(path,ext=".bp"):
     """ This function parses the list of .bp files in path and Returns

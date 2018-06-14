@@ -64,7 +64,7 @@ def VTK_save_space_time_field(var_dic,X,Y,base_name,time_list):
         raise AttributeError('Shape do not match '+ str(nt)
                              +" "+str(var_dic[v0].shape[1]))
     for i in range(len(time_list)):
-        print("writing "+base_name+time_list[i])
+        # print("writing "+base_name+time_list[i])
         snapshot={}
         for var in var_list:
             snapshot[var]=var_dic[var][:,i]
