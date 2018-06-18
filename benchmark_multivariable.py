@@ -309,9 +309,13 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 label_line=reduction_method
                 plot_error_tucker(Result,F,number_plot,label_line,
                                   output_variable_name='variable')
-        
-        if reduction_method=='TT_SVD':
-            Result=TT_SVD(F, eps=1e-10, rank=100)
+
+        if reduction_method=='RPOD':
+            from RPOD import rpod, recursive_tensor
+            Result=rpod(F, M, tol=1e-10)
+            print(F.size)
+            print(Result)
+            print(np.linalg.norm(Result.to_full()-F))
             if plot=='yes':
                 number_plot=number_plot+1
                 label_line=reduction_method
