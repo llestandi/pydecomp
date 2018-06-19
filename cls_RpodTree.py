@@ -1,3 +1,5 @@
+import numpy as np
+
 class RpodTree:
     """
     RPOD decomposition tree storage structure.
@@ -8,6 +10,10 @@ class RpodTree:
     - children point to phi_k(x) decompostion\n
     - is_last is just a trick to tell a nodes children are leaves\n
     leaves are described in a separate structure.
+
+    **TODO**: For efficiency reasons, it would be better to store a POD decomp
+    directly at leaf instead of having r leaves per terminal node. Same storage cost.
+    Probably more efficient for evaluation.
     """
     def __init__(self, u):
         self.u = u
@@ -21,12 +27,18 @@ class RpodTree:
         else:
             self.children[index[0]].add_node( u, index[1:])
 
-    def add_leaf(self, u, v, index):
+    def add_leaf(self, u, v,sigma, index):
+        """
+        Adds a leaf which contains
+        u :(1d array) mode on dim d -1
+        v :(1d array) mode on dim d
+        sigma: leaf weight
+        """
         if len(index) == 0:
-            self.children.append(RpodLeaf(u, v))
+            self.children.append(RpodLeaf(u, v, sigma))
             self.is_last = True
         else:
-            self.children[index[0]].add_leaf(u, v, index[1:])
+            self.children[index[0]].add_leaf(u, v, sigma, index[1:])
 
     def __str__(self, string=''):
         list_tree = [[]]
@@ -42,9 +54,9 @@ class RpodTree:
     def _rec_str(self, list_tree, depth):
         if self.is_last:
             for i in range(len(self.children)):
-                # list_tree[depth].append("U: {0} V: {1}\n".format(self.children[i].u, self.children[i].v))
-                list_tree[depth].append("leaf")
-            list_tree[depth].append('|')
+                list_tree[depth].append("leaf sigma[{0}]: {1} \n".format(i,self.children[i].sigma))
+                # list_tree[depth].append("U: {0} \nV: {1}\n\n".format(self.children[i].u, self.children[i].v))
+            list_tree[depth].append('|\n')
         else:
             for i in range(len(self.children)):
                 list_tree[depth].append('node')
@@ -68,4 +80,4 @@ class RpodLeaf:
         self.sigma= sigma
 
     def eval(self):
-        return (np.kron(child.u, child.v))
+        return self.sigma*(np.kron(self.u,self.v))

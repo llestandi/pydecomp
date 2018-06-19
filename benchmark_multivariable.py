@@ -314,6 +314,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             from RPOD import rpod, recursive_tensor
             Result=rpod(F, M, tol=1e-10)
             print(F.size)
+            print(Result.to_full())
             print(Result)
             print(np.linalg.norm(Result.to_full()-F))
             if plot=='yes':

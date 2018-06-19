@@ -35,6 +35,8 @@ class recursive_tensor(TensorDescriptor):
     """
     def __init__(self,_tshape,dim):
         TensorDescriptor.__init__(self,_tshape,dim)
+        self.sigma_max=1
+        self.sigma_max_loc=[]
         self.rank=[]
         self.tree=None
 
@@ -80,18 +82,22 @@ def rpod_rec(f, tree, int_weights, node_index, tol):
 
     **Return ** recursive tensor containing the decomposition tree.
     """
-    f_shape = f.shape
     Mx,Mt = hf.matricize_mass_matrix(f.ndim,0,int_weights)
     Phi = np.reshape(f, [f.shape[0], -1])
+
     U, sigma, V = POD(Phi, Mx, Mt, tol)
     rank = U.shape[1]
-    V = V@sigma
-    Phi_shape = np.append(f_shape[1:], rank)
-    Phi_next = [np.reshape(V[:, i], f_shape[1:]) for i in range(rank)]
+    # sending weight to the last mode and keeping it as sigma
+    if len(f.shape[1:]) == 1:
+        sigma=sigma.diagonal()
+    else:
+        V = V@sigma
+    Phi_shape = np.append(f.shape[1:], rank)
+    Phi_next = [np.reshape(V[:, i], f.shape[1:]) for i in range(rank)]
 
     for i in range(rank):
-        if len(f_shape[1:]) == 1:
-            tree.add_leaf(U[:, i], Phi_next[i], node_index)
+        if len(f.shape[1:]) == 1:
+            tree.add_leaf(U[:, i], Phi_next[i], sigma[i], node_index)
         else:
             tree.add_node(U[:, i], node_index)
             node_index.append(i)
@@ -105,9 +111,9 @@ def eval_rpod(tree: RpodTree, shape):
 def eval_rpod_rec(tree: RpodTree):
     if tree.is_last:
         child = tree.children[0]
-        res = np.kron(child.u, child.v)
+        res = child.eval()
         for child in tree.children[1:]:
-            res = res + np.kron(child.u, child.v)
+            res = res + child.eval()
         return res
     else:
         child = tree.children[0]
@@ -119,7 +125,7 @@ def eval_rpod_rec(tree: RpodTree):
 
 if __name__=='__main__':
     from benchmark_multivariable import benchmark_multivariable
-    benchmark_multivariable(["RPOD"], ['trapezes'],dim=4 , shape=[115,10,8,20],
+    benchmark_multivariable(["RPOD"], ['trapezes'],dim=4 , shape=[5,3,7,4],
                                   test_function=1, plot="no",
                                   output_variable_file='yes',
                                   output_variable_name='test_rpod')
