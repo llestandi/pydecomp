@@ -68,6 +68,18 @@ def rpod(f, int_weights, tol=1.e-3):
     return rpod_approx
 
 def rpod_rec(f, tree, int_weights, node_index, tol):
+    """
+    Recursive part of the RPOD algorithm. Actually corresponds to the
+    mathematical definition (see PhD. Thesis)
+    **Attributes**
+
+    **f**: ndarray input tensor \n
+    **int_weights**: list of integratino weights \n
+    **node_index**: indicates position in the tree \n
+    **tol**: float, POD tolerance \n
+
+    **Return ** recursive tensor containing the decomposition tree.
+    """
     f_shape = f.shape
     Mx,Mt = hf.matricize_mass_matrix(f.ndim,0,int_weights)
     Phi = np.reshape(f, [f.shape[0], -1])
