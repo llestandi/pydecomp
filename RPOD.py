@@ -13,6 +13,7 @@ import numpy as np
 import scipy
 from POD import POD2 as POD
 import high_order_decomposition_method_functions as hf
+import copy
 
 
 class recursive_tensor(TensorDescriptor):
@@ -24,9 +25,10 @@ class recursive_tensor(TensorDescriptor):
 
     **Attributes**
 
-    **decomp** : nested list of eigen functions. \n
-    **weights** : nested list of singular values. \n
-    **rpod_rank** : nested list of ranks. \n
+    **decomp** : RpodTree containing the decomposition. \n
+    **sigma_max** : maximum sigma. \n
+    **sigma_max_loc** : maximum sigma location. \n
+    **rank** : nested list of ranks. \n
     **_tshape**: array like, with the numbers of elements that each 1-rank
     tensor is going to discretize each subspace of the full tensor. \n
     **dim**: integer type, number that represent the n-rank tensor that is
@@ -35,14 +37,20 @@ class recursive_tensor(TensorDescriptor):
     """
     def __init__(self,_tshape,dim):
         TensorDescriptor.__init__(self,_tshape,dim)
-        self.sigma_max=1
+        self.sigma_max=0
         self.sigma_max_loc=[]
         self.rank=[]
         self.tree=None
 
     def __str__(self):
-        ret = "ttensor of size {0}\n".format(self._tshape);
+        ret = "-----------------------------------\n"
+        ret+= "recursive_tensor of size {0}\n".format(self._tshape);
+        ret+= "Sigma_max={0}, sigma_max_loc={1}\n".format(self.sigma_max,self.sigma_max_loc)
+        ret+= "-----------------------------------\n"
+        ret+= "Printing tree structure\n"
+        ret+= "-----------------------------------\n"
         ret+=str(self.tree)
+        ret+= "-----------------------------------\n"
         return ret
 
     def to_full(self,rank=[]):
@@ -61,26 +69,24 @@ def rpod(f, int_weights, tol=1.e-3):
 
     **Return ** recursive tensor containing the decomposition tree.
     """
-    tree = RpodTree(np.zeros(0))
-    node_index = []
-    rpod_rec(f, tree,int_weights, node_index, tol)
-
     rpod_approx=recursive_tensor(f.shape,f.ndim)
-    rpod_approx.tree=tree
+    rpod_approx.tree = RpodTree(np.zeros(0))
+    node_index = []
+    rpod_rec(f, rpod_approx,int_weights, node_index, tol)
+
     return rpod_approx
 
-def rpod_rec(f, tree, int_weights, node_index, tol):
+def rpod_rec(f, rpod_approx, int_weights, node_index, tol):
     """
     Recursive part of the RPOD algorithm. Actually corresponds to the
     mathematical definition (see PhD. Thesis)
     **Attributes**
 
     **f**: ndarray input tensor \n
+    **rpod_approx**: recursive_tensor containing the approximation of f \n
     **int_weights**: list of integratino weights \n
     **node_index**: indicates position in the tree \n
     **tol**: float, POD tolerance \n
-
-    **Return ** recursive tensor containing the decomposition tree.
     """
     Mx,Mt = hf.matricize_mass_matrix(f.ndim,0,int_weights)
     Phi = np.reshape(f, [f.shape[0], -1])
@@ -90,6 +96,9 @@ def rpod_rec(f, tree, int_weights, node_index, tol):
     # sending weight to the last mode and keeping it as sigma
     if len(f.shape[1:]) == 1:
         sigma=sigma.diagonal()
+        if rpod_approx.sigma_max < sigma[0]:
+            rpod_approx.sigma_max=sigma[0]
+            rpod_approx.sigma_max_loc=np.concatenate([node_index,[0]])
     else:
         V = V@sigma
     Phi_shape = np.append(f.shape[1:], rank)
@@ -97,11 +106,11 @@ def rpod_rec(f, tree, int_weights, node_index, tol):
 
     for i in range(rank):
         if len(f.shape[1:]) == 1:
-            tree.add_leaf(U[:, i], Phi_next[i], sigma[i], node_index)
+            rpod_approx.tree.add_leaf(U[:, i], Phi_next[i], sigma[i], node_index)
         else:
-            tree.add_node(U[:, i], node_index)
+            rpod_approx.tree.add_node(U[:, i], node_index)
             node_index.append(i)
-            rpod_rec(Phi_next[i], tree, int_weights[1:], node_index, tol)
+            rpod_rec(Phi_next[i], rpod_approx, int_weights[1:], node_index, tol)
             node_index.pop()
 
 def eval_rpod(tree: RpodTree, shape):

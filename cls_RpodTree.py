@@ -19,6 +19,8 @@ class RpodTree:
         self.u = u
         self.children = []
         self.is_last = False
+        #Cosmetic Attribute
+        self.branch_weight=
 
     def add_node(self, u, index):
         if len(index) == 0:
