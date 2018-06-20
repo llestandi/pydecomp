@@ -93,22 +93,23 @@ def rpod_rec(f, rpod_approx, int_weights, node_index, tol):
 
     U, sigma, V = POD(Phi, Mx, Mt, tol)
     rank = U.shape[1]
+    sigma_vec=sigma.diagonal()
     # sending weight to the last mode and keeping it as sigma
     if len(f.shape[1:]) == 1:
-        sigma=sigma.diagonal()
-        if rpod_approx.sigma_max < sigma[0]:
-            rpod_approx.sigma_max=sigma[0]
+        if rpod_approx.sigma_max < sigma_vec[0]:
+            rpod_approx.sigma_max=sigma_vec[0]
             rpod_approx.sigma_max_loc=np.concatenate([node_index,[0]])
     else:
         V = V@sigma
     Phi_shape = np.append(f.shape[1:], rank)
     Phi_next = [np.reshape(V[:, i], f.shape[1:]) for i in range(rank)]
-
+    # recursive call on each phi_i
     for i in range(rank):
+        branch_weight=sigma_vec[i]
         if len(f.shape[1:]) == 1:
-            rpod_approx.tree.add_leaf(U[:, i], Phi_next[i], sigma[i], node_index)
+            rpod_approx.tree.add_leaf(U[:, i], Phi_next[i], sigma_vec[i], node_index, branch_weight)
         else:
-            rpod_approx.tree.add_node(U[:, i], node_index)
+            rpod_approx.tree.add_node(U[:, i], node_index, branch_weight)
             node_index.append(i)
             rpod_rec(Phi_next[i], rpod_approx, int_weights[1:], node_index, tol)
             node_index.pop()
