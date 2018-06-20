@@ -50,19 +50,19 @@ class RpodTree:
         for i in range(len(list_tree)):
             string+="Level {0} :\n".format(i+1)
             for j in range(len(list_tree[i])):
-                string += list_tree[i][j] + ' '
-            string += "\n"
+                string += ' '+list_tree[i][j]
+            string += ""
         return string
 
     def _rec_str(self, list_tree, depth):
         if self.is_last:
             for i in range(len(self.children)):
-                list_tree[depth].append("leaf[{0}] \t ({1}) \n".format(i,self.children[i].branch_weight))
+                list_tree[depth].append("leaf[{0}] ({1:2.3e}) \t".format(i,self.children[i].branch_weight))
                 # list_tree[depth].append("U: {0} \nV: {1}\n\n".format(self.children[i].u, self.children[i].v))
             list_tree[depth].append('|\n')
         else:
             for i in range(len(self.children)):
-                list_tree[depth].append('node ({0})'.format(self.children[i].branch_weight))
+                list_tree[depth].append('node ({0:2.3e})\t'.format(self.children[i].branch_weight))
             list_tree[depth].append('|\n')
             if len(list_tree) == depth+1:
                 list_tree.append([])

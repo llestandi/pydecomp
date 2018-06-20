@@ -149,8 +149,6 @@ def benchmark_multivariable(list_reduction_method, integration_method,
         integration_method=list_integration_method[ii]
         output_variable_name=list_output_variable_name[ii]
 
-
-
         acepted_shape_type=[list]
         if type(shape) not in acepted_shape_type:
             error_shape_type="""
@@ -261,60 +259,23 @@ def benchmark_multivariable(list_reduction_method, integration_method,
 
         if integration_method=='SVD':
             X=[np.ones(x) for x in shape]
-
-        if integration_method=='trapezes':
-            M=hf.mass_matrices_creator(X)
-        if integration_method=='SVD':
             M=[diags(x) for x in X]
-
-
+        elif integration_method=='trapezes':
+            M=hf.mass_matrices_creator(X)
 
         if reduction_method=='PGD':
             Result=PGD(M,F)
-
-
-            if plot=='yes':
-                number_plot=number_plot+1
-                label_line="PGD"
-                plot_error_canonical(Result,F, number_plot,label_line)
-
-        if reduction_method=='HO_POD':
+        elif reduction_method=='HO_POD':
             Result=HOPOD(F,M)
-            if plot=='yes':
-                number_plot=number_plot+1
-                label_line='HO_POD'
-                plot_error_tucker(Result,F,number_plot,label_line,
-                                  output_variable_name='variable')
-
-        if reduction_method=='SHO_POD':
+        elif reduction_method=='SHO_POD':
             Result=SHOPOD(F,M)
-            if plot=='yes':
-                number_plot=number_plot+1
-                label_line=reduction_method
-                plot_error_tucker(Result,F,number_plot,label_line,
-                                  output_variable_name='variable')
-
-        if reduction_method=='THO_SVD':
+        elif reduction_method=='THO_SVD':
             Result=THOSVD(F)
-            if plot=='yes':
-                number_plot=number_plot+1
-                label_line=reduction_method
-                plot_error_tucker(Result,F,number_plot,label_line,
-                                  output_variable_name='variable')
-
-        if reduction_method=='STHO_SVD':
+        elif reduction_method=='STHO_SVD':
             Result=STHOSVD(F)
-            if plot=='yes':
-                number_plot=number_plot+1
-                label_line=reduction_method
-                plot_error_tucker(Result,F,number_plot,label_line,
-                                  output_variable_name='variable')
-
-        if reduction_method=='RPOD':
+        elif reduction_method=='RPOD':
             from RPOD import rpod, recursive_tensor
-            Result=rpod(F, M, tol=1e-10)
-            print(F.size)
-            print(Result.to_full())
+            Result=rpod(F, int_weights=None, POD_tol=1e-10,cutoff_tol=1e-3)
             print(Result)
             print(np.linalg.norm(Result.to_full()-F))
             if plot=='yes':
@@ -328,11 +289,6 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             
         if  output_variable_file=='yes':
             hf.save(Result,output_variable_name)
-
-
-
-
-
 
 
 #------------------------------------------------------------------------------
