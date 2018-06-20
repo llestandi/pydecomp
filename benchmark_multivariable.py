@@ -275,7 +275,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=STHOSVD(F)
         elif reduction_method=='RPOD':
             from RPOD import rpod, recursive_tensor
-            Result=rpod(F, int_weights=None, POD_tol=1e-10,cutoff_tol=1e-3)
+            Result=rpod(F, int_weights=None, POD_tol=1e-16,cutoff_tol=1e-6)
             print(Result)
             print(np.linalg.norm(Result.to_full()-F))
             if plot=='yes':

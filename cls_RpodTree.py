@@ -48,7 +48,7 @@ class RpodTree:
         self._rec_str(list_tree, depth)
         string = ''
         for i in range(len(list_tree)):
-            string+="Level {0} :\n".format(i+1)
+            string+="Level {0} :===============================\n".format(i+1)
             for j in range(len(list_tree[i])):
                 string += ' '+list_tree[i][j]
             string += ""
@@ -69,6 +69,34 @@ class RpodTree:
             for i in range(len(self.children)):
                 self.children[i]._rec_str(list_tree, depth+1)
 
+    def get_node(self,node_index):
+        """ returns tree generated at node_index """
+        if len(node_index) == 0:
+            return self
+        else:
+            return self.children[node_index[0]].get_node(node_index[1:])
+
+
+    def has_leaf(self,node_index):
+        """ Returns true if a leaf was find down the tree"""
+        handle=self.get_node(node_index)
+        status=(type(self.children[0])==RpodLeaf)
+        if not status:
+            status=_rec_has_leaf(handle)
+        return status
+
+def _rec_has_leaf(tree):
+    status=False
+    for child in tree.children:
+        if type(child)==RpodLeaf :
+            return True
+        else:
+            status= _rec_has_leaf(child)
+            if status :
+                continue
+    return status
+
+
 
 class RpodLeaf:
     """ Leaf class to store RPOD decomp.
@@ -85,3 +113,6 @@ class RpodLeaf:
 
     def eval(self):
         return self.sigma*(np.kron(self.u,self.v))
+
+    def has_leaf(self):
+        return True

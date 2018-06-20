@@ -44,16 +44,17 @@ class recursive_tensor(TensorDescriptor):
         self.tree_weight=None
 
     def __str__(self):
-        ret = "-----------------------------------\n"
-        ret+= "recursive_tensor of size {0}\n".format(self._tshape);
+        ret = "-----------------------------------------------\n"
+        ret+= "Recursive_tensor of shape {0}\n\n".format(self._tshape);
         ret+= "Sigma_max={0}, sigma_max_loc={1}\n".format(self.sigma_max,self.sigma_max_loc)
-        ret+= "-----------------------------------\n"
-        ret+= "Printing tree structure\n"
-        ret+= "(branch_weight)\n"
         ret+= "Total tree weight (norm)={0} \n".format(self.tree_weight)
-        ret+= "-----------------------------------\n"
+        ret+= "-----------------------------------------------\n"
+        ret+= "Printing tree structure\n"
+        ret+= "-----------------------------------------------\n"
+        ret+= "node kind (branch_weight)\n"
+        ret+= "-----------------------------------------------\n"
         ret+=str(self.tree)
-        ret+= "-----------------------------------\n"
+        ret+= "-----------------------------------------------\n"
         return ret
 
     def to_full(self,rank=[]):
@@ -115,10 +116,9 @@ def rpod_rec(f, rpod_approx, int_weights, node_index, POD_tol=1e-10, cutoff_tol=
     # recursive call on each phi_i
     for i in range(rank):
         branch_weight=sigma_vec[i]/rpod_approx.tree_weight
-        if branch_weight < cutoff_tol and node_index!=[]:
-            print(node_index)
-            if node_index[-1]!=0: #making sure that a branch has at least one leaf
-                print(node_index)
+        #special case for root #making sure that a branch has at least one leaf
+        if branch_weight < cutoff_tol:
+            if node_index==[] or rpod_approx.tree.has_leaf(node_index):
                 continue
         if len(f.shape[1:]) == 1:
             rpod_approx.tree.add_leaf(U[:, i], Phi_next[i], sigma_vec[i], node_index, branch_weight)
@@ -149,7 +149,7 @@ def eval_rpod_rec(tree: RpodTree):
 
 if __name__=='__main__':
     from benchmark_multivariable import benchmark_multivariable
-    benchmark_multivariable(["RPOD"], ['trapezes'],dim=4 , shape=[5,3,7,4],
-                                  test_function=1, plot="no",
+    benchmark_multivariable(["RPOD"], ['trapezes'],dim=5 , shape=[115,35,21,7,5],
+                                  test_function=2, plot="no",
                                   output_variable_file='yes',
                                   output_variable_name='test_rpod')
