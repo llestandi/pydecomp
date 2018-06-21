@@ -275,18 +275,22 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=STHOSVD(F)
         elif reduction_method=='RPOD':
             from RPOD import rpod, recursive_tensor
-            Result=rpod(F, int_weights=None, POD_tol=1e-16,cutoff_tol=1e-6)
+            Result=rpod(F, int_weights=None, POD_tol=1e-16,cutoff_tol=1e-7)
             print(Result)
             print(np.linalg.norm(Result.to_full()-F))
-            if plot=='yes':
-                number_plot=number_plot+1
-                label_line=reduction_method
-                plot_error_tt(Result, F, number_plot=number_plot, 
-                               label_line=label_line,
-                               output_variable_name='variable') 
-                            
-                
-            
+            print(np.linalg.norm(Result.to_full(cutoff_tol=1e-2)-F))
+            print("Compression rate {0}%".format(Result.compression_rate()))
+
+        if plot=='yes':
+            number_plot+=1
+            label_line=reduction_method
+            if type(Result)==Tucker:
+                plot_error_tucker(Result,F,number_plot,label_line,
+                                  output_variable_name)
+            elif type(Result)==CanonicalForme:
+                plot_error_canonical(Result,F, number_plot,label_line)
+
+
         if  output_variable_file=='yes':
             hf.save(Result,output_variable_name)
 
