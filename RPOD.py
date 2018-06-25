@@ -7,14 +7,14 @@ Created on 07/06/2018
 """
 
 import numpy as np
+import scipy
+import matplotlib.pyplot as plt
+from matplotlib.backends.backend_pdf import PdfPages
+
+import high_order_decomposition_method_functions as hf
 from tensor_descriptor_class import TensorDescriptor
 from cls_RpodTree import  RpodTree
-import numpy as np
-import scipy
 from POD import POD2 as POD
-import high_order_decomposition_method_functions as hf
-import copy
-
 
 class recursive_tensor(TensorDescriptor):
     """
@@ -66,7 +66,6 @@ class recursive_tensor(TensorDescriptor):
         shape=self._tshape
         buff=np.sum(np.asarray(shape[-1]*self.rank[-1]))
         for i in range(self._dim-1):
-            print(i)
             buff+=np.sum(np.asarray(shape[i]*self.rank[i]))
         return buff
 
@@ -173,13 +172,79 @@ def eval_rpod_rec_tree(tree: RpodTree, cutoff_tol=1e-16):
                 res = res + np.kron(child.u, eval_rpod_rec_tree(child,cutoff_tol))
         return res
 
-        return np.reshape(res, rec_tens._tshape)
+def rpod_tree_size(tree: RpodTree, shape,cutoff_tol=1e-8):
+    """ Evaluate RpodTree size while ignoring branches
+    with weight lower than cutoff_tol """
+    return rpod_size_rec(tree,cutoff_tol)/np.product(shape)
+
+
+def rpod_size_rec(tree: RpodTree, cutoff_tol=1e-8):
+    size=0
+    for child in tree.children:
+        if child.branch_weight>cutoff_tol:
+            if tree.is_last:
+                size+= child.u.size+child.v.size
+            else:
+                size += child.u.size+ rpod_size_rec(child,cutoff_tol)
+    return size
+
+def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8):
+    """Computes error and compression rate with given tolerance"""
+    err=[]
+    comp_rate=[]
+    # min_exp=np.log10(min_tol)
+    # max_exp=np.log10(max_tol)
+    for tol in np.logspace(np.log10(min_tol), np.log10(max_tol)):
+    # for tol in np.logspace(min_exp, max_exp):
+        loc_rate=rpod_tree_size(T_rec.tree,T_rec._tshape,tol)
+        if not comp_rate:
+            pass
+        elif loc_rate==comp_rate[-1]:
+            continue
+        err.append(np.linalg.norm(T_rec.to_full(tol)-T_full))
+        comp_rate.append(loc_rate)
+
+    return np.asarray(err), np.asarray(comp_rate)
+
+def plot_rpod_approx(T_rec, T_full, out_file='RPOD_approx_error.pdf', min_tol=1., max_tol=1e-8):
+    err,comp_rate=rpod_error_data(T_rec,T_full, min_tol,max_tol)
+    print(err)
+    print(comp_rate)
+    color_code='m'
+    marker_code='h'
+    linestyle_code='--'
+    label_line='RPOD'
+    pp = PdfPages(out_file)
+    if plt.fignum_exists(1):
+        if comp_rate[-1]>plt.axis()[1]:
+            plt.xlim(0,(comp_rate[-1]+5))
+    else:
+        fig=plt.figure()
+        ax=fig.add_subplot(111)
+        ax.set_xlim(0,(comp_rate[-1]+5))
+        ax.set_ylim([1e-8,0.15])
+
+
+    plt.yscale('log')
+    plt.xlabel("Compresion rate (%)")
+    plt.ylabel('Relative Error')
+    plt.grid()
+    plt.legend()
+    plt.plot(100*comp_rate, err ,color=color_code, marker=marker_code,
+             linestyle=linestyle_code,
+             label=label_line)
+    # plt.show()
+
+    #saving plot as pdf
+    plt.savefig(out_file)
+    # pp.savefig()
+    plt.close()
+    return
 
 
 
 if __name__=='__main__':
     from benchmark_multivariable import benchmark_multivariable
-    benchmark_multivariable(["RPOD"], ['trapezes'],dim=3 , shape=[100,100,100],
-                                  test_function=1, plot="no",
-                                  output_variable_file='yes',
-                                  output_variable_name='test_rpod')
+    benchmark_multivariable(["RPOD","PGD"], ['trapezes'], dim=3 , shape=[100,100,100],
+                                  test_function=2, plot=True,
+                                  output_name='output/approx_test_rpod')

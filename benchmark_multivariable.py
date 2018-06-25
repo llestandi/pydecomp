@@ -16,10 +16,13 @@ from STHOSVD import STHOSVD
 from TT_SVD import TT_SVD
 from plot_error_canonical import plot_error_canonical
 from plot_error_tucker import plot_error_tucker
+from RPOD import rpod, recursive_tensor, plot_rpod_approx
+import Tucker
+from Canonical import CanonicalForme
 from plot_error_tt import plot_error_tt
 
 def benchmark_multivariable(list_reduction_method, integration_method,
-                              dim, shape,test_function=1, plot="no",
+                              shape,test_function=1, plot="no",
                               output_variable_file='yes',
                               output_variable_name='variable'):
 
@@ -98,6 +101,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
 
 
     """
+    dim=shape.ndim
     domain=[0,1]
     #Number plot is just a variable that will define ploting characteristics
     #such as color, linestyle, marker
@@ -274,13 +278,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
         elif reduction_method=='STHO_SVD':
             Result=STHOSVD(F)
         elif reduction_method=='RPOD':
-            from RPOD import rpod, recursive_tensor
             Result=rpod(F, int_weights=None, POD_tol=1e-16,cutoff_tol=1e-7)
-            print(Result)
-            print(np.linalg.norm(Result.to_full()-F))
-            print(np.linalg.norm(Result.to_full(cutoff_tol=1e-2)-F))
-            print("Compression rate {0}%".format(Result.compression_rate()))
-
         if plot=='yes':
             number_plot+=1
             label_line=reduction_method
@@ -289,6 +287,8 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                                   output_variable_name)
             elif type(Result)==CanonicalForme:
                 plot_error_canonical(Result,F, number_plot,label_line)
+            elif type(Result)==recursive_tensor:
+                plot_rpod_approx(Result, F)
 
 
         if  output_variable_file=='yes':
