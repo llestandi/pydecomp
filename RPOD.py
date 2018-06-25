@@ -206,7 +206,7 @@ def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8):
 
     return np.asarray(err), np.asarray(comp_rate)
 
-def plot_rpod_approx(T_rec, T_full, out_file='RPOD_approx_error.pdf', min_tol=1., max_tol=1e-8):
+def plot_rpod_approx(T_rec, T_full, out_file='RPOD_approx_error', min_tol=1., max_tol=1e-8):
     err,comp_rate=rpod_error_data(T_rec,T_full, min_tol,max_tol)
     print(err)
     print(comp_rate)
@@ -214,7 +214,6 @@ def plot_rpod_approx(T_rec, T_full, out_file='RPOD_approx_error.pdf', min_tol=1.
     marker_code='h'
     linestyle_code='--'
     label_line='RPOD'
-    pp = PdfPages(out_file)
     if plt.fignum_exists(1):
         if comp_rate[-1]>plt.axis()[1]:
             plt.xlim(0,(comp_rate[-1]+5))
@@ -233,11 +232,10 @@ def plot_rpod_approx(T_rec, T_full, out_file='RPOD_approx_error.pdf', min_tol=1.
     plt.plot(100*comp_rate, err ,color=color_code, marker=marker_code,
              linestyle=linestyle_code,
              label=label_line)
-    # plt.show()
+    plt.show()
 
     #saving plot as pdf
     plt.savefig(out_file)
-    # pp.savefig()
     plt.close()
     return
 
@@ -245,6 +243,6 @@ def plot_rpod_approx(T_rec, T_full, out_file='RPOD_approx_error.pdf', min_tol=1.
 
 if __name__=='__main__':
     from benchmark_multivariable import benchmark_multivariable
-    benchmark_multivariable(["RPOD","PGD"], ['trapezes'], dim=3 , shape=[100,100,100],
-                                  test_function=2, plot=True,
-                                  output_name='output/approx_test_rpod')
+    benchmark_multivariable(["RPOD"], ['trapezes'],shape=[20,20,20],
+                                  test_function=2, plot=True,output_decomp='',
+                                  plot_name='output/approx_test_rpod.pdf')

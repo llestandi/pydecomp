@@ -6,8 +6,10 @@ Created on Fri May 18 15:09:32 2018
 """
 import tensor_creator
 import numpy as np
-import high_order_decomposition_method_functions as hf
+import matplotlib.pyplot as plt
 from scipy.sparse import diags
+
+import high_order_decomposition_method_functions as hf
 from pgd_main import PGD
 from HOPOD import HOPOD
 from SHOPOD import SHOPOD
@@ -16,15 +18,15 @@ from STHOSVD import STHOSVD
 from TT_SVD import TT_SVD
 from plot_error_canonical import plot_error_canonical
 from plot_error_tucker import plot_error_tucker
-from RPOD import rpod, recursive_tensor, plot_rpod_approx
+from RPOD import rpod, recursive_tensor, plot_rpod_approx,rpod_error_data
 import Tucker
 from Canonical import CanonicalForme
 from plot_error_tt import plot_error_tt
 
 def benchmark_multivariable(list_reduction_method, integration_method,
-                              shape,test_function=1, plot="no",
-                              output_variable_file='yes',
-                              output_variable_name='variable'):
+                              shape,test_function=1, plot=False,
+                              output_decomp=[],
+                              plot_name='output/approx_benchmark'):
 
 
 
@@ -101,15 +103,15 @@ def benchmark_multivariable(list_reduction_method, integration_method,
 
 
     """
-    dim=shape.ndim
+    dim=len(shape)
     domain=[0,1]
-    #Number plot is just a variable that will define ploting characteristics
-    #such as color, linestyle, marker
+    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'SHO_POD','RPOD']
+    acepted_integration_methods=['trapezes','SVD']
     number_plot=0
+    approx_data={}
 
     if type(list_reduction_method) == str:
         list_reduction_method=[list_reduction_method]
-
     number_of_methods=len(list_reduction_method)
 
     if type(integration_method)==str:
@@ -131,93 +133,54 @@ def benchmark_multivariable(list_reduction_method, integration_method,
         raise ValueError(error_integration_method)
 
 
+    acepted_shape_type=[list]
+    if type(shape) not in acepted_shape_type:
+        error_shape_type="""
+        shape input must be either a list or np.ndarray with integer as
+        its elements.
+        """
+        raise ValueError(error_shape_type)
+
+
     if number_of_methods>1:
-        if type(output_variable_name)==str:
+        if type(output_decomp)==str:
             list_output_variable_name=[]
             for i in range(number_of_methods):
-                aux=output_variable_name+'('+str(i)+')'
+                aux=output_decomp+'('+str(i)+')'
                 list_output_variable_name.append(aux)
-        elif type(output_variable_name)==list:
-            if len(output_variable_name)!=number_of_methods:
+        elif type(output_decomp)==list:
+            if len(output_decomp)!=number_of_methods:
                 error_variable_name="""
                 The number of output_variable_name is not coherent with the
                 number of integration methods selected.
                 """
                 raise TypeError(error_variable_name)
-    elif number_of_methods==1:
-        list_output_variable_name=[output_variable_name]
 
+
+    if type(plot) != bool :
+        raise TypeError("Error!! wrong plot is a boolean.")
+    show_plot=plot
+    if type(plot_name)==str:
+        if plot_name!='':
+            plot=True
 
     for ii in range(number_of_methods):
         reduction_method=list_reduction_method[ii]
         integration_method=list_integration_method[ii]
-        output_variable_name=list_output_variable_name[ii]
 
-        acepted_shape_type=[list]
-        if type(shape) not in acepted_shape_type:
-            error_shape_type="""
-            shape input must be either a list or np.ndarray with integer as
-            its elements.
-            """
-            raise ValueError(error_shape_type)
-
-        acepted_output_variable_file_option=['yes', 'no']
-        if output_variable_file not in acepted_output_variable_file_option:
-            error_output_variable_file="""
-            Fatal error in output_variable_file!!! \n
-            output_variable_file acepts either 'yes' or 'no' as an input option
-            """
-            raise ValueError(error_output_variable_file)
-
-        if type(output_variable_name)!=str:
-            error_output_variable_name="""
-            Fatal error in output_variable_name!!! \n
-            String type variable is spected.
-            """
-            raise ValueError(error_output_variable_name)
-
-        acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD','SHO_POD','RPOD']
         if reduction_method not in acepted_reduction_method:
-            error_reduction_method="""
-            The acepted reduction methods are: 'PGD',THO_SVD','STHO_SVD',
-            'HO_POD','SHO_POD'. \n
-            Please verify and choose one value method correcly.
-            """
+            error_reduction_method="""{0} is incorrect.
+            The acepted reduction methods are: {1}.
+            Please verify and choose one value method correcly. """.format(
+                    reduction_method,acepted_reduction_method)
             raise ValueError(error_reduction_method)
 
-        acepted_integration_methods=['trapezes','SVD']
-
         if integration_method not in acepted_integration_methods:
-            error_integration_method="""
-            The only integration methods acepted are trapezes and SVD.
-            """
+            error_integration_method=" The only integration methods acepted are trapezes and SVD."
             raise ValueError(error_integration_method)
 
 
-        if len(shape)!=dim:
-             error="""
-             Number of elements of shape and "dim" value must be equals
-             """
-             raise ValueError(error)
-
-
-        plot_options=['yes', 'no']
-        if plot not in plot_options:
-            plot_error="""
-            Error!! wrong plot argument. plot='yes' or plot='no' expected.
-            """
-            raise TypeError(plot_error)
-
-
-        output_variable_file_options=['yes', 'no']
-        if output_variable_file not in output_variable_file_options:
-            output_variable_file_error="""
-            Error!! wrong plot argument. output_variable_file='yes' or
-            output_variable_file='no' expected.
-            """
-            raise ValueError(output_variable_file_error)
-
-        if type(output_variable_name)!= str:
+        if type(plot_name)!= str:
             raise ValueError('output_variable_name must be a string variable')
 
 
@@ -239,17 +202,6 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 print(note_print1)
                 integration_method='SVD'
                 
-        if reduction_method=='PGD':
-            if integration_method=='SVD':
-                note_error_integration_method="""
-                PGD reduction method does not work with SVD mass matrices,
-                trapezes method will be automatically applied
-                """
-                print(note_error_integration_method)
-                integration_method='trapezes'
-
-
-
         if reduction_method=="STHO_SVD":
             if integration_method != "SVD":
                 note_print2="""
@@ -258,6 +210,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 """
                 print(note_print2)
                 integration_method="SVD"
+#########################END OF TESTS##########################################
 
         X,F=testf(test_function, shape, dim, domain)
 
@@ -278,21 +231,68 @@ def benchmark_multivariable(list_reduction_method, integration_method,
         elif reduction_method=='STHO_SVD':
             Result=STHOSVD(F)
         elif reduction_method=='RPOD':
-            Result=rpod(F, int_weights=None, POD_tol=1e-16,cutoff_tol=1e-7)
-        if plot=='yes':
-            number_plot+=1
-            label_line=reduction_method
-            if type(Result)==Tucker:
-                plot_error_tucker(Result,F,number_plot,label_line,
-                                  output_variable_name)
-            elif type(Result)==CanonicalForme:
-                plot_error_canonical(Result,F, number_plot,label_line)
+            Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=1e-8)
+
+        if plot:
+            if type(Result)==Tucker.Tucker:
+                approx_data[reduction_method]=np.stack(Tucker.tucker_error_data(Result,F))
             elif type(Result)==recursive_tensor:
-                plot_rpod_approx(Result, F)
+                approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
+            elif type(Result)==CanonicalForme:
+                raise NotImplementedError("Canonical plot V2 is not implemented yet")
+                # plot_error_canonical(Result,F, number_plot,label_line)
+        try:
+            if output_decomp!='':
+                hf.save(Result,output_decomp)
+        except:
+            pass
+
+    if plot:
+        benchmark_plotter(approx_data)
+    return
+
+def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**kwargs):
+    """
+    Plotter routine for benchmark function.
+
+    **Parameters**:
+    *approx_data* [dict] whose labels are the lines labels, and data is
+                         a 2-column array with first column compression rate,
+                         second one is the approximation error associated.
+    *show* [bool]        whether the plot is shown or not
+    *plot_name* [str]    plot output location, if empty string, no plot
+    """
+    styles=['r+-','b*-','ko-','gh:','mh--']
+    fig=plt.figure()
+    xmax=1
+    ylim=[0.1,1]
+    k=0
+    print(approx_data)
+    plt.yscale('log')
+    plt.xlabel("Compresion rate (%)")
+    plt.ylabel('Relative Error')
+    plt.grid()
+
+    for label, data in approx_data.items():
+        print(label)
+        err=data[0,:]
+        comp_rate=100*data[1,:]
+        xmax=max(xmax,comp_rate[-1]+5)
+        ylim=[min(ylim[0],err[-1]),min(ylim[1],err[0])]
+        ax=fig.add_subplot(111)
+        ax.set_xlim(0,xmax)
+        ax.set_ylim(ylim)
+        print(xmax,ylim,comp_rate, err)
+        plt.plot(comp_rate, err , styles[k], label=label)
+
+        k+=1
+    #saving plot as pdf
+    plt.legend()
+    plt.show()
+    fig.savefig(plot_name)
+    plt.close()
 
 
-        if  output_variable_file=='yes':
-            hf.save(Result,output_variable_name)
 
 
 #------------------------------------------------------------------------------
@@ -372,3 +372,11 @@ def testf(test_function, shape, dim, domain ):
     X,F= Function._Generator2(equation)
 
     return X,F
+
+
+if __name__ == '__main__':
+    decomp_methods=["RPOD","HO_POD","SHO_POD","STHO_SVD"]
+    solver=["trapezes","trapezes","trapezes","SVD"]
+    benchmark_multivariable(decomp_methods, solver ,shape=[65,35,18,27],
+                                  test_function=1, plot=True,output_decomp='',
+                                  plot_name='output/approx_benchmark.pdf')

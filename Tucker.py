@@ -8,48 +8,39 @@ from tensor_descriptor_class import TensorDescriptor
 from high_order_decomposition_method_functions import multilinear_multiplication
 from full_format_class import FullFormat
 import pickle
+import numpy as np
+
 class Tucker(TensorDescriptor):
     """
     This class is created to storage a decomposed Tensor in the Tucker
-    Format, this is code is based in ttensor code from pytensor code package.\n 
+    Format, this is code is based in ttensor code from pytensor code package.\n
     **Attributes**\n
-         **shape**: array like, with the numbers of elements that each 1-rank 
+         **shape**: array like, with the numbers of elements that each 1-rank
         tensor is going to discretize each subspace of the full tensor. \n
-        **dim**: integer type, number that represent the n-rank tensor that is 
-        going to be represented. The value of dim must be coherent with the 
+        **dim**: integer type, number that represent the n-rank tensor that is
+        going to be represented. The value of dim must be coherent with the
         size of _tshape parameter. \n
-        
-        **core:** List type, in this list will be storage the core of the 
+
+        **core:** List type, in this list will be storage the core of the
         decomposed tensor.\n
-        
+
         **u:**List of the projection matrices in  each subspace.\n
-       
+
     **Tucker Format Definition**\n
     """
     core = None;
     u = None;
-#-----------------------------------------------------------------------------    
+#-----------------------------------------------------------------------------
     def __init__(self, core, uIn):
-        
-        
         #Handle if the uIn is not a list
         if(uIn.__class__ != list):
             uIn=[x for x in uIn]
-            #newuIn = [];
-            #for x in uIn:
-            #    newuIn.extend([x]);
-            #uIn = newuIn;
-           
-        #newuIn = []; 
-        #for i in range(0, len(uIn)):
-        #    newuIn.extend([uIn[i].copy()]);
-        #uIn = newuIn;
-        
+
         # check that each U is indeed a matrix
         for i in range(0,len(uIn)):
             if (len(uIn[i].shape) != 2):
                 raise ValueError("{0} is not a 2-D matrix!".format(uIn[i]));
-        
+
         # Size error checking
         k = core.shape;
         a="""Number of dims of Core and the number of matrices are different"""
@@ -57,15 +48,17 @@ class Tucker(TensorDescriptor):
             of columns of uIn[i]"""
         if (len(k) != len(uIn)):
             raise ValueError(a);
-        
+
         for i in range(0,len(uIn)):
             if (k[i] != len((uIn[i])[0])):
                 raise ValueError(b.format(i));
-                   
-         
+
+        self._dim = core.ndim
+
         self.core = core.copy();
+        self.rank = self.core.shape
         self.u = uIn;
-        
+
         #save the shape of the ttensor
         shape = [];
         for i in range(0, len(self.u)):
@@ -78,36 +71,82 @@ class Tucker(TensorDescriptor):
         for i in range(0, len(self.shape)):
             ret = ret * self.shape[i];
         return ret;
-#-----------------------------------------------------------------------------   
+#-----------------------------------------------------------------------------
     def dimsize(self):
         return len(self.u)
-#-----------------------------------------------------------------------------    
+#-----------------------------------------------------------------------------
     def copy(self):
         return Tucker(self.core, self.u);
-#-----------------------------------------------------------------------------        
+#-----------------------------------------------------------------------------
     def destructor(self):
         self.u=[]
         self.core=0
         self.shape=[]
-#-----------------------------------------------------------------------------    
+#-----------------------------------------------------------------------------
     def reconstruction(self):
-        """returns a FullFormat object that is represented by the 
+        """returns a FullFormat object that is represented by the
         tucker tensor"""
-    
+
         dim=len(self.u)
         Fresult=multilinear_multiplication(self.u,self.core,dim)
         tshape=Fresult.shape
         Result=FullFormat(Fresult,tshape,dim)
-    
+
         return Result
 #-----------------------------------------------------------------------------
-    
-#-----------------------------------------------------------------------------           
     def __str__(self):
         ret = "ttensor of size {0}\n".format(self.shape);
         ret += "Core = {0} \n".format(self.core.__str__());
         for i in range(0, len(self.u)):
             ret += "u[{0}] =\n{1}\n".format(i, self.u[i]);
-        
-        return ret; 
-    
+
+        return ret;
+
+    def memory_eval(self):
+        "Returns the number of floats required to store self"
+        mem=np.product(self.rank)
+        for i in range(self._dim):
+            mem+=self.shape[i]*self.rank[i]
+        return mem
+
+
+def tucker_error_data(T_tucker, T_full):
+    from numpy.linalg import norm
+    #We are going to calculate one average value of ranks
+    d=T_full.ndim
+    data_compression=[]
+    shape=T_full.shape
+    F_volume=np.product(shape)
+    rank=np.asarray(T_tucker.rank)
+    maxrank=max(rank)
+    error=[]
+    comp_rate=[]
+
+    r=np.zeros(d)
+    for i in range(maxrank):
+        r=np.minimum(rank,r+1)
+        print(r)
+        T_trunc=truncate(T_tucker,r)
+        comp_rate.append(T_trunc.memory_eval()/F_volume)
+
+        T_approx=T_trunc.reconstruction().tondarray()
+
+        actual_error=norm(T_full-T_approx)/norm(T_full)
+        error.append(actual_error)
+
+    return np.asarray(error), np.asarray(comp_rate)
+
+
+def truncate(T_tucker,trunc_rank):
+    """Returns a truncated rank tucker tensor"""
+    r=np.minimum(trunc_rank,T_tucker.rank)
+    d=T_tucker._dim
+    core_shape=''
+    modes=[]
+    for j in range(d):
+        modes.append(T_tucker.u[j][:,:r[j]])
+        core_shape+=":"+str(r[j])
+        if j<(d-1):
+            core_shape+=','
+    core=eval("T_tucker.core["+core_shape+"]")
+    return Tucker(core,modes)

@@ -196,11 +196,7 @@ def plot_error_tucker(A,F,number_plot=1,label_line="",
     plt.legend()
 
     #saving to pdf
-    pp = PdfPages(output_variable_name+'.pdf')
-    plt.savefig(pp, format='pdf')
-    pp.savefig()
-    pp.close()
-
+    plt.savefig(output_variable_name)
 
 def actual_weight(dim, projections, core):
    projections_weight=0
