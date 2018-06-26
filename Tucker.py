@@ -125,7 +125,7 @@ def tucker_error_data(T_tucker, T_full):
     r=np.zeros(d)
     for i in range(maxrank):
         r=np.minimum(rank,r+1)
-        print(r)
+        # print(r)
         T_trunc=truncate(T_tucker,r)
         comp_rate.append(T_trunc.memory_eval()/F_volume)
 

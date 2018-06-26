@@ -8,6 +8,7 @@ import tensor_creator
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.sparse import diags
+import time
 
 import high_order_decomposition_method_functions as hf
 from pgd_main import PGD
@@ -164,6 +165,8 @@ def benchmark_multivariable(list_reduction_method, integration_method,
         if plot_name!='':
             plot=True
 
+    X,F=testf(test_function, shape, dim, domain)
+
     for ii in range(number_of_methods):
         reduction_method=list_reduction_method[ii]
         integration_method=list_integration_method[ii]
@@ -212,7 +215,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 integration_method="SVD"
 #########################END OF TESTS##########################################
 
-        X,F=testf(test_function, shape, dim, domain)
+
 
         if integration_method=='SVD':
             X=[np.ones(x) for x in shape]
@@ -220,6 +223,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
         elif integration_method=='trapezes':
             M=hf.mass_matrices_creator(X)
 
+        t=time.time()
         if reduction_method=='PGD':
             Result=PGD(M,F)
         elif reduction_method=='HO_POD':
@@ -232,6 +236,8 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=STHOSVD(F)
         elif reduction_method=='RPOD':
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=1e-8)
+        t=time.time()-t
+        print("{0} \t {1:.2f} s".format(reduction_method,t))
 
         if plot:
             if type(Result)==Tucker.Tucker:
@@ -248,7 +254,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             pass
 
     if plot:
-        benchmark_plotter(approx_data)
+        benchmark_plotter(approx_data, show_plot)
     return
 
 def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**kwargs):
@@ -267,14 +273,12 @@ def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**
     xmax=1
     ylim=[0.1,1]
     k=0
-    print(approx_data)
     plt.yscale('log')
     plt.xlabel("Compresion rate (%)")
     plt.ylabel('Relative Error')
     plt.grid()
 
     for label, data in approx_data.items():
-        print(label)
         err=data[0,:]
         comp_rate=100*data[1,:]
         xmax=max(xmax,comp_rate[-1]+5)
@@ -282,13 +286,13 @@ def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**
         ax=fig.add_subplot(111)
         ax.set_xlim(0,xmax)
         ax.set_ylim(ylim)
-        print(xmax,ylim,comp_rate, err)
         plt.plot(comp_rate, err , styles[k], label=label)
 
         k+=1
     #saving plot as pdf
     plt.legend()
-    plt.show()
+    if show:
+        plt.show()
     fig.savefig(plot_name)
     plt.close()
 
@@ -375,8 +379,9 @@ def testf(test_function, shape, dim, domain ):
 
 
 if __name__ == '__main__':
-    decomp_methods=["RPOD","HO_POD","SHO_POD","STHO_SVD"]
-    solver=["trapezes","trapezes","trapezes","SVD"]
-    benchmark_multivariable(decomp_methods, solver ,shape=[65,35,18,27],
-                                  test_function=1, plot=True,output_decomp='',
-                                  plot_name='output/approx_benchmark.pdf')
+    decomp_methods=["RPOD","HO_POD","SHO_POD","PGD"]
+    solver=["trapezes","trapezes","trapezes",'trapezes']
+    benchmark_multivariable(decomp_methods, solver ,shape=[20,15,18,7],
+                            test_function=1, plot=False,output_decomp='',
+                            plot_name='output/approx_benchmark.pdf')
+                            # plot_name='')
