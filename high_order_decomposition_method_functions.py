@@ -16,24 +16,24 @@ import pickle
 def multilinear_multiplication(phi,F,dim):
     """
     **Parameters**:_ \n
-    
+
     phi= Is a list with n-array type elements as the elements.\n \n
     F  = 2d Array type (unfolded Tensor expresed as a matrix). \n
-    dim = tuple, list or array type that its value must be coherent with  
+    dim = tuple, list or array type that its value must be coherent with
     the number of elements of phi. \n \n
     **Return**:_ \n
-    
+
     W= Array type element, result of an unfolded multilinear multiplication. \n
-    
+
     **Definition** \n
     In general the *unfolding multilinear multiplication* is given by: \n
     :math:`[(\phi_{1},\phi_{2},...,\phi_{n}).F]^{n}=\phi_{n}F^{n}
-    (\phi_{1} \otimes ... \otimes \phi_{m-1} \otimes \phi_{m+1} \otimes ... 
+    (\phi_{1} \otimes ... \otimes \phi_{m-1} \otimes \phi_{m+1} \otimes ...
     \otimes \phi_{d})^{T}` \n
     where
     :math:`\otimes` represents the Kronecker product.
-        
-    
+
+
     """
     W=F
     formeW=[x for x in F.shape]
@@ -46,7 +46,7 @@ def multilinear_multiplication(phi,F,dim):
        formeW=actual_dimention
        W=np.reshape(W,formeW)
     return W.T
-""" 
+"""
 #optional algorithm for multilinear_multiplication
 def multilinear_multiplication(PHI, F, dim):
     index=finding_biggest_mode(PHI)
@@ -58,7 +58,7 @@ def multilinear_multiplication(PHI, F, dim):
     for i in range(1,dim-1):
         aux=np.kron(aux,PHI2[i+1])
     aux=aux.T
-    
+
     MnX=PHI2[0]@Fmat
     W=MnX@aux
     forme_W=new_forme_W(PHI2)
@@ -68,29 +68,57 @@ def multilinear_multiplication(PHI, F, dim):
 
 """
 
+def kathri_rao(A,B):
+    """
+    kathri_rao product of matrices A (IxK) and B (JxK) which result in a matrix
+    of size (IJxK). See Kolda and Balder definition.
+    """
+    Ka=A.shape[1]
+    Kb=B.shape[1]
+    if Ka==Kb:
+        K=Ka
+    else:
+        raise AttributeError("A.shape[1]= {0} != {1} B.shape[1], Kathri-rao\
+                             product is not allowed".format(Ka,Kb))
+    return np.transpose(np.stack([np.kron(A[:,i],B[:,i]) for i in range(K) ]))
+
+def multi_kathri_rao(matrices):
+    """Computes the kr product of all matrices in the list"""
+
+    if type(matrices)==np.ndarray:
+        return matrices
+    if len(matrices)==1:
+        return matrices[1]
+
+    prod=np.ones((1,matrices[0].shape[1]))
+    for M in matrices:
+        prod=kathri_rao(prod,M)
+
+    return prod
+
 #------------------------------------------------------------------------------
 def matricize(F,dim,i):
     """
-    Returns the tensor F rearanged as a matrix with the *"i"* dimention as 
-    the new principal (order 0) order. In other words it returns the unfolded 
-    tensor as a matrix with the "i" dimention as the new "0" dimention.  \n 
+    Returns the tensor F rearanged as a matrix with the *"i"* dimention as
+    the new principal (order 0) order. In other words it returns the unfolded
+    tensor as a matrix with the "i" dimention as the new "0" dimention.  \n
     **Parameters**\n
     F= array type of n dimentions.\n
     dim= number of dimentions of the tensor F.\n
     i= dimention that is going to be taken as the principal to matricize.
     """
-   
+
     aux=1
     F1=np.moveaxis(F,i,0)
     lista1=F1.shape
     for j in range(1,dim):
         #aux will return the multiplication of dim-1 elements of F1.shape
-        
+
         aux=aux*lista1[j]
     F1=F1.reshape((lista1[0],aux))
     return F1
 #------------------------------------------------------------------------------
-    
+
 def  matricize_mass_matrix(dim,i,M):
     """
     Returns the equivalent mass matrices of a matricized tensor.\n
@@ -130,16 +158,16 @@ def  matricize_mass_matrix(dim,i,M):
         Mt=scipy.sparse.kron(Mt,M2[var],format='dia')
         var=var+1
     return Mx,Mt
-#------------------------------------------------------------------------------        
+#------------------------------------------------------------------------------
 def finding_biggest_mode(PHI):
     """
     Returns the index of the maximal value in a list
     """
-    
+
     PHI_shape=[np.size(i) for i in PHI]
     index, value = max(enumerate(PHI_shape), key=operator.itemgetter(1))
-    
-    return index 
+
+    return index
 #------------------------------------------------------------------------------
 
 def rearrange(PHI,index):
@@ -151,15 +179,15 @@ def rearrange(PHI,index):
          raise ValueError("index is higher than number of dimentions");
      PHI.insert(0,PHI.pop(index))
      return PHI
- 
+
 #------------------------------------------------------------------------------
-          
-    
+
+
 def list_transpose(phi):
     """
     Parameter:
         phi: list with n-array matrices as elements.
-        
+
     Return:
         phit: list with n-array transposed matrices of input parameter.
     """
@@ -174,17 +202,17 @@ def new_forme_W(PHI):
     type decomposition.
     """
     forme_W=[i.shape[0] for i in PHI]
-    
+
     return forme_W
 #------------------------------------------------------------------------------
 def final_arrange(W,index):
     """
-    Returns an array with the *"index"* dimention as the firs dimention of 
+    Returns an array with the *"index"* dimention as the firs dimention of
     the array.
     """
     W=np.moveaxis(W,0,index)
-    
-    return W 
+
+    return W
 #------------------------------------------------------------------------------
 def integrationphi(PHIT,M):
     a="""
@@ -194,24 +222,24 @@ def integrationphi(PHIT,M):
     if len(PHIT)!= len(M):
         raise ValueError(print(a))
     integrated_phi=[phit@m for (phit,m) in zip(PHIT,M)]
-    
+
     return integrated_phi
 #------------------------------------------------------------------------------
-    
+
 def mass_matrices_creator(X):
-    
+
     """
-    Returns a list of   sparse diagonals matrices with the integration points  
-    for the trapezoidal integration method (mass matrices) from a list of  
+    Returns a list of   sparse diagonals matrices with the integration points
+    for the trapezoidal integration method (mass matrices) from a list of
     cartesian grid points.\n
-    
+
     **Parameter**\n
     X: list of Cartesian grids vectors. \n
-    
+
     **Return**
-    M:list of mass matrices (integration points for trapeze integration method) 
-    as sparse.diag type elements. \n 
-    
+    M:list of mass matrices (integration points for trapeze integration method)
+    as sparse.diag type elements. \n
+
     **Example**
     import high_order_decomposition_method_functions as hf \n
     import numpy as np \n
@@ -231,41 +259,41 @@ def mass_matrices_creator(X):
         <4x4 sparse matrix of type '<class 'numpy.float64'>' \n
         with 4 stored elements (1 diagonals) in DIAgonal format>] \n
     """
-    
+
     dim=len(X)
     tshape=[]
-    
+
     a="""X's elements must be either numpy.array or list type elements"""
     b="""X's elements must be vectors"""
-    
+
     for i in range(dim):
         if type(X[i])==list:
             X[i]=np.array(X[i])
-        aux=np.array([0])    
+        aux=np.array([0])
         if type(X[i])!= type(aux):
             raise ValueError(a)
         if (len(X[i].shape)>1):
             raise ValueError(b)
-            
+
         aux=X[i].size
         tshape.append(aux)
     M=integrationgrid.IntegrationGrid(X,dim,tshape)
     M=M.IntegrationGridCreation()
     for i in range (dim):
-        M[i]=diags(M[i])    
- 
-    
+        M[i]=diags(M[i])
+
+
     return M
 #------------------------------------------------------------------------------
-    
-def orth(dim,Xgrid,R,C): 
+
+def orth(dim,Xgrid,R,C):
     """
     This function serves to verify the orthogonality in L_{2} between the modes
     in the canonical class.
     """
-       
+
     for i in range(dim):
-            
+
             Orth=orthogonality_verification(Xgrid[i],R[i],C._U[i])
             Verification=1
             for j in range(C.get_rank()):
@@ -275,7 +303,7 @@ def orth(dim,Xgrid,R,C):
                     print('Variable of failure= U(',i,')')
                     print('Value of the scalar product of failure=', Orth[j])
                     Verification=0
-    return Verification 
+    return Verification
 
 def orthogonality_verification(w,R,RR):
     """
@@ -283,29 +311,29 @@ def orthogonality_verification(w,R,RR):
     """
     aux=np.transpose(np.multiply(w,RR))
     Orth=np.dot(R,aux)
-    return Orth  
+    return Orth
 #------------------------------------------------------------------------------
-    
+
 def load(file_name):
     """
-    This function will load a file (variable, classe object, etc) in pickle 
+    This function will load a file (variable, classe object, etc) in pickle
     format in to its python orinal variable format.\n
     **Parameters**:\n
     file_name: string type, containg the name of the file to load.\n
-    directory_path= is the adreess of the folder where the desired file is 
+    directory_path= is the adreess of the folder where the desired file is
     located.
     **Returns**\n
-    
-    Variable: could be an python variable, class object, list, ndarray 
+
+    Variable: could be an python variable, class object, list, ndarray
     contained in the binary file. \n
-    
+
     **Example** \n
     import high_order_decomposition_method_functions as hf  \n
 
     FF=hf.load('example_file')
-    
+
     """
-    
+
     if type(file_name) != str:
         file_name_error="""
         The parameter file_name must be a string type variable
@@ -318,26 +346,26 @@ def load(file_name):
 #-----------------------------------------------------------------------------
 def save(variable, file_name):
     """
-        This function will save a python variable (list, ndarray, classe  
+        This function will save a python variable (list, ndarray, classe
     object, etc)  in a pickle file format .\n
         **Parameters**:\n
             Variable= list, ndarray, class object etc.\n
-            file_name= String type. Name of the file that is going to be 
+            file_name= String type. Name of the file that is going to be
             storage. \n
-            directory_path=string type. Is the directory adress if the file 
+            directory_path=string type. Is the directory adress if the file
             is going to be saved in a desired folder.
         **Returns**:\n
-            File= Binary file that will reproduce the object class when 
+            File= Binary file that will reproduce the object class when
             reloaded. \n
     **Example**\n
     import high_order_decomposition_method_functions as hf
 
     hf.save(F,'example_file') \n
-    
+
     Binary file saved as'example_file'
     """
-   
-        
+
+
     if type(file_name)!=str:
         raise ValueError('Variable file_name must be a string')
     pickle_out=open(file_name,"wb")
@@ -357,3 +385,14 @@ def unit_mass_matrix_creator(Data):
         massi=diags(massi)
         mass.append(massi)
     return mass
+
+
+if __name__=="__main__":
+    A=np.random.rand(3,4)
+    B=np.random.rand(5,4)
+    C=np.random.rand(2,4)
+    kr=kathri_rao(A,B)
+    print(kr.shape)
+    print(kr)
+    print("multiple kathri rao")
+    print(multi_kathri_rao([A,B,C]))
