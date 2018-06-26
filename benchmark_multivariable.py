@@ -245,7 +245,18 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             elif type(Result)==recursive_tensor:
                 approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
             elif type(Result)==CanonicalForme:
-                raise NotImplementedError("Canonical plot V2 is not implemented yet")
+                t=time.time()
+                for i in range(10):
+                    Result.to_full_quick()
+                t=time.time()-t
+                print("t_new=",t)
+                t=time.time()
+                for i in range(10):
+                    Result.reconstruction()
+                t=time.time()-t
+                print("t_old=",t)
+                print("diff=",np.linalg.norm(Result.to_full_quick()-Result.reconstruction()))
+                # raise NotImplementedError("Canonical plot V2 is not implemented yet")
                 # plot_error_canonical(Result,F, number_plot,label_line)
         try:
             if output_decomp!='':
@@ -381,7 +392,7 @@ def testf(test_function, shape, dim, domain ):
 if __name__ == '__main__':
     decomp_methods=["RPOD","HO_POD","SHO_POD","PGD"]
     solver=["trapezes","trapezes","trapezes",'trapezes']
-    benchmark_multivariable(decomp_methods, solver ,shape=[20,15,18,7],
+    benchmark_multivariable(decomp_methods, solver ,shape=[50,15,18,7],
                             test_function=1, plot=False,output_decomp='',
                             plot_name='output/approx_benchmark.pdf')
                             # plot_name='')
