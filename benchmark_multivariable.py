@@ -21,13 +21,13 @@ from plot_error_canonical import plot_error_canonical
 from plot_error_tucker import plot_error_tucker
 from RPOD import rpod, recursive_tensor, plot_rpod_approx,rpod_error_data
 import Tucker
-from Canonical import CanonicalForme
+import Canonical
 from plot_error_tt import plot_error_tt
 
 def benchmark_multivariable(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,
                               output_decomp=[],
-                              plot_name='output/approx_benchmark'):
+                              plot_name='output/approx_benchmark', tol=1e-5):
 
 
 
@@ -225,11 +225,11 @@ def benchmark_multivariable(list_reduction_method, integration_method,
 
         t=time.time()
         if reduction_method=='PGD':
-            Result=PGD(M,F)
+            Result=PGD(M,F,epenri=tol)
         elif reduction_method=='HO_POD':
-            Result=HOPOD(F,M)
+            Result=HOPOD(F,M,tol=tol)
         elif reduction_method=='SHO_POD':
-            Result=SHOPOD(F,M)
+            Result=SHOPOD(F,M,tol=tol)
         elif reduction_method=='THO_SVD':
             Result=THOSVD(F)
         elif reduction_method=='STHO_SVD':
@@ -244,20 +244,10 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 approx_data[reduction_method]=np.stack(Tucker.tucker_error_data(Result,F))
             elif type(Result)==recursive_tensor:
                 approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
-            elif type(Result)==CanonicalForme:
-                t=time.time()
-                for i in range(10):
-                    Result.to_full_quick()
-                t=time.time()-t
-                print("t_new=",t)
-                t=time.time()
-                for i in range(10):
-                    Result.reconstruction()
-                t=time.time()-t
-                print("t_old=",t)
-                print("diff=",np.linalg.norm(Result.to_full_quick()-Result.reconstruction()))
-                # raise NotImplementedError("Canonical plot V2 is not implemented yet")
+            elif type(Result)==Canonical.CanonicalForme:
+                approx_data[reduction_method]=np.stack(Canonical.canonical_error_data(Result,F))
                 # plot_error_canonical(Result,F, number_plot,label_line)
+                # raise NotImplementedError("Canonical plot V2 is not implemented yet")
         try:
             if output_decomp!='':
                 hf.save(Result,output_decomp)
@@ -392,7 +382,7 @@ def testf(test_function, shape, dim, domain ):
 if __name__ == '__main__':
     decomp_methods=["RPOD","HO_POD","SHO_POD","PGD"]
     solver=["trapezes","trapezes","trapezes",'trapezes']
-    benchmark_multivariable(decomp_methods, solver ,shape=[50,15,18,7],
-                            test_function=1, plot=False,output_decomp='',
-                            plot_name='output/approx_benchmark.pdf')
+    benchmark_multivariable(decomp_methods, solver ,shape=[100,15,18,7],
+                            test_function=1, plot=True,output_decomp='',
+                            plot_name='output/approx_benchmark.pdf',tol=1e-10)
                             # plot_name='')
