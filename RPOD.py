@@ -158,12 +158,23 @@ def eval_rpod_tree(tree: RpodTree, shape, cutoff_tol=1e-16):
 
 def eval_rpod_rec_tree(tree: RpodTree, cutoff_tol=1e-16):
     if tree.is_last:
+        #naive and presumably slow version
         child = tree.children[0]
         res = child.eval()
         for child in tree.children[1:]:
             if child.branch_weight>cutoff_tol:
                 res = res + child.eval()
         return res
+        # THis one is left here as an example to improve efficiecy. not working, the
+        # leaves themselves should be changed
+        # firstborn=tree.children[0]
+        # U = np.expand_dims(firstborn.u,axis=1)
+        # V = np.expand_dims(firstborn.sigma*firstborn.v,axis=1)
+        # for child in tree.children[1:]:
+        #     if child.branch_weight>cutoff_tol:
+        #         U=np.concatenate([U,np.expand_dims(child.u,axis=1)],axis=1)
+        #         V=np.concatenate([V,np.expand_dims(child.sigma*child.v,axis=1)],axis=1)
+        # return np.matmul(U,V.T)
     else:
         child = tree.children[0]
         res = np.kron(child.u, eval_rpod_rec_tree(child,cutoff_tol))

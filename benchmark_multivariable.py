@@ -238,7 +238,11 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=1e-8)
         t=time.time()-t
         print("{0} \t {1:.2f} s".format(reduction_method,t))
+        t=time.time()
         approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
+        t=time.time()-t
+        print("Reconstruction time \t {:.2f} s".format(t))
+        print(approx_data)
         return
         if plot:
             if type(Result)==Tucker.Tucker:
@@ -412,7 +416,7 @@ def testf(test_function, shape, dim, domain ):
 if __name__ == '__main__':
     decomp_methods=["RPOD"]#,"HO_POD","SHO_POD"]#,"PGD"]
     solver=["trapezes"]#,"trapezes","trapezes"]#,'trapezes']
-    benchmark_multivariable(decomp_methods, solver ,shape=[64,64,64,64],
+    benchmark_multivariable(decomp_methods, solver ,shape=[164,64,64,64],
                             test_function=2, plot=False,output_decomp='',
                             plot_name='output/approx_benchmark.pdf',tol=1e-16)
                             # plot_name='')
