@@ -119,7 +119,7 @@ def truncate_POD(Lambda,tol,rank,U):
     i=0
     stop_criteria=1
     while (stop_criteria>tol) & (i<imax) :
-       stop_criteria=norm(Lambda[i]/Lambda1)
+       stop_criteria=abs(Lambda[i]/Lambda1)
        i+=1
     Lambda=Lambda[:i]
     U=U[::,:i]

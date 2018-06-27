@@ -225,7 +225,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
 
         t=time.time()
         if reduction_method=='PGD':
-            Result=PGD(M,F,epenri=tol)
+            Result=PGD(M,F,epenri=np.sqrt(tol))
         elif reduction_method=='HO_POD':
             Result=HOPOD(F,M,tol=tol)
         elif reduction_method=='SHO_POD':
@@ -238,7 +238,8 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=1e-8)
         t=time.time()-t
         print("{0} \t {1:.2f} s".format(reduction_method,t))
-
+        approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
+        return
         if plot:
             if type(Result)==Tucker.Tucker:
                 approx_data[reduction_method]=np.stack(Tucker.tucker_error_data(Result,F))
@@ -272,7 +273,7 @@ def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**
     styles=['r+-','b*-','ko-','gh:','mh--']
     fig=plt.figure()
     xmax=1
-    ylim=[0.1,1]
+    ylim=[0.1,0.1]
     k=0
     plt.yscale('log')
     plt.xlabel("Compresion rate (%)")
@@ -282,8 +283,8 @@ def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**
     for label, data in approx_data.items():
         err=data[0,:]
         comp_rate=100*data[1,:]
-        xmax=max(xmax,comp_rate[-1]+5)
-        ylim=[min(ylim[0],err[-1]),min(ylim[1],err[0])]
+        xmax=max(xmax,comp_rate[-1])
+        ylim=[min(ylim[0],err[-1]),max(ylim[1],err[0])]
         ax=fig.add_subplot(111)
         ax.set_xlim(0,xmax)
         ax.set_ylim(ylim)
@@ -301,6 +302,39 @@ def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**
 
 
 #------------------------------------------------------------------------------
+def testg(test_function, shape, dim, domain ):
+    """
+    This function propose several models of function to be chosen to build a
+    multivariable tensor (synthetic data) , the output
+    depends only on the function selected (1,2..) and the number of dimention
+    to work with.\n
+    **Parameters**\n
+    test_function: integer type, describes the format of the function selected:
+    \n
+    Formule 1 \n
+    :math:`1\(1+X_{1}^{2}+X_{2}^{2}+...+X_{n}^{2})`
+    \n
+    Formule 2 \
+    :math:`1\(1+X_{1}^{2}X_{2}^{2}...X_{n}^{2})`
+    \n
+    Formule 3 \n
+    :math:`\sin(\sqrt {X_{1}^{2}+X_{2}^{2}+...+X_{n}^{2}})`
+    \n
+    **shape**: array or list type number of elements to be taken
+    in each subspace. \n
+    **dim**:Integer type. Number of dimentions.
+    """
+
+    Function=tensor_creator.TensorCreator()
+    #Creating the variables required for TensorCreator from the data
+    Function.lowerlimit=np.ones(dim)*domain[0]
+    Function.upperlimit=np.ones(dim)*domain[1]
+    Function.tshape=shape
+    print(test_function)
+    X,F= Function._Generator(test_function)
+
+    return X,F
+
 def testf(test_function, shape, dim, domain ):
     """
     This function propose several models of function to be chosen to build a
@@ -324,7 +358,12 @@ def testf(test_function, shape, dim, domain ):
     **dim**:Integer type. Number of dimentions.
     """
     test_function_possibilities=[1,2,3]
-
+    if test_function not in test_function_possibilities:
+        note="""
+        Only 3 multivariable test functions are defined, please introduce
+        introduce a valid value.
+        """
+        raise ValueError(note)
     if test_function==1:
         equation='(1'
         for i in range(dim):
@@ -335,8 +374,7 @@ def testf(test_function, shape, dim, domain ):
                aux='+V['+str(i)+']**2)'
                equation=equation+aux
         equation='1/'+equation
-
-    if test_function==2:
+    elif test_function==2:
         equation='np.sin(np.sqrt('
         for i in range(dim):
             if i<dim-1:
@@ -346,8 +384,7 @@ def testf(test_function, shape, dim, domain ):
                 aux='V['+str(i)+']**2)'
                 equation=equation+aux
         equation=equation+')'
-
-    if test_function==3:
+    elif test_function==3:
         equation=''
         for i in range(dim):
             if i<dim-1:
@@ -356,13 +393,6 @@ def testf(test_function, shape, dim, domain ):
             else:
                 aux='V['+str(i)+']'
                 equation=equation+aux
-
-    if test_function not in test_function_possibilities:
-        note="""
-        Only 3 multivariable test functions are defined, please introduce
-        introduce a valid value.
-        """
-        raise ValueError(note)
 
 
     Function=tensor_creator.TensorCreator()
@@ -380,9 +410,9 @@ def testf(test_function, shape, dim, domain ):
 
 
 if __name__ == '__main__':
-    decomp_methods=["RPOD","HO_POD","SHO_POD","PGD"]
-    solver=["trapezes","trapezes","trapezes",'trapezes']
-    benchmark_multivariable(decomp_methods, solver ,shape=[100,15,18,7],
-                            test_function=1, plot=True,output_decomp='',
-                            plot_name='output/approx_benchmark.pdf',tol=1e-10)
+    decomp_methods=["RPOD"]#,"HO_POD","SHO_POD"]#,"PGD"]
+    solver=["trapezes"]#,"trapezes","trapezes"]#,'trapezes']
+    benchmark_multivariable(decomp_methods, solver ,shape=[64,64,64,64],
+                            test_function=2, plot=False,output_decomp='',
+                            plot_name='output/approx_benchmark.pdf',tol=1e-16)
                             # plot_name='')

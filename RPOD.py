@@ -194,6 +194,7 @@ def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8):
     comp_rate=[]
     # min_exp=np.log10(min_tol)
     # max_exp=np.log10(max_tol)
+    norm_T=np.linalg.norm(T_full)
     for tol in np.logspace(np.log10(min_tol), np.log10(max_tol)):
     # for tol in np.logspace(min_exp, max_exp):
         loc_rate=rpod_tree_size(T_rec.tree,T_rec._tshape,tol)
@@ -201,7 +202,7 @@ def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8):
             pass
         elif loc_rate==comp_rate[-1]:
             continue
-        err.append(np.linalg.norm(T_rec.to_full(tol)-T_full))
+        err.append(np.linalg.norm(T_rec.to_full(tol)-T_full)/norm_T)
         comp_rate.append(loc_rate)
 
     return np.asarray(err), np.asarray(comp_rate)
@@ -244,5 +245,5 @@ def plot_rpod_approx(T_rec, T_full, out_file='RPOD_approx_error', min_tol=1., ma
 if __name__=='__main__':
     from benchmark_multivariable import benchmark_multivariable
     benchmark_multivariable(["RPOD"], ['trapezes'],shape=[20,20,20],
-                                  test_function=2, plot=True,output_decomp='',
+                                  test_function=2, plot=False,output_decomp='',
                                   plot_name='output/approx_test_rpod.pdf')

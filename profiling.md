@@ -2,7 +2,7 @@
 
 Three ways avaible to do so:
   - gprof2dot
-  > python3 -m profile -o profiling/output.pstats
+  > python3 -m profile -o profiling/output.pstats benchmark_multivariable.py
   > python3 ../gprof2dot.py -f pstats profiling/output.pstats | dot -Tsvg -o profiling/call_trace.svg
 
   efficient tool, generates a tree view of calls
