@@ -41,7 +41,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
     **Parameters** \n
 
     reduction_method--> string type or list with string type elements.  \n
-    Options expected: 'PGD','THO_SVD','STHO_SVD','HO_POD',TT_SVD or 'SHO_POD'. 
+    Options expected: 'PGD','THO_SVD','STHO_SVD','HO_POD',TT_SVD or 'SHO_POD'.
     Example= 'PGD'     \n
     If an evaluation to compare two differents methods is wanted, this variable
     should be introduced as a list, with the methods to evaluate as the
@@ -195,16 +195,16 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 """
                 print(note_print1)
                 integration_method='SVD'
-        
+
         if  reduction_method=='TT_SVD':
-             if integration_method != "SVD":   
+             if integration_method != "SVD":
                 note_print1="""
                 For TT_SVD reduction method, integration method must be 'SVD',
                 this change is automatically applied.
                 """
                 print(note_print1)
                 integration_method='SVD'
-                
+
         if reduction_method=="STHO_SVD":
             if integration_method != "SVD":
                 note_print2="""
@@ -236,14 +236,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=STHOSVD(F)
         elif reduction_method=='RPOD':
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=1e-8)
-        t=time.time()-t
-        print("{0} \t {1:.2f} s".format(reduction_method,t))
-        t=time.time()
-        approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
-        t=time.time()-t
-        print("Reconstruction time \t {:.2f} s".format(t))
-        print(approx_data)
-        return
+    
         if plot:
             if type(Result)==Tucker.Tucker:
                 approx_data[reduction_method]=np.stack(Tucker.tucker_error_data(Result,F))
@@ -414,9 +407,9 @@ def testf(test_function, shape, dim, domain ):
 
 
 if __name__ == '__main__':
-    decomp_methods=["RPOD"]#,"HO_POD","SHO_POD"]#,"PGD"]
-    solver=["trapezes"]#,"trapezes","trapezes"]#,'trapezes']
-    benchmark_multivariable(decomp_methods, solver ,shape=[164,64,64,64],
-                            test_function=2, plot=False,output_decomp='',
+    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]#,"PGD"]
+    solver=["trapezes","trapezes","trapezes","SVD"]#,'trapezes']
+    benchmark_multivariable(decomp_methods, solver ,shape=[32,32,32,32],
+                            test_function=2, plot=True,output_decomp='',
                             plot_name='output/approx_benchmark.pdf',tol=1e-16)
                             # plot_name='')
