@@ -81,7 +81,7 @@ def PGD(M,F, epenri=1e-12, maxfix=15):
     C._U=[x[1:,::] for x in C._U]
     return C
 
-def fixed_point(M,tshape,U,F,z,r,maxfix):
+def fixed_point(M,tshape,U,F,z,r,max_iter):
     """
     This function calculates the n mode for each iteration in the
     enrichment loop for the PGD method. The definition of each variable
@@ -103,6 +103,8 @@ def fixed_point(M,tshape,U,F,z,r,maxfix):
     if it has converged.
     """
     dim=np.size(tshape)
+    # @TODO @Diego Replace this useless call to class, with use of rank ones
+    # tensors in canonical format. Much clearer
     New_Solution=IterationSolution(tshape,dim)
     New_Solution._current_solution_initialization()
     R=New_Solution.R
@@ -110,32 +112,14 @@ def fixed_point(M,tshape,U,F,z,r,maxfix):
 
     Old_Solution=New_Solution
     k=0
-    eppf=1e-8
+    eppf=1e-8  # @TODO @Diego Variable naming should say what it does (without comment)
     epsilon=1
-    itmax=maxfix
 
-    #Eliminate the commentary if the impresion in screen about the
-    #the information of convergence at each iteration is desired
-    """
-    if r==1:
-
-        o='''Number of iterations in fix point routine for each enrichment'''
-        g='''-------------------------------------------------------------'''
-        print(o)
-        print(g)
-    """
-    while ((epsilon>=eppf) & (k<itmax)):
-
+    while ((epsilon>=eppf) & (k<max_iter)):
         k=k+1
-
         Old_Solution=R[dim-1]
-        Gamma=[]
-        Alpha=np.zeros(dim)
-
-
 
         for i in range(dim):
-
             Alpha=alpha(R,M,i,dim)
             Gamma=gamma(R,F,M,i,dim)
             Betha=betha(M,R,U,i,dim)
@@ -145,31 +129,19 @@ def fixed_point(M,tshape,U,F,z,r,maxfix):
             R[i]=(-aux+Gamma)/Alpha
 
             if (i<(dim-1)):
-
                 R[i]=R[i]/(norm(R[i]))
 
         epsilon=norm(R[dim-1]-Old_Solution)/norm(Old_Solution)
 
-
-        #Eliminate the comentary if the impresion in screen about the
-        #the information of convergence at each iteration is desired
-
-
-        """
-        if epsilon<eppf :
-            print('k(',r,')=',k)
-            print('convergence')
-
-        if k==itmax:
-            print('k(',r,')=',k)
-            print('No convergence')
-        """
+        # @TODO @Diego
+        # I don't see the point of having this z variable + it prevents more
+        # concise writing of enriching Canonical approx
         if k==itmax:
             z=z+1
-
-
     return  R,z
 
+# @TODO @Diego
+# This class is useless, please remove and rely on rank one tensors in canonical format
 class IterationSolution:
     def __init__(self,tshape,dim):
         self.R=[]
@@ -182,8 +154,9 @@ class IterationSolution:
 
 
 def alpha(R,M, i, dim):
-
-    """This function calculates the value of the
+    """
+    # @TODO @Diego This is a mathematical description, please document the function itself too
+    This function calculates the value of the
     :math:`\\alpha`
     variable in the fix point algorithm:  \n
 
@@ -191,8 +164,6 @@ def alpha(R,M, i, dim):
     {2}\prod_{i=s+1}^{d}(X_{i}^{k})^{2}`, which could be expressed also as: \n
     :math:`\\alpha^{s}=\prod_{i=1}^{s-1}\int_{\Omega_{i}}(X_{i}^{k+1})^
     {2}dx_{i}\prod_{i=s+1}^{d}\int_{\Omega_{i}}(X_{i}^{k})^{2}	dx_{i}`
-
-
     """
     R1=R[:]
     alpha=1
@@ -200,16 +171,18 @@ def alpha(R,M, i, dim):
     M1=M[:]
     M1[0],M1[i]=M1[i],M1[0]
 
+    # @TODO @Diego Thats a weird integral, I think you need to uniformize it
+    # with the rest of the code. Remove loop if possible
     for j in range(dim-1,0,-1):
-
-            R1[j]=np.multiply(R1[j],R1[j])
-            aux=R1[j]@M1[j]
-            alpha=alpha*aux
+        R1[j]=np.multiply(R1[j],R1[j])
+        aux=R1[j]@M1[j]
+        alpha=alpha*aux
     return alpha
 
 
 def gamma(R,F,M,i,dim):
     """
+    # @TODO @Diego This is a mathematical description, please document the function itself too
     This function will return the value of the
     :math:`gamma
     variable for each iteration in the fix poitn algorithm.
@@ -230,42 +203,38 @@ def gamma(R,F,M,i,dim):
         F2=F2@M1[j]
     return F2
 
+def beta(M,R,U,i,dim):
+    """
+    # @TODO @Diego This is a mathematical description, please document the function itself too
+    This function calculates the value of the
+    :math:`\\beta`
+    variable in the fix point algorithm:  \n
 
+    :math:`\\beta^{s}(j)=\int_{\Omega/\Omega_{s}}\prod_{i=1}^{s-1}(X_{i}^{k+1}
+    X_{i}^{j})\prod_{i=s+1}^{d}(X_{i}^{k}X_{i}^{j})`, which  could be expressed
+    as, \n
+    :math:`\\beta^{s}(j)=\prod_{i=1}^{s-1}\int_{\Omega}(X_{i}^{k+1}X_{i}^{j})
+    \prod_{i=s+1}^{d}\int_{\Omega_{s}}\prod_{i=s+1}^{d}(X_{i}^{k}
+    X_{i}^{j})dx_{i}`
+    """
+    M1=M[:]
+    M1[0],M1[i]=M1[i],M1[0]
+    U1=U[:]
+    U1[0],U1[i]=U1[i],U1[0]
+    R1=R[:]
+    R1[0],R1[i]=R1[i],R1[0]
 
-def betha(M,R,U,i,dim):
-
-     """
-     This function calculates the value of the
-     :math:`\\beta`
-     variable in the fix point algorithm:  \n
-
-     :math:`\\beta^{s}(j)=\int_{\Omega/\Omega_{s}}\prod_{i=1}^{s-1}(X_{i}^{k+1}
-     X_{i}^{j})\prod_{i=s+1}^{d}(X_{i}^{k}X_{i}^{j})`, which  could be expressed
-     as, \n
-     :math:`\\beta^{s}(j)=\prod_{i=1}^{s-1}\int_{\Omega}(X_{i}^{k+1}X_{i}^{j})
-     \prod_{i=s+1}^{d}\int_{\Omega_{s}}\prod_{i=s+1}^{d}(X_{i}^{k}
-     X_{i}^{j})dx_{i}`
-     """
-     M1=M[:]
-     M1[0],M1[i]=M1[i],M1[0]
-     U1=U[:]
-     U1[0],U1[i]=U1[i],U1[0]
-     R1=R[:]
-     R1[0],R1[i]=R1[i],R1[0]
-
-
-     Betha=1
-     for j in range(1,dim):
-
-         aux2=np.multiply(U1[j],R1[j])
-         aux2=aux2@M1[j]
-         Betha=Betha*aux2
-
-
-     return Betha
+    #@TODO improve this by removing loop (use Kronecker and matmul)
+    Betha=1
+    for j in range(1,dim):
+        aux2=np.multiply(U1[j],R1[j])
+        aux2=aux2@M1[j]
+        Betha=Betha*aux2
+    return Betha
 
 if __name__=="__main__":
-
+    # @TODO @Diego This is a simple copy paste of old files, please write a Simple
+    # test for PGD
     tshape=np.array([5,4,8])
     dim=3
     R=IterationSolution(tshape,dim)
