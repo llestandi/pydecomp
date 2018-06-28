@@ -4,7 +4,7 @@ Created on Fri May 18 15:09:32 2018
 
 @author: Diego Britez
 """
-import tensor_creator
+import utils.tensor_creator as tensor_creator
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.sparse import diags
@@ -236,7 +236,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=STHOSVD(F)
         elif reduction_method=='RPOD':
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=1e-8)
-    
+
         if plot:
             if type(Result)==Tucker.Tucker:
                 approx_data[reduction_method]=np.stack(Tucker.tucker_error_data(Result,F))
