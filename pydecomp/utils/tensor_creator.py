@@ -6,7 +6,7 @@ Created on Tue Mar 27 17:24:54 2018
 """
 
 import numpy as np
-import CartesianGrid
+import utils.CartesianGrid
 
 """
 This code serve to create a tensor with its grid of any dimention from
@@ -51,7 +51,7 @@ def funcx(V,case):
         #1/(1+V[0]**2+V[1]**2+V[2]**2)
         #np.sin(np.sqrt(V[0]**2+V[1]**2+V[2]**2))
         #V[0]*V[1]*V[2]
-
+# @Diego Okay, why not use a class. Please cleanup and document !!!!!
 class TensorCreator():
     def __init__(self):
         self.tshape=[]
@@ -61,8 +61,6 @@ class TensorCreator():
         self.X=[]
         self.Grid=[]
         self.F=[]
-
-
 
     """
     Domaine limits

@@ -4,25 +4,23 @@ Created on Fri May 18 15:09:32 2018
 
 @author: Diego Britez
 """
-import utils.tensor_creator as tensor_creator
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.sparse import diags
 import time
 
-import high_order_decomposition_method_functions as hf
-from pgd_main import PGD
-from HOPOD import HOPOD
-from SHOPOD import SHOPOD
-from THOSVD import THOSVD
-from STHOSVD import STHOSVD
-from TT_SVD import TT_SVD
-from plot_error_canonical import plot_error_canonical
-from plot_error_tucker import plot_error_tucker
-from RPOD import rpod, recursive_tensor, plot_rpod_approx,rpod_error_data
-import Tucker
-import Canonical
-from plot_error_tt import plot_error_tt
+import utils.tensor_creator as tensor_creator
+import core.tensor_algebra as ta
+from core.PGD import PGD
+from core.HOPOD import HOPOD
+from core.SHOPOD import SHOPOD
+from core.THOSVD import THOSVD
+from core.STHOSVD import STHOSVD
+from core.TT_SVD import TT_SVD
+from core.RPOD import rpod, recursive_tensor, plot_rpod_approx,rpod_error_data
+import core.Tucker
+import core.Canonical
+# from plot_error_tt import plot_error_tt
 
 def benchmark_multivariable(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,
@@ -221,7 +219,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             X=[np.ones(x) for x in shape]
             M=[diags(x) for x in X]
         elif integration_method=='trapezes':
-            M=hf.mass_matrices_creator(X)
+            M=ta.mass_matrices_creator(X)
 
         t=time.time()
         if reduction_method=='PGD':
@@ -248,7 +246,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 # raise NotImplementedError("Canonical plot V2 is not implemented yet")
         try:
             if output_decomp!='':
-                hf.save(Result,output_decomp)
+                ta.save(Result,output_decomp)
         except:
             pass
 
