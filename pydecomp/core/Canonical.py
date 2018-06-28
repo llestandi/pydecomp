@@ -16,7 +16,6 @@ import full_format_class
 
 class CanonicalFormat(TensorDescriptor):
     """
-
     **Canonical Type Format**
 
 
@@ -58,43 +57,26 @@ class CanonicalFormat(TensorDescriptor):
 #------------------------------------------------------------------------
 
     def get_rank(self):
-        """
-        Method to get   _rank value
-        """
         return self._rank
 
-    def set_rank(self):
-        """
-        Method to set a new _rank value
-        """
+    def set_rank(self,r):
+        self._rank=r
+
+    def rank_increment(self):
         self._rank=self._rank+1
 
 #------------------------------------------------------------------------
 
     def get_tshape(self):
-        """
-        Method to get _tshape value
-        """
         return self._tshape
 
     def set_tshape(self,tshape):
-        """
-        Method to set a new _tshape value
-        """
         self._tshape=tshape
 #------------------------------------------------------------------------
 
     def get_U(self):
-
-        """
-        get_U is the methode to call and get the variable _U
-        """
         return self._U
     def set_U(self,newU):
-
-        """
-        set_U is the methode to call and get _U
-        """
         self._U=newU
 
     def add_enrich(self,R):
@@ -102,8 +84,8 @@ class CanonicalFormat(TensorDescriptor):
         add_enrich is the method to add a new mode in each element of the
         _U list attribute.
         """
+        self.rank_increment()
         for i in range(self._dim):
-
                        self._U[i]=np.append(self._U[i],np.array([R[i]]),axis=0)
 
 #--------------------------------------------------------------------------
@@ -189,6 +171,7 @@ class CanonicalFormat(TensorDescriptor):
         """
         This function returns a full format class object from the Canonical
         object introduced. \n
+        **Deprecated**
         """
         tshape=self._tshape
         #tshape=tshape.astype(int)
@@ -211,13 +194,18 @@ class CanonicalFormat(TensorDescriptor):
 
     def to_full_quick(self,rank=-1):
         """
+        @author : Lucas 27/06/18
         Provides a quick evaluation (based on kathri rao product) of rank r
         truncated self.
         It is based on Kolda formula for evaluation of Canonical format in matrix
         formulation. (much more efficient for large arrays, still not as fast as
         Kosambi version which is using eigsum)
 
-        *Return* ndarray of shape = self._tshape
+        **Parameters**:
+        *self* To be evaluated
+        *rank* [int] Truncation rank, if out of range, set to maximum value
+
+        **Return** ndarray of shape = self._tshape
         """
         if rank <= 0 or rank > self.get_rank():
             r=self.get_rank()
@@ -230,11 +218,28 @@ class CanonicalFormat(TensorDescriptor):
 
 
     def memory_eval(self,r):
-        "Returns the number of floats required to store self at rank r"
+        """
+        @author : Lucas 27/06/18
+        Returns the number of floats required to store self at rank r
+        """
         return np.sum(self._tshape)*r
 
 
 def canonical_error_data(T_can, T_full):
+    """
+    @author : Lucas 27/06/18
+    Builds a set of approximation error and associated compression rate for a
+    representative subset of ranks.
+
+    **Parameters**:
+    *T_can*  Canonical approximation
+    *T_full* Full tensor
+
+    **Return** ndarray of error values, ndarray of compression rates
+
+    **Todo** Add integration matrices to compute actual error associated with
+    discrete integration operator
+    """
     from numpy.linalg import norm
     data_compression=[]
     shape=T_full.shape
@@ -254,14 +259,17 @@ def canonical_error_data(T_can, T_full):
         error.append(actual_error)
         try:
             err_var=np.abs(error[-1]-error[-2])/error[-2]
+            if comp_rate[-1]>1 or err_var<1e-10:
+                break
         except:
-            err_var=1
-        if comp_rate[-1]>1 or err_var<1e-10:
-            break
+            pass
     return np.asarray(error), np.asarray(comp_rate)
 
 def build_eval_rank_list(maxrank):
-    """Sort of handwritten log spacing of rank evaluation """
+    """
+    @author : Lucas 27/06/18
+    Sort of handwritten log spacing of rank evaluation.
+    """
     if maxrank < 20:
         rank_list=[i for i in range(1,maxrank)]
     else:
@@ -280,18 +288,14 @@ def build_eval_rank_list(maxrank):
 
 
 def new_iteration_result(R, tshape, Resultat):
-
+    #FIXME @Diego : undocumented, seems deprecated
      NewModeResultat=(np.transpose(np.array([R[0]])).dot(np.array([R[1]])))
 
      if len(R)>2:
          for i in range(2,len(R)):
              NewModeResultat=np.kron(NewModeResultat,R[i])
-
          NewModeResultat=NewModeResultat.reshape(tshape)
-
      Resultat=np.add(Resultat,NewModeResultat)
-
-
      return Resultat
 
 
