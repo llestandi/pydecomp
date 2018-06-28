@@ -12,7 +12,8 @@ from tensor_descriptor_class import TensorDescriptor
 import high_order_decomposition_method_functions as hf
 import full_format_class
 #------------------------------------------------------------------------
-
+# @Diego, class is working but a lot of simplification work is needed with your
+# new python knowledge + homogeneisation of tensor format classes.
 
 class CanonicalFormat(TensorDescriptor):
     """
@@ -48,6 +49,7 @@ class CanonicalFormat(TensorDescriptor):
 #------------------------------------------------------------------------
     def solution_initialization(self):
         """
+        @Diego, this is redundant with __init__ #FIXME
         This method serve to initiate a new object
         """
 
@@ -300,4 +302,5 @@ def new_iteration_result(R, tshape, Resultat):
 
 
 if __name__=="__main__":
+    #@Diego, Write proper tests (creation, eval etc)
     print(build_eval_rank_list(300))
