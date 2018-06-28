@@ -56,3 +56,6 @@ def save(variable, file_name):
     pickle.dump(variable, pickle_out)
     pickle_out.close()
     print('Binary file saved as'+"'"+file_name+"'")
+
+def read(file):
+    return np.loadtxt(file,delimiter=",",dtype=float)

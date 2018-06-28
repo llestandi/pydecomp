@@ -215,7 +215,7 @@ class CanonicalTensor(TensorDescriptor):
             r=rank
         U_trunc=[(np.stack(self._U[i][:r])).T for i in range(self._dim)]
         shape=self._tshape
-        flat_eval=U_trunc[0] @ np.transpose(hf.multi_kathri_rao(U_trunc[1:]))
+        flat_eval=U_trunc[0] @ np.transpose(ta.multi_kathri_rao(U_trunc[1:]))
         return np.reshape(flat_eval,shape)
 
 

@@ -16,7 +16,7 @@ from core.PGD import PGD
 from core.tucker_decomp import HOPOD, SHOPOD, THOSVD, STHOSVD
 from core.TT_SVD import TT_SVD
 from core.RPOD import rpod, RecursiveTensor, plot_rpod_approx,rpod_error_data
-from core.Canonical import CanonicalTensor
+from core.Canonical import CanonicalTensor, canonical_error_data
 from core.Tucker import TuckerTensor, tucker_error_data
 # from plot_error_tt import plot_error_tt
 
@@ -239,7 +239,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             elif type(Result)==RecursiveTensor:
                 approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
             elif type(Result)==CanonicalTensor:
-                approx_data[reduction_method]=np.stack(Canonical.canonical_error_data(Result,F))
+                approx_data[reduction_method]=np.stack(canonical_error_data(Result,F))
                 # plot_error_canonical(Result,F, number_plot,label_line)
                 # raise NotImplementedError("Canonical plot V2 is not implemented yet")
         try:
