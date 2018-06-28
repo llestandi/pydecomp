@@ -6,10 +6,10 @@ Created on Tue Jun 19 13:19:41 2018
 @author: diego
 """
 import numpy as np
-from TSVD import TSVD
-from TensorTrain import TensorTrain
+from core.TSVD import TSVD
+from core.TensorTrain import TensorTrain
 from scipy.sparse import diags
-from POD import POD2 as POD
+from core.POD import POD
 
 def TT_SVD(F, eps=1e-8, rank=100):
     """

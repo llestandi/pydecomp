@@ -8,14 +8,14 @@ import numpy as np
 import csv
 import pickle
 
-from tensor_descriptor_class import TensorDescriptor
-import high_order_decomposition_method_functions as hf
-import full_format_class
+from deprecated.tensor_descriptor_class import TensorDescriptor
+import core.tensor_algebra as ta
+import deprecated.full_format
 #------------------------------------------------------------------------
 # @Diego, class is working but a lot of simplification work is needed with your
 # new python knowledge + homogeneisation of tensor format classes.
 
-class CanonicalFormat(TensorDescriptor):
+class CanonicalTensor(TensorDescriptor):
     """
     **Canonical Type Format**
 
@@ -141,7 +141,7 @@ class CanonicalFormat(TensorDescriptor):
 
     def __sub__(C,object2):
 
-        if (isinstance(object2,CanonicalFormat)==False):
+        if (isinstance(object2,CanonicalTensor)==False):
             print('New object has not the correct canonical forme')
 
         if (C._d!=object2._d):
@@ -153,7 +153,7 @@ class CanonicalFormat(TensorDescriptor):
 
 
 
-        New_Value=CanonicalFormat(C._tshape,C._dim)
+        New_Value=CanonicalTensor(C._tshape,C._dim)
         New_Value._rank=C._rank+object2._rank
         New_Value._d=C._d
 

@@ -6,7 +6,7 @@ Created on Mon Mar 12 09:42:12 2018
 """
 
 import numpy as np
-from tensor_descriptor_class import TensorDescriptor
+from deprecated.tensor_descriptor_class import TensorDescriptor
 
         
         

@@ -7,7 +7,7 @@ Major # REVIEW:  on 28/06/18
 """
 import numpy as np
 from scipy.linalg import norm
-from Canonical import CanonicalFormat
+from core.Canonical import CanonicalTensor
 
 def PGD(M,F, epenri=1e-12, maxfix=15):
     """
@@ -64,14 +64,13 @@ def PGD(M,F, epenri=1e-12, maxfix=15):
     M=[x.toarray() for x in M]
     M=[np.diag(x) for x in M]
 
-    C=CanonicalFormat(tshape,dim)
+    C=CanonicalTensor(tshape,dim)
     C.solution_initialization()
 
     while (eps>=epenri):
-        C.set_rank()
+        # C.rank_increment()
         R,n_iter=fixed_point(M,C._tshape,C._U,F,n_iter ,C._rank,maxfix)
         C.add_enrich(R)
-
         if C.get_rank()==1:
             REF=R[dim-1]
 
@@ -82,6 +81,8 @@ def PGD(M,F, epenri=1e-12, maxfix=15):
     return C
 
 def fixed_point(M,tshape,U,F,z,r,max_iter):
+    # @Diego It would be great if you could put all arguments related to C (3 of
+    # them into a single arguments, C) easier to read, easier to debug
     """
     This function calculates the n mode for each iteration in the
     enrichment loop for the PGD method. The definition of each variable
@@ -122,7 +123,7 @@ def fixed_point(M,tshape,U,F,z,r,max_iter):
         for i in range(dim):
             Alpha=alpha(R,M,i,dim)
             Gamma=gamma(R,F,M,i,dim)
-            Betha=betha(M,R,U,i,dim)
+            Betha=beta(M,R,U,i,dim)
 
             aux=np.dot(U[i].T,Betha)
             aux=np.transpose(aux)
@@ -136,7 +137,7 @@ def fixed_point(M,tshape,U,F,z,r,max_iter):
         # @TODO @Diego
         # I don't see the point of having this z variable + it prevents more
         # concise writing of enriching Canonical approx
-        if k==itmax:
+        if k==max_iter:
             z=z+1
     return  R,z
 

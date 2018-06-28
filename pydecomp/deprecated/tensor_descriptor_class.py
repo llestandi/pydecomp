@@ -5,7 +5,8 @@ Created on Mon Mar 12 09:40:00 2018
 @author: Diego Britez
 """
 import numpy as np
-
+# @Diego, as we have discussed, please remove it and adapt existig formats to
+# our choices with ndim and shape directly included
 #
 #To begin the TensorDescriptor class is defined with the
 #values of the number of grids in each space (thsape array), and
@@ -13,7 +14,7 @@ import numpy as np
 class TensorDescriptor:
     """
     TensorDescriptor is a class that contains basic information that
-    other  classes (Full Format, CanonicalFormat) will inherit.\n
+    other  classes (Full Format, CanonicalTensor) will inherit.\n
     **Attributes**
         **_tshape**: array like, with the numbers of elements that each 1-rank
         tensor is going to discretize each subspace of the full tensor. \n
@@ -24,6 +25,6 @@ class TensorDescriptor:
     def __init__(self,tshape,dim):
         if (np.size(tshape)!=dim):
             raise AttributeError('Fatal error!!! Dimetion size declaration  and the actual size of div_tshape are not equals')
-            
+
         self._dim=dim
         self._tshape=tshape

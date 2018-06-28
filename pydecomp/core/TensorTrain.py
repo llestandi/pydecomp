@@ -6,7 +6,7 @@ Created on Thu Jun 14 11:20:10 2018
 @author: diego
 """
 import numpy as np
-from tensor_descriptor_class import TensorDescriptor
+from deprecated.tensor_descriptor_class import TensorDescriptor
 import csv
 import pickle
 class TensorTrain:

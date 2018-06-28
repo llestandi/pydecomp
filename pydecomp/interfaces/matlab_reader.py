@@ -28,7 +28,7 @@ def matlab_file_reduction(file_name, error_evaluation=False):
     U=TT_SVD2 (data)
 
     if error_evaluation:
-        # plot_error_tucker(U,data,1, 'Error vs compression rate',
+        # plot_error_TuckerTensor(U,data,1, 'Error vs compression rate',
         #                   output_variable_name='Matlab_compression_file')
         plot_error_tt(U,data,1, 'Error vs compression rate',
                           output_variable_name='Matlab_compression_file')

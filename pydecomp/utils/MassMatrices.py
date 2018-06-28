@@ -6,11 +6,45 @@ Created on Fri Apr 13 16:17:19 2018
 """
 
 import numpy as np
+import scipy
 from scipy.sparse import diags
-import integrationgrid
+# @Diego I have merged several files here, they all relate to the mass matrix.
+# However you have made classes that are not all necessary. I think we (you)
+# should create a class for mass matrices. Indeed, they have a particular behaviour,
+# it is handy to have them always together and you could also add two cases inside
+# them that would be transparent both for the user and the routines that need them.
+# Basically it contains two cases : one is filled with vectors (very efficient and
+# easy to manipulate) while the other one is filled with diagonal matrices. This allows
+# more efficient computing as long as you define the required operators (mainly matmul)
+
+# @Diego, do we need a class for that? I don't think so.
+"""
+In this class we define the grid that will contain the integration points to
+integrate with the trapezes  Method.
+"""
+class IntegrationGrid:
+
+    def __init__(self,X,dim, tshape):
+        self.X = X
+        self.Xgrid = []
+        self.dim = dim
+        self.tshape = tshape
+
+    def grille(self,x,nx):
+        w=np.zeros(nx)
+        w[1:-1]=(x[2:]-x[0:-2])/2
+        w[0]=(x[1]-x[0])/2
+        w[-1]=(x[-1]-x[-2])/2
+        return w
+
+    def IntegrationGridCreation(self):
+        for i in range(self.dim):
+            w=self.grille(self.X[i],self.tshape[i])
+            self.Xgrid.append(w)
+        return self.Xgrid
 
 
-def  matricize_mass_matrix(dim,i,M):
+def matricize_mass_matrix(dim,i,M):
     """
     Returns the equivalent mass matrices of a matricized tensor.\n
     **Parameters** \n
@@ -35,9 +69,7 @@ def  matricize_mass_matrix(dim,i,M):
     :math:`M_{x}=M_{i}`\n
     :math:`M_{t}=M_{1} \otimes M_{2} \otimes...M_{i-1} \otimes M_{i+1} \otimes..
     \otimes M_{d}`
-
     """
-
     #copy the list of mass matrices to M2
     M2=M[:]
     #moving the actual indice to the first order
@@ -103,7 +135,7 @@ def mass_matrices_creator(X):
         aux=X[i].size
         tshape.append(aux)
 
-    M=integrationgrid.IntegrationGrid(X,dim,tshape)
+    M=IntegrationGrid(X,dim,tshape)
     M=M.IntegrationGridCreation()
     for i in range (dim):
         M[i]=diags(M[i])
@@ -122,3 +154,14 @@ def unit_mass_matrix_creator(Data):
         massi=diags(massi)
         mass.append(massi)
     return mass
+
+if __name__=="__main__":
+    #X=[]
+    #x1=np.linspace(0,1,3)
+    #x2=np.linspace(0,1,5)
+    #X.append(x1)
+    #X.append(x2)
+    #tshape=np.array([3,5])
+    Xgrid=IntegrationGrid(X,np.size(tshape),tshape)
+    Xgrid=Xgrid.IntegrationGridCreation()
+    print(Xgrid)

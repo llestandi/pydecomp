@@ -1,3 +1,5 @@
+# NOT used so far
+
 class cls_POD:
     """ This class stores a 2D decomposition """
     def __init__(self,n1,n2,rank):

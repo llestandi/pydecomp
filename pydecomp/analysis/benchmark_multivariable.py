@@ -11,15 +11,13 @@ import time
 
 import utils.tensor_creator as tensor_creator
 import core.tensor_algebra as ta
+import utils.MassMatrices as mm
 from core.PGD import PGD
-from core.HOPOD import HOPOD
-from core.SHOPOD import SHOPOD
-from core.THOSVD import THOSVD
-from core.STHOSVD import STHOSVD
+from core.tucker_decomp import HOPOD, SHOPOD, THOSVD, STHOSVD
 from core.TT_SVD import TT_SVD
-from core.RPOD import rpod, recursive_tensor, plot_rpod_approx,rpod_error_data
-import core.Tucker
-import core.Canonical
+from core.RPOD import rpod, RecursiveTensor, plot_rpod_approx,rpod_error_data
+from core.Canonical import CanonicalTensor
+from core.Tucker import TuckerTensor, tucker_error_data
 # from plot_error_tt import plot_error_tt
 
 def benchmark_multivariable(list_reduction_method, integration_method,
@@ -219,7 +217,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             X=[np.ones(x) for x in shape]
             M=[diags(x) for x in X]
         elif integration_method=='trapezes':
-            M=ta.mass_matrices_creator(X)
+            M=mm.mass_matrices_creator(X)
 
         t=time.time()
         if reduction_method=='PGD':
@@ -236,11 +234,11 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=1e-8)
 
         if plot:
-            if type(Result)==Tucker.Tucker:
-                approx_data[reduction_method]=np.stack(Tucker.tucker_error_data(Result,F))
-            elif type(Result)==recursive_tensor:
+            if type(Result)==TuckerTensor:
+                approx_data[reduction_method]=np.stack(tucker_error_data(Result,F))
+            elif type(Result)==RecursiveTensor:
                 approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
-            elif type(Result)==Canonical.CanonicalFormat:
+            elif type(Result)==CanonicalTensor:
                 approx_data[reduction_method]=np.stack(Canonical.canonical_error_data(Result,F))
                 # plot_error_canonical(Result,F, number_plot,label_line)
                 # raise NotImplementedError("Canonical plot V2 is not implemented yet")

@@ -65,7 +65,7 @@ def plot_error_canonical(A,F, number_plot=1, label_line='PGD',
     #storaged
     error=[]
     tshape=A._tshape
-    AUX_CANONICAL=Canonical.CanonicalFormat(tshape,dim)
+    AUX_CANONICAL=Canonical.CanonicalTensor(tshape,dim)
     modes=np.arange(1,rank_max+1)
     data_compression=[]
     F_volume=fvolume(F)

@@ -10,8 +10,6 @@ import numpy as np
 import scipy.sparse
 import operator
 from scipy.sparse import diags
-import integrationgrid
-import pickle
 
 def multilinear_multiplication(phi,F,dim):
     """

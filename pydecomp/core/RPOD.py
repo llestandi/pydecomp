@@ -11,12 +11,12 @@ import scipy
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-import high_order_decomposition_method_functions as hf
-from tensor_descriptor_class import TensorDescriptor
-from cls_RpodTree import  RpodTree
-from POD import POD2 as POD
+import utils.MassMatrices as mm
+from deprecated.tensor_descriptor_class import TensorDescriptor
+from core.cls_RpodTree import  RpodTree
+from core.POD import POD
 
-class recursive_tensor(TensorDescriptor):
+class RecursiveTensor(TensorDescriptor):
     """
     ** Recursive Type Format**
     This format is designed to store and reconstruct RPOD decomposition.
@@ -90,7 +90,7 @@ def rpod(f, int_weights=None, POD_tol=1e-10, cutoff_tol=1e-10):
         X=[np.ones(x) for x in f.shape]
         int_weights=[scipy.sparse.diags(x) for x in X]
 
-    rpod_approx=recursive_tensor(f.shape,f.ndim)
+    rpod_approx=RecursiveTensor(f.shape,f.ndim)
     rpod_approx.tree = RpodTree(np.zeros(0))
     node_index = []
     rpod_rec(f, rpod_approx,int_weights, node_index, POD_tol, cutoff_tol)
@@ -110,7 +110,7 @@ def rpod_rec(f, rpod_approx, int_weights, node_index, POD_tol=1e-10, cutoff_tol=
     **tol**: float, POD tolerance \n
     """
     ######## POD part ################
-    Mx,Mt = hf.matricize_mass_matrix(f.ndim,0,int_weights)
+    Mx,Mt = mm.matricize_mass_matrix(f.ndim,0,int_weights)
     Phi = np.reshape(f, [f.shape[0], -1])
 
     U, sigma, V = POD(Phi, Mx, Mt, POD_tol)

@@ -55,7 +55,7 @@ def Analize_compressed_bp(bp_compressed_out,**kwargs):
     plot_err=kwargs.get('plot_err',None)
     if plot_err:
         for var in Reduced:
-            plot_error_tucker(Reduced[var],field[var],1, 'Error vs compression rate',
+            plot_error_TuckerTensor(Reduced[var],field[var],1, 'Error vs compression rate',
                             output_variable_name='ouptut/bp_compression')
 
     bp_comp_to_vtk(Reduced,X,Y,time_list,heights,

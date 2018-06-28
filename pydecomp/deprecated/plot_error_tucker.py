@@ -12,7 +12,7 @@ import Tucker
 import sys
 from matplotlib.backends.backend_pdf import PdfPages
 
-def plot_error_tucker(A,F,number_plot=1,label_line="",
+def plot_error_TuckerTensor(A,F,number_plot=1,label_line="",
                       output_variable_name='variable'):
     """
     This function will reconstruct and calculate the error for each mode from
@@ -137,7 +137,7 @@ def plot_error_tucker(A,F,number_plot=1,label_line="",
         AUX_CORE=eval(Cutting_core_shape_complet)
 
         #Creating a tucker object from the truncated data
-        AUX_TUCKER=Tucker.Tucker(AUX_CORE,projections)
+        AUX_TUCKER=Tucker.TuckerTensor(AUX_CORE,projections)
 
         #Finding the solution for the actual truncated Tucker object
         Fparcial=AUX_TUCKER.reconstruction()

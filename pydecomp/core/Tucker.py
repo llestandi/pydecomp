@@ -4,13 +4,13 @@ Created on Wed May  2 09:25:40 2018
 
 @author: Diego Britez
 """
-from tensor_descriptor_class import TensorDescriptor
-from high_order_decomposition_method_functions import multilinear_multiplication
-from full_format_class import FullFormat
+from deprecated.tensor_descriptor_class import TensorDescriptor
+from core.tensor_algebra import multilinear_multiplication
+from deprecated.full_format import FullFormat
 import pickle
 import numpy as np
 
-class Tucker(TensorDescriptor):
+class TuckerTensor(TensorDescriptor):
     """
     This class is created to storage a decomposed Tensor in the Tucker
     Format, this is code is based in ttensor code from pytensor code package.\n
@@ -76,7 +76,7 @@ class Tucker(TensorDescriptor):
         return len(self.u)
 #-----------------------------------------------------------------------------
     def copy(self):
-        return Tucker(self.core, self.u);
+        return TuckerTensor(self.core, self.u);
 #-----------------------------------------------------------------------------
     def destructor(self):
         self.u=[]
@@ -149,4 +149,4 @@ def truncate(T_tucker,trunc_rank):
         if j<(d-1):
             core_shape+=','
     core=eval("T_tucker.core["+core_shape+"]")
-    return Tucker(core,modes)
+    return TuckerTensor(core,modes)
