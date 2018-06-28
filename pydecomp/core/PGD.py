@@ -1,18 +1,15 @@
 # -*- coding: utf-8 -*-
 """
 Created on Wed Feb 14 15:35:41 2018
-
 @author: Diego Britez
+Major # REVIEW:  on 28/06/18
+@author: Lucas Lestandi
 """
 import numpy as np
-from fixepoint import fixpoint
 from scipy.linalg import norm
-import high_order_decomposition_method_functions as hf
 from Canonical import CanonicalFormat
-import timeit
 
 def PGD(M,F, epenri=1e-12, maxfix=15):
-    #start = timeit.default_timer()
     """
     This function use the PGD method for a multivariate problem decomposition,
     returning an Canonical class objet.
@@ -59,71 +56,29 @@ def PGD(M,F, epenri=1e-12, maxfix=15):
     equation and that are expoded in the fix point variables section.
 
     """
-
-
     tshape=F.shape
     dim=len(tshape)
-
-
-    #Start value of epn that allows get in to the enrichment loop for the first
-    #iteration
-
-    epn=1
-
-
-    #The variable z is created to count the number of iterations in the
-    #fix point loop which don't arrive to the convergence after maximal
-    #times of iterations declared as a stoping criteria.
-
-    z=0
-
-
-
-
+    #Start value of epn that allows get in to the enrichment loop for the first iteration
+    eps=1
+    n_iter=0
     M=[x.toarray() for x in M]
     M=[np.diag(x) for x in M]
 
-    #The Verification variable is going to be used to evaluate the orthogonality
-    #Verification=1 ----> Orthogonality verified
-    #Verification=0 ----> Non Orthogonality found
-
-
-    Verification=1
     C=CanonicalFormat(tshape,dim)
-
     C.solution_initialization()
 
-
-    while   (epn>=epenri):
+    while (eps>=epenri):
         C.set_rank()
-
-        R,z=fixed_point(M,C._tshape,C._U,F,z ,C._rank,maxfix)
+        R,n_iter=fixed_point(M,C._tshape,C._U,F,n_iter ,C._rank,maxfix)
         C.add_enrich(R)
-
-        #Unmark  next line if the orthogonality verification is desired
-        #Verification=hf.orth(dim,Xgrid,R,C)
-
 
         if C.get_rank()==1:
             REF=R[dim-1]
 
         epn=norm(R[dim-1])/norm(REF)
-
-    #Unmark commentary if Orthogonality Verification is desired
-    """
-    if (Verification==1):
-                print('Orthogonality between modes was verified')
-                print('----------------------------------------\n')
-    print('--------------------------------------------------------------\n')
-    print("Iteration's enrichment loops=",C.get_rank())
-    print("Iteration's enrichment loops in fixed-point loop with no convergence:",z)
-    print('Epsilon=',epn)
-    """
-
+    # @Diego is this necessary?
     #Eliminating the first (zeros) row created to initiate the algorithm
     C._U=[x[1:,::] for x in C._U]
-    #C.writeU()
-    #stop=timeit.default_timer()
     return C
 
 def fixed_point(M,tshape,U,F,z,r,maxfix):
@@ -310,7 +265,7 @@ def betha(M,R,U,i,dim):
      return Betha
 
 if __name__=="__main__":
-    
+
     tshape=np.array([5,4,8])
     dim=3
     R=IterationSolution(tshape,dim)
@@ -343,3 +298,15 @@ if __name__=="__main__":
     for j in range(dim-1,1,-1):
         F2=np.multiply(F2,R2[j])
         F2=integration_1dtrap(F2,X2[j])
+
+
+    #Unmark commentary if Orthogonality Verification is desired
+    """
+    if (Verification==1):
+                print('Orthogonality between modes was verified')
+                print('----------------------------------------\n')
+    print('--------------------------------------------------------------\n')
+    print("Iteration's enrichment loops=",C.get_rank())
+    print("Iteration's enrichment loops in fixed-point loop with no convergence:",z)
+    print('Epsilon=',epn)
+    """
