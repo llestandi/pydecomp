@@ -14,7 +14,7 @@ import full_format_class
 #------------------------------------------------------------------------
 
 
-class CanonicalForme(TensorDescriptor):
+class CanonicalFormat(TensorDescriptor):
     """
 
     **Canonical Type Format**
@@ -157,7 +157,7 @@ class CanonicalForme(TensorDescriptor):
 
     def __sub__(C,object2):
 
-        if (isinstance(object2,CanonicalForme)==False):
+        if (isinstance(object2,CanonicalFormat)==False):
             print('New object has not the correct canonical forme')
 
         if (C._d!=object2._d):
@@ -169,7 +169,7 @@ class CanonicalForme(TensorDescriptor):
 
 
 
-        New_Value=CanonicalForme(C._tshape,C._dim)
+        New_Value=CanonicalFormat(C._tshape,C._dim)
         New_Value._rank=C._rank+object2._rank
         New_Value._d=C._d
 

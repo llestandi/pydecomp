@@ -242,7 +242,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 approx_data[reduction_method]=np.stack(Tucker.tucker_error_data(Result,F))
             elif type(Result)==recursive_tensor:
                 approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
-            elif type(Result)==Canonical.CanonicalForme:
+            elif type(Result)==Canonical.CanonicalFormat:
                 approx_data[reduction_method]=np.stack(Canonical.canonical_error_data(Result,F))
                 # plot_error_canonical(Result,F, number_plot,label_line)
                 # raise NotImplementedError("Canonical plot V2 is not implemented yet")

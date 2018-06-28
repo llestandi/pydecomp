@@ -13,7 +13,7 @@ import numpy as np
 class TensorDescriptor:
     """
     TensorDescriptor is a class that contains basic information that
-    other  classes (Full Format, CanonicalForme) will inherit.\n
+    other  classes (Full Format, CanonicalFormat) will inherit.\n
     **Attributes**
         **_tshape**: array like, with the numbers of elements that each 1-rank
         tensor is going to discretize each subspace of the full tensor. \n

@@ -55,7 +55,7 @@ def reconstruction2(C):
         return Resultat
     
     except:
-        print("Variable has to be an object of CanonicalForme Class")
+        print("Variable has to be an object of CanonicalFormat Class")
     
 
 
