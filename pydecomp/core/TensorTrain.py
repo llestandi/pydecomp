@@ -10,16 +10,6 @@ class TensorTrain:
     """
 
     **Tensor Train Type Format**
-    In this format, any tensor
-    :math:`\chi\in V = \otimes_{\mu=1}^{d}V_{\mu}`
-    a tensor space, is written as the finite sum of rank-1 tensors.
-    :math:`\chi \in C_{r} (\mathbb{R})`
-    is said to be represented in the
-    Tensor Train format and it reads, \n
-    :math:`\chi(i_{1},...,i_{d})=\sum\limits_{\alpha_{0},...,\alpha_{d-1},
-    \alpha_{d}}G_{1}(\alpha_{0},i_{1},\alpha_{1})G_{2}(\alpha_{1},i_{2},
-    \alpha_{2})...G_{d}(\alpha_{d-1},i_{d},\alpha_{d})`
-    \n
     **Attributes**
 
         **G** : list type, each element will bi a 3 dimentional tensor, one
@@ -31,6 +21,18 @@ class TensorTrain:
         size of _tshape parameter. \n
         **rank**: list type, this element will contain the number of rank
         obtained in each decomposition. Includes r0 and rd for easier loops.
+
+    In this format, any tensor
+    :math:`\chi\in V = \otimes_{\mu=1}^{d}V_{\mu}`
+    a tensor space, is written as the finite sum of rank-1 tensors.
+    :math:`\chi \in C_{r} (\mathbb{R})`
+    is said to be represented in the
+    Tensor Train format and it reads, \n
+    :math:`\chi(i_{1},...,i_{d})=\sum\limits_{\alpha_{0},...,\alpha_{d-1},
+    \alpha_{d}}G_{1}(\alpha_{0},i_{1},\alpha_{1})G_{2}(\alpha_{1},i_{2},
+    \alpha_{2})...G_{d}(\alpha_{d-1},i_{d},\alpha_{d})`
+    \n
+
     **Methods**
     """
 
@@ -79,10 +81,7 @@ class TensorTrain:
 
         """
         G=self.G[:]
-        if trunc_rank==[] or not (trunc_rank<=self.rank):
-            r=self.rank
-        else:
-            r=trunc_rank
+        r=self.check_rank(trunc_rank)
         dim=self.ndim
         shape=self.shape
 
@@ -99,6 +98,24 @@ class TensorTrain:
         """Truncation of Tensor Train at rank"""
         raise NotImplementedError("Truncation function not implemented yet!")
 
+    def mem_eval(self,rank):
+        """ Evaluates memory use of self at given rank (list of integer)"""
+        mem_use=0
+        r=self.check_rank(rank)
+        for i in range(self.ndim):
+            mem_use+=r[i]*self.shape[i]*r[i+1]
+        return mem_use
+
+    def check_rank(self,rank=[]):
+        """ Verifies that rank is acceptable for self. If not, returns the actual rank"""
+        zeros=[0 for i in range(self.ndim+1)  ]
+        if np.all(rank<=self.rank) and np.all(rank>zeros):
+            r=rank
+        else:
+            r=self.rank
+        r=[int(rk) for rk in r]
+        return r
+
 def init_from_decomp(G):
     """ Initializes and fills a tensor train TT from data obtained in TTSVD
     from list of order 3 tensors G """
@@ -107,6 +124,46 @@ def init_from_decomp(G):
     TT=TensorTrain(shape)
     TT.fill(G)
     return TT
+
+def error_TT_data(TT,T_full):
+    """
+    @author : Lucas 27/06/18
+    Builds a set of approximation error and associated compression rate for a
+    representative subset of ranks.
+
+    **Parameters**:
+    *TT*     TensorTrain approximation
+    *T_full* Full tensor
+
+    **Return** ndarray of error values, ndarray of compression rates
+
+    **Todo** Add integration matrices to compute actual error associated with
+    discrete integration operator
+    """
+    from numpy.linalg import norm
+    if np.any(T_full.shape != TT.shape):
+        raise AttributeError("T_full (shape={}) and TT (shape={}) should have \
+                             the same shape".format(T_full.shape,TT.shape))
+    #We are going to calculate one average value of ranks
+    d=T_full.ndim
+    data_compression=[]
+    shape=T_full.shape
+    F_volume=np.product(shape)
+    rank=np.asarray(TT.rank)
+    maxrank=max(rank)
+    error=[]
+    comp_rate=[]
+
+    r=np.zeros(d+1)
+    for i in range(maxrank):
+        r=np.minimum(rank,r+1)
+        print(r)
+        comp_rate.append(TT.mem_eval(r)/F_volume)
+        T_approx=TT.to_full(r)
+        actual_error=norm(T_full-T_approx)/norm(T_full)
+        error.append(actual_error)
+
+    return np.asarray(error), np.asarray(comp_rate)
 
 if __name__=="__main__":
     d=3
@@ -117,3 +174,4 @@ if __name__=="__main__":
     TT=init_from_decomp(G)
     print(TT)
     print(np.linalg.norm(TT.to_full()-TT.to_full([1,2,3,1])))
+    print(error_TT_data(TT,TT.to_full()))

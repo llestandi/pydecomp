@@ -75,7 +75,6 @@ def PGD(M,F, epenri=1e-12, maxfix=15):
             REF=R[dim-1]
 
         eps=norm(R[dim-1])/norm(REF)
-        print(eps, epenri)
     # @Diego is this necessary?
     #Eliminating the first (zeros) row created to initiate the algorithm
     C._U=[x[1:,::] for x in C._U]

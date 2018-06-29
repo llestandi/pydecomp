@@ -10,6 +10,7 @@ from deprecated.full_format import FullFormat
 import pickle
 import numpy as np
 
+# @Diego Need for uniformization with decided structure for full format (ndarray)
 class TuckerTensor(TensorDescriptor):
     """
     This class is created to storage a decomposed Tensor in the Tucker
