@@ -302,6 +302,7 @@ def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**
 
 #------------------------------------------------------------------------------
 def testg(test_function, shape, dim, domain ):
+    # @Diego FIXME
     """
     This function propose several models of function to be chosen to build a
     multivariable tensor (synthetic data) , the output
@@ -323,15 +324,13 @@ def testg(test_function, shape, dim, domain ):
     in each subspace. \n
     **dim**:Integer type. Number of dimentions.
     """
-
     Function=tensor_creator.TensorCreator()
     #Creating the variables required for TensorCreator from the data
     Function.lowerlimit=np.ones(dim)*domain[0]
     Function.upperlimit=np.ones(dim)*domain[1]
     Function.tshape=shape
-    print(test_function)
     X,F= Function._Generator(test_function)
-
+    print(X,F)
     return X,F
 
 def testf(test_function, shape, dim, domain ):

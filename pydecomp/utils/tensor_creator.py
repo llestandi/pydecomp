@@ -123,17 +123,17 @@ class TensorCreator():
         meshgrid: this function handles the vectors that represent the grid
         in order to obtain the tensor by one matricial operation.
         """
-        dimention=self.dim
+        dim=self.dim
         shape=[]
-        limit2=dimention-1
-        for i in range(dimention):
+        limit2=dim-1
+        for i in range(dim):
             if i==0:
-                shape.append(dimention)
+                shape.append(dim)
             shape.append(np.size(self.X[i]))
             self.Grid=np.ones(shape=shape)
 
 
-        for i in range(dimention):
+        for i in range(dim):
             Aux=self.Grid[i]
 
             Aux=np.swapaxes(Aux,i,limit2)
