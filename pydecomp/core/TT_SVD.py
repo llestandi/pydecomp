@@ -38,15 +38,15 @@ def TT_SVD(F, eps=1e-8, rank=100):
     G=[]
     for i in range(dim-1):
        aux=r[i]*tshape[i]
-       mass1=np.ones(aux)
-       mass1=diags(mass1)
        Csize=C.size
        C=C.reshape(aux,int(Csize/aux))
-       mass2=np.ones(int(Csize/aux))
-       mass2=diags(mass2)
        if rank!=100:
            u,sigma,v=TSVD(C, rank=rank)
        else:
+           mass1=np.ones(aux)
+           mass1=diags(mass1)
+           mass2=np.ones(int(Csize/aux))
+           mass2=diags(mass2)
            u,sigma,v=POD(C, mass1,mass2,tol=eps)
 
        new_rank=sigma.shape[0]
@@ -54,7 +54,6 @@ def TT_SVD(F, eps=1e-8, rank=100):
        G.append(u.reshape(r[i],tshape[i],r[i+1]))
        C=sigma@v.T
     G.append(C)
-
     Gdshape=list(G[dim-1].shape)
     Gdshape.append(1)
 

@@ -235,7 +235,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=tol)
         elif reduction_method=='TT_SVD':
             Result=TT_SVD(F, tol)
-        print("{} decompostion time: {}s".format(reduction_method,time.time()-t))
+        print("{} decompostion time: {:.2f} s".format(reduction_method,time.time()-t))
 
         if plot:
             if type(Result)==TuckerTensor:
