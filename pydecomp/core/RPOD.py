@@ -29,23 +29,24 @@ class RecursiveTensor(TensorDescriptor):
     **sigma_max** : maximum sigma. \n
     **sigma_max_loc** : maximum sigma location. \n
     **rank** : nested list of ranks. \n
-    **_tshape**: array like, with the numbers of elements that each 1-rank
+    **shape**: array like, with the numbers of elements that each 1-rank
     tensor is going to discretize each subspace of the full tensor. \n
     **dim**: integer type, number that represent the n-rank tensor that is
     going to be represented. The value of dim must be coherent with the
-    size of _tshape parameter. \n
+    size of shape parameter. \n
     """
-    def __init__(self,_tshape,dim):
-        TensorDescriptor.__init__(self,_tshape,dim)
+    def __init__(self,shape):
+        self.shape=shape
+        self.ndim=len(shape)
         self.sigma_max=-1
         self.sigma_max_loc=[]
-        self.rank=[[] for i in range(dim-1)]
+        self.rank=[[] for i in range(self.ndim-1)]
         self.tree=None
         self.tree_weight=None
 
     def __str__(self):
         ret = "-----------------------------------------------\n"
-        ret+= "Recursive_tensor of shape {0}\n\n".format(self._tshape);
+        ret+= "Recursive_tensor of shape {0}\n\n".format(self.shape);
         ret+= "Sigma_max={0}, sigma_max_loc={1}\n".format(self.sigma_max,self.sigma_max_loc)
         ret+= "Total tree weight (norm)={0} \n".format(self.tree_weight)
         ret+= "Rank:\n {0}\n".format(self.rank)
@@ -59,11 +60,11 @@ class RecursiveTensor(TensorDescriptor):
         return ret
 
     def to_full(self, cutoff_tol=1e-16):
-        return eval_rpod_tree(self.tree, self._tshape, cutoff_tol)
+        return eval_rpod_tree(self.tree, self.shape, cutoff_tol)
 
     def size(self):
         """ returns the number of elements stored """
-        shape=self._tshape
+        shape=self.shape
         buff=np.sum(np.asarray(shape[-1]*self.rank[-1]))
         for i in range(self._dim-1):
             buff+=np.sum(np.asarray(shape[i]*self.rank[i]))
@@ -71,7 +72,7 @@ class RecursiveTensor(TensorDescriptor):
 
     def compression_rate(self):
         """ Compression rate as compared to the full tensor size"""
-        return self.size()/np.product(self._tshape)
+        return self.size()/np.product(self.shape)
 
 
 def rpod(f, int_weights=None, POD_tol=1e-10, cutoff_tol=1e-10):
@@ -90,7 +91,7 @@ def rpod(f, int_weights=None, POD_tol=1e-10, cutoff_tol=1e-10):
         X=[np.ones(x) for x in f.shape]
         int_weights=[scipy.sparse.diags(x) for x in X]
 
-    rpod_approx=RecursiveTensor(f.shape,f.ndim)
+    rpod_approx=RecursiveTensor(f.shape)
     rpod_approx.tree = RpodTree(np.zeros(0))
     node_index = []
     rpod_rec(f, rpod_approx,int_weights, node_index, POD_tol, cutoff_tol)
@@ -117,21 +118,20 @@ def rpod_rec(f, rpod_approx, int_weights, node_index, POD_tol=1e-10, cutoff_tol=
     pod_rank = U.shape[1]
 
     ######## Preparing recursive call ########
-    loc_rank =0
     sigma_vec=sigma.diagonal()
     if rpod_approx.tree_weight==None: #initial
         rpod_approx.tree_weight=sigma_vec.sum()
-    # sending weight to the last mode and keeping it as sigma
-    if len(f.shape[1:]) == 1:
-        if rpod_approx.sigma_max < sigma_vec[0]:
-            rpod_approx.sigma_max=sigma_vec[0]
-            rpod_approx.sigma_max_loc=np.concatenate([node_index,[0]])
-    else:
+
+    at_leaf=(len(f.shape[1:]) == 1)
+    eval_sigma_max(rpod_approx,sigma_vec,at_leaf,node_index)
+    if not at_leaf:
         V = V@sigma
+
     Phi_shape = np.append(f.shape[1:], pod_rank)
     Phi_next = [np.reshape(V[:, i], f.shape[1:]) for i in range(pod_rank)]
 
     ######### recursive call on each phi_i ########
+    loc_rank =0
     for i in range(pod_rank):
         branch_weight=sigma_vec[i]/rpod_approx.tree_weight
         #special case for root and making sure that a branch has at least one leaf
@@ -149,6 +149,14 @@ def rpod_rec(f, rpod_approx, int_weights, node_index, POD_tol=1e-10, cutoff_tol=
         loc_rank+=1
     rpod_approx.rank[len(node_index)].append(loc_rank)
 
+def eval_sigma_max(rpod_approx,sigma_vec, at_leaf,node_index):
+    """ Test and updates branches weights in rpod algorithm """
+
+    # sending weight to the last mode and keeping it as sigma
+    if at_leaf:
+        if rpod_approx.sigma_max < sigma_vec[0]:
+            rpod_approx.sigma_max=sigma_vec[0]
+            rpod_approx.sigma_max_loc=np.concatenate([node_index,[0]])
 
 def eval_rpod_tree(tree: RpodTree, shape, cutoff_tol=1e-16):
     """ Reconstruct tensor to full format while ignoring branches
@@ -159,6 +167,7 @@ def eval_rpod_tree(tree: RpodTree, shape, cutoff_tol=1e-16):
 def eval_rpod_rec_tree(tree: RpodTree, cutoff_tol=1e-16):
     if tree.is_last:
         #naive and presumably slow version
+        #makes sure that an explored branch returns something
         child = tree.children[0]
         res = child.eval()
         for child in tree.children[1:]:
@@ -203,19 +212,20 @@ def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8):
     """Computes error and compression rate with given tolerance"""
     err=[]
     comp_rate=[]
-    # min_exp=np.log10(min_tol)
-    # max_exp=np.log10(max_tol)
     norm_T=np.linalg.norm(T_full)
-    for tol in np.logspace(np.log10(min_tol), np.log10(max_tol)):
-    # for tol in np.logspace(min_exp, max_exp):
-        loc_rate=rpod_tree_size(T_rec.tree,T_rec._tshape,tol)
-        if not comp_rate:
+    tol_space=np.logspace(np.log10(min_tol), np.log10(max_tol))
+
+    for tol in tol_space:
+        loc_rate=rpod_tree_size(T_rec.tree,T_rec.shape,tol)
+        if loc_rate==0:
+            continue #prevent cutoff discrepencies
+        elif not comp_rate:
             pass
         elif loc_rate==comp_rate[-1]:
             continue
+        
         err.append(np.linalg.norm(T_rec.to_full(tol)-T_full)/norm_T)
         comp_rate.append(loc_rate)
-
     return np.asarray(err), np.asarray(comp_rate)
 
 def plot_rpod_approx(T_rec, T_full, out_file='RPOD_approx_error', min_tol=1., max_tol=1e-8):
