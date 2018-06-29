@@ -18,6 +18,7 @@ from core.TT_SVD import TT_SVD
 from core.RPOD import rpod, RecursiveTensor, plot_rpod_approx,rpod_error_data
 from core.Canonical import CanonicalTensor, canonical_error_data
 from core.Tucker import TuckerTensor, tucker_error_data
+from core.TensorTrain import TensorTrain, error_TT_data
 # from plot_error_tt import plot_error_tt
 
 def benchmark_multivariable(list_reduction_method, integration_method,
@@ -102,7 +103,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
     """
     dim=len(shape)
     domain=[0,1]
-    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'SHO_POD','RPOD']
+    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'SHO_POD','RPOD','TT_SVD']
     acepted_integration_methods=['trapezes','SVD']
     number_plot=0
     approx_data={}
@@ -231,7 +232,10 @@ def benchmark_multivariable(list_reduction_method, integration_method,
         elif reduction_method=='STHO_SVD':
             Result=STHOSVD(F)
         elif reduction_method=='RPOD':
-            Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=1e-8)
+            Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=tol)
+        elif reduction_method=='TT_SVD':
+            Result=TT_SVD(F, tol)
+        print("{} decompostion time: {}s".format(reduction_method,time.time()-t))
 
         if plot:
             if type(Result)==TuckerTensor:
@@ -240,6 +244,8 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
             elif type(Result)==CanonicalTensor:
                 approx_data[reduction_method]=np.stack(canonical_error_data(Result,F))
+            elif type(Result)==TensorTrain:
+                approx_data[reduction_method]=np.stack(error_TT_data(Result,F))
                 # plot_error_canonical(Result,F, number_plot,label_line)
                 # raise NotImplementedError("Canonical plot V2 is not implemented yet")
         try:

@@ -116,7 +116,7 @@ class TensorTrain:
         r=[int(rk) for rk in r]
         return r
 
-def init_from_decomp(G):
+def TT_init_from_decomp(G):
     """ Initializes and fills a tensor train TT from data obtained in TTSVD
     from list of order 3 tensors G """
     ndim=len(G)
@@ -125,7 +125,7 @@ def init_from_decomp(G):
     TT.fill(G)
     return TT
 
-def error_TT_data(TT,T_full):
+def error_TT_data(T_tt,T_full):
     """
     @author : Lucas 27/06/18
     Builds a set of approximation error and associated compression rate for a
@@ -141,15 +141,15 @@ def error_TT_data(TT,T_full):
     discrete integration operator
     """
     from numpy.linalg import norm
-    if np.any(T_full.shape != TT.shape):
+    if np.any(T_full.shape != T_tt.shape):
         raise AttributeError("T_full (shape={}) and TT (shape={}) should have \
-                             the same shape".format(T_full.shape,TT.shape))
+                             the same shape".format(T_full.shape,T_tt.shape))
     #We are going to calculate one average value of ranks
     d=T_full.ndim
     data_compression=[]
     shape=T_full.shape
     F_volume=np.product(shape)
-    rank=np.asarray(TT.rank)
+    rank=np.asarray(T_tt.rank)
     maxrank=max(rank)
     error=[]
     comp_rate=[]
@@ -157,9 +157,8 @@ def error_TT_data(TT,T_full):
     r=np.zeros(d+1)
     for i in range(maxrank):
         r=np.minimum(rank,r+1)
-        print(r)
-        comp_rate.append(TT.mem_eval(r)/F_volume)
-        T_approx=TT.to_full(r)
+        comp_rate.append(T_tt.mem_eval(r)/F_volume)
+        T_approx=T_tt.to_full(r)
         actual_error=norm(T_full-T_approx)/norm(T_full)
         error.append(actual_error)
 
@@ -171,7 +170,7 @@ if __name__=="__main__":
     r=[1,2,3,1]
     G=[np.random.rand(r[i],shape[i],r[i+1]) for i in range(d)]
     print([g.size for g in G])
-    TT=init_from_decomp(G)
+    TT=TT_init_from_decomp(G)
     print(TT)
     print(np.linalg.norm(TT.to_full()-TT.to_full([1,2,3,1])))
-    print(error_TT_data(TT,TT.to_full()))
+    print("Error eval:",error_TT_data(TT,TT.to_full()))

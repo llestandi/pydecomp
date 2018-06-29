@@ -145,7 +145,7 @@ def truncate(T_tucker,trunc_rank):
     core_shape=''
     modes=[]
     for j in range(d):
-        modes.append(T_tucker.u[j][:,:r[j]])
+        modes.append(T_tucker.u[j][:,:int(r[j])])
         core_shape+=":"+str(r[j])
         if j<(d-1):
             core_shape+=','

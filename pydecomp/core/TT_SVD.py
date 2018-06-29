@@ -7,7 +7,7 @@ Created on Tue Jun 19 13:19:41 2018
 """
 import numpy as np
 from core.TSVD import TSVD
-from core.TensorTrain import TensorTrain
+from core.TensorTrain import TensorTrain, TT_init_from_decomp
 from scipy.sparse import diags
 from core.POD import POD
 
@@ -59,4 +59,4 @@ def TT_SVD(F, eps=1e-8, rank=100):
     Gdshape.append(1)
 
     G[dim-1]=G[dim-1].reshape(Gdshape)
-    return TensorTrain(G)
+    return TT_init_from_decomp(G)
