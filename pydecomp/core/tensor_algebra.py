@@ -109,6 +109,25 @@ def matricize(F,dim,i):
     F1=F1.reshape((F1shape[0],np.prod(F1shape[1:])))
     return F1
 #------------------------------------------------------------------------------
+def truncate_modes(Lambda,tol,rank,U):
+    """
+    This function evaluates the values of eingenvalues comparing to the maximal
+    tolerance or the maximal number of rank(modes) in order to avoid nan values
+    and unnecesary calcul, the final number of modes will be reduced.
+    """
+    imax=len(Lambda)
+    if rank>=0:
+        imax=min(len(Lambda),rank)
+
+    Lambda1=Lambda[0]
+    i=0
+    stop_criteria=1
+    while (stop_criteria>tol) & (i<imax) :
+       stop_criteria=abs(Lambda[i]/Lambda1)
+       i+=1
+    Lambda=Lambda[:i]
+    U=U[::,:i]
+    return Lambda, U
 
 
 if __name__=="__main__":
