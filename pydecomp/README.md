@@ -1,5 +1,7 @@
 <h1>Pydecomp Overview</h1>
 
+A new organisation has been applied to the code. Main features are working. Ready for optimization by @Diego !
+
 In this project we try to build an easy to use library for decomposition of
 multiparameter Data. It is written in python and aims at being used by
 people that do not master the decomposition techniques but want to use it.

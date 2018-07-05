@@ -10,6 +10,9 @@ class cls_POD:
         self._U=np.zeros(n1,rank)
         self._Phi=np.zeros(n2,rank)
 
+    def shape(self):
+        return (n1,n2)
+
     def setSigma(self,Sigma):
         if Sigma.size != self.rank:
             raise AttributeError("rank is incoherent"+str(Sigma.size)+"!="+str(self.rank))
@@ -41,13 +44,11 @@ class cls_POD:
 
                 retrurn a 2D array of dimension 2  : (shape(X[:,0]), shape(T[:,0])
         """
-        n =  np.size(self._sigma)
-        if (r == 0) : r = n
-        #Both algorithm give the same result but the first one is way faster
-        S = np.zeros(np.shape(self.U))
-        S[:n,:n] = np.diag(self._sigma)
-        Phi_T=np.transpose(self._Phi)
-        A = np.dot(self._U[:,:],np.dot(S[:n,:r], Phi_T[:r,:]))
+        if (r < 0) or r>self.rank :
+            r = self.rank
+        S=np.reshape(self._Sigma,[r,1])
+        Phi_T=np.transpose(self._Phi[:,:r])
+        F_approx = self._U[:,:r]@(S*Phi_T)
 
         return A
 
@@ -73,3 +74,54 @@ class cls_POD:
         repr+="\n ------------------------------"
         repr+="\n----------End of canonical tensor----------"
         return repr
+
+def init_POD_class_from_decomp(U,sigma,phi):
+    """ Initializes from already computed decomposition """
+    r=sigma.size
+    n1=U.shape[0]
+    n2=phi.shape[0]
+    if U.shape[1]!= r or phi.shape[1] != r:
+        raise AttributeError("rank of input data shoud be the same\
+                             {} {} {}".format(U.shape[1],phi.shape[1],r))
+
+    approx=cls_POD(n1,n2,r)
+    approx.setSigma(sigma)
+    approx.setPhi(phi)
+    approx.setU(U)
+    return approx
+
+def pod_error_data(F_pod,F,int_matrices=None):
+    """
+    @author : Lucas 27/06/18
+    Builds a set of approximation error and associated compression rate for a
+    representative subset of ranks.
+
+    **Parameters**:
+    *F_pod*     cls_POD approximation
+    *F*    Full data matrix
+
+    **Return** ndarray of error values, ndarray of compression rates
+
+    **Todo** Add integration matrices to compute actual error associated with
+    discrete integration operator
+    """
+    from numpy.linalg import norm
+    if int_matrices :
+        raise NotImplementedError("Integration matrices not implemented yet")
+    if np.any(F.shape != F_pod.shape()):
+        raise AttributeError("F (shape={}) and F_pod (shape={}) should have \
+                             the same shape".format(F.shape,F_pod.shape()))
+    #We are going to calculate one average value of ranks
+    shape=T_full.shape
+    maxrank=max(F_pod.rank)
+    error=[]
+
+    for r in range(maxrank):
+        F_approx=F_pod.build_POD_approx(r)
+        if int_matrices:
+            pass
+        else:
+            actual_error=norm(F-F_approx)/norm(T)
+        error.append(actual_error)
+
+    return np.asarray(error)

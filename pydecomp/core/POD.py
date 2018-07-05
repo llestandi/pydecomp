@@ -9,6 +9,7 @@ from scipy.sparse import diags
 import scipy.sparse
 import numpy as np
 from scipy.linalg import norm
+from core.tensor_algebra import truncate_modes
 
 def POD(F, Mx, Mt, tol=1e-17, rank=-1):
     """
@@ -71,7 +72,7 @@ def POD(F, Mx, Mt, tol=1e-17, rank=-1):
     Lambda = Lambda[::-1]
     U=U[::,::-1]
 
-    Lambda, U=truncate_POD(Lambda,tol,rank,U)
+    Lambda, U=truncate_modes(Lambda,tol,rank,U)
     sigma=diags(np.sqrt(Lambda))
 
     Mtsqinv=inv(np.sqrt(Mt))
@@ -99,26 +100,6 @@ def inv(Mtsq):
     Mtsqinv=1/Mtsq
     Mtsqinv=diags(Mtsqinv)
     return Mtsqinv
-
-def truncate_POD(Lambda,tol,rank,U):
-    """
-    This function evaluates the values of eingenvalues comparing to the maximal
-    tolerance or the maximal number of rank(modes) in order to avoid nan values
-    and unnecesary calcul, the final number of modes will be reduced.
-    """
-    imax=len(Lambda)
-    if rank>=0:
-        imax=min(len(Lambda),rank)
-
-    Lambda1=Lambda[0]
-    i=0
-    stop_criteria=1
-    while (stop_criteria>tol) & (i<imax) :
-       stop_criteria=abs(Lambda[i]/Lambda1)
-       i+=1
-    Lambda=Lambda[:i]
-    U=U[::,:i]
-    return Lambda, U
 
 if __name__=="__main__":
     print("\n Testing POD with random matrix and Identity weights\n")
