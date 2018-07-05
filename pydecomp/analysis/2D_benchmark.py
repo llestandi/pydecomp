@@ -76,10 +76,10 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
 
         if reduction_method in ['POD','PGD']:
             M=mm.mass_matrices_creator(X)
-
+            print(M[0])
         t=time.time()
         if reduction_method=='PGD':
-            Result=PGD(M,F,epenri=np.sqrt(tol))
+            Result=PGD(M,F,epenri=tol)
         elif reduction_method=='POD':
             Result=POD(F,M[0],M[1],tol=tol)
         elif reduction_method=='SVD':
@@ -89,16 +89,17 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
         print("{} decompostion time: {:.2f} s".format(reduction_method,time.time()-t))
 
         if plot:
-            if type(Result)==cls_POD:
-                approx=init_POD_class_from_decomp(Result)
+            if type(Result)==CanonicalTensor:
+                approx_data[reduction_method]=np.stack(canonical_error_data(Result,F,rank_based=True))
+            else:
+                approx=init_POD_class_from_decomp(Result[0],Result[1],Result[2])
                 approx_data[reduction_method]=np.stack(pod_error_data(approx,F))
-            elif type(Result)==CanonicalTensor:
-                approx_data[reduction_method]=np.stack(canonical_error_data(Result,F))
+                print(approx_data[reduction_method])
                 # plot_error_canonical(Result,F, number_plot,label_line)
                 # raise NotImplementedError("Canonical plot V2 is not implemented yet")
 
     if plot:
-        benchmark_plotter(approx_data, show_plot)
+        rank_benchmark_plotter(approx_data, show_plot, plot_name)
     return
 
 def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**kwargs):
@@ -123,8 +124,8 @@ def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pd
     plt.grid()
 
     for label, err in approx_data.items():
-        ranks=np.arange(err.size)
-        xmax=max(xmax,rank[-1])
+        ranks=np.arange(1,err.size+1)
+        xmax=max(xmax,ranks[-1])
         ylim=[min(ylim[0],err[-1]),max(ylim[1],err[0])]
         ax=fig.add_subplot(111)
         ax.set_xlim(0,xmax)
@@ -215,5 +216,5 @@ def testf(test_function, shape, dim, domain ):
 
 if __name__ == '__main__':
     decomp_methods=["POD","PGD","SVD","SVD_by_EVD"]
-    benchmark_2D(decomp_methods ,shape=[32,32], test_function=2, plot=True,
-                plot_name='output/2D_approx_benchmark.pdf',tol=1e-16)
+    benchmark_2D(decomp_methods ,shape=[32,320], test_function=2, plot=True,
+                plot_name='../output/2D_approx_benchmark.pdf',tol=1e-16)

@@ -227,7 +227,7 @@ class CanonicalTensor(TensorDescriptor):
         return np.sum(self._tshape)*r
 
 
-def canonical_error_data(T_can, T_full):
+def canonical_error_data(T_can, T_full,rank_based=False):
     """
     @author : Lucas 27/06/18
     Builds a set of approximation error and associated compression rate for a
@@ -249,23 +249,34 @@ def canonical_error_data(T_can, T_full):
     maxrank=T_can.get_rank()
     #skipping most ranks of higher values as they individually yield little information
     #this could be done more precisely with separated weight (related to scalar product)
-    rank_list=build_eval_rank_list(maxrank)
+    if rank_based:
+        rank_list=np.arange(1,maxrank)
 
-    error=[]
-    comp_rate=[]
-    T_norm=norm(T_full)
-    for r in rank_list:
-        comp_rate.append(T_can.memory_eval(r)/mem_Full)
-        T_approx=T_can.to_full_quick(r)
-        actual_error=norm(T_full-T_approx)/T_norm
-        error.append(actual_error)
-        try:
-            err_var=np.abs(error[-1]-error[-2])/error[-2]
-            if comp_rate[-1]>1 or err_var<1e-10:
-                break
-        except:
-            pass
-    return np.asarray(error), np.asarray(comp_rate)
+        error=[]
+        T_norm=norm(T_full)
+        for r in rank_list:
+            T_approx=T_can.to_full_quick(r)
+            actual_error=norm(T_full-T_approx)/T_norm
+            error.append(actual_error)
+        print(error)
+        return np.asarray(error)
+    else:
+        rank_list=build_eval_rank_list(maxrank)
+        error=[]
+        comp_rate=[]
+        T_norm=norm(T_full)
+        for r in rank_list:
+            comp_rate.append(T_can.memory_eval(r)/mem_Full)
+            T_approx=T_can.to_full_quick(r)
+            actual_error=norm(T_full-T_approx)/T_norm
+            error.append(actual_error)
+            try:
+                err_var=np.abs(error[-1]-error[-2])/error[-2]
+                if comp_rate[-1]>1 or err_var<1e-10:
+                    break
+            except:
+                pass
+        return np.asarray(error), np.asarray(comp_rate)
 
 def build_eval_rank_list(maxrank):
     """

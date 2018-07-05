@@ -1,4 +1,6 @@
-# NOT used so far
+import numpy as np
+import scipy.sparse
+from scipy.sparse import dia_matrix
 
 class cls_POD:
     """ This class stores a 2D decomposition """
@@ -6,12 +8,14 @@ class cls_POD:
         self.n1=n1
         self.n2=n2
         self.rank=rank
-        self._Sigma=np.zeros(rank)
-        self._U=np.zeros(n1,rank)
-        self._Phi=np.zeros(n2,rank)
+        self._Sigma=None
+        self._U=None
+        self._Phi=None
+
+        return
 
     def shape(self):
-        return (n1,n2)
+        return (self.n1,self.n2)
 
     def setSigma(self,Sigma):
         if Sigma.size != self.rank:
@@ -19,14 +23,14 @@ class cls_POD:
         self._Sigma=Sigma
 
     def setU(self,U):
-        if U.shape[0] != n1:
+        if U.shape[0] != self.n1:
             raise AttributeError("n1 incoherent"+str(U.shape[0])+"!="+str(n1))
         if U.shape[1] != self.rank:
             raise AttributeError("rank is incoherent"+str(U.shape[1])+"!="+str(self.rank))
         self._U=U
 
     def setPhi(self,Phi):
-        if Phi.shape[0] != n2:
+        if Phi.shape[0] != self.n2:
             raise AttributeError("n1 incoherent"+str(Phi.shape[0])+"!="+str(n2))
         if Phi.shape[1] != self.rank:
             raise AttributeError("rank is incoherent"+str(Phi.shape[1])+"!="+str(self.rank))
@@ -35,7 +39,7 @@ class cls_POD:
     def build_POD_approx(self,r=0):
         """
             This function computes the sum of the POD modes up to a given r
-                $$ A = sum_i=1^r (sigma_i . X_i \times T_i) $$
+                $$ F_approx = sum_i=1^r (sigma_i . X_i \times T_i) $$
 
                 X       is a 2 way np.array that contains at least the r first POD spatial modes
                 T       is a 2 way np.array that contains at least the r first POD temporal modes
@@ -46,11 +50,11 @@ class cls_POD:
         """
         if (r < 0) or r>self.rank :
             r = self.rank
-        S=np.reshape(self._Sigma,[r,1])
+        S=np.reshape(self._Sigma[:r],[r,1])
         Phi_T=np.transpose(self._Phi[:,:r])
         F_approx = self._U[:,:r]@(S*Phi_T)
 
-        return A
+        return F_approx
 
     def __repr__(self):
         repr="Canonical Tensor represenation"
@@ -75,11 +79,16 @@ class cls_POD:
         repr+="\n----------End of canonical tensor----------"
         return repr
 
-def init_POD_class_from_decomp(U,sigma,phi):
+def init_POD_class_from_decomp(U,Sigma,phi):
     """ Initializes from already computed decomposition """
+    if type(Sigma)==dia_matrix:
+        sigma=Sigma.diagonal()
+    else:
+        sigma=Sigma
     r=sigma.size
     n1=U.shape[0]
     n2=phi.shape[0]
+    print(r,n1,n2)
     if U.shape[1]!= r or phi.shape[1] != r:
         raise AttributeError("rank of input data shoud be the same\
                              {} {} {}".format(U.shape[1],phi.shape[1],r))
@@ -112,16 +121,16 @@ def pod_error_data(F_pod,F,int_matrices=None):
         raise AttributeError("F (shape={}) and F_pod (shape={}) should have \
                              the same shape".format(F.shape,F_pod.shape()))
     #We are going to calculate one average value of ranks
-    shape=T_full.shape
-    maxrank=max(F_pod.rank)
+    shape=F.shape
+    maxrank=F_pod.rank
     error=[]
-
+    norm_F=norm(F)
     for r in range(maxrank):
         F_approx=F_pod.build_POD_approx(r)
         if int_matrices:
             pass
         else:
-            actual_error=norm(F-F_approx)/norm(T)
+            actual_error=norm(F-F_approx)/norm_F
         error.append(actual_error)
 
     return np.asarray(error)
