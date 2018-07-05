@@ -209,10 +209,10 @@ class CanonicalTensor(TensorDescriptor):
 
         **Return** ndarray of shape = self._tshape
         """
-        if rank <= 0 or rank > self.get_rank():
+        if rank < 0 or rank > self.get_rank():
             r=self.get_rank()
         else:
-            r=rank
+            r=rank+1
         U_trunc=[(np.stack(self._U[i][:r])).T for i in range(self._dim)]
         shape=self._tshape
         flat_eval=U_trunc[0] @ np.transpose(ta.multi_kathri_rao(U_trunc[1:]))
@@ -250,32 +250,30 @@ def canonical_error_data(T_can, T_full,rank_based=False):
     #skipping most ranks of higher values as they individually yield little information
     #this could be done more precisely with separated weight (related to scalar product)
     if rank_based:
-        rank_list=np.arange(1,maxrank)
-
-        error=[]
-        T_norm=norm(T_full)
-        for r in rank_list:
-            T_approx=T_can.to_full_quick(r)
-            actual_error=norm(T_full-T_approx)/T_norm
-            error.append(actual_error)
-        print(error)
-        return np.asarray(error)
+        rank_list=np.arange(0,maxrank)
     else:
         rank_list=build_eval_rank_list(maxrank)
-        error=[]
-        comp_rate=[]
-        T_norm=norm(T_full)
-        for r in rank_list:
+
+    error=[]
+    T_norm=norm(T_full)
+    comp_rate=[]
+    for r in rank_list:
+        if not rank_based:
             comp_rate.append(T_can.memory_eval(r)/mem_Full)
-            T_approx=T_can.to_full_quick(r)
-            actual_error=norm(T_full-T_approx)/T_norm
-            error.append(actual_error)
-            try:
-                err_var=np.abs(error[-1]-error[-2])/error[-2]
-                if comp_rate[-1]>1 or err_var<1e-10:
-                    break
-            except:
-                pass
+
+        T_approx=T_can.to_full_quick(r)
+        actual_error=norm(T_full-T_approx)/T_norm
+        error.append(actual_error)
+        try:
+            err_var=np.abs(error[-1]-error[-2])/error[-2]
+            if comp_rate[-1]>1 or err_var<1e-10:
+                break
+        except:
+            pass
+
+    if rank_based:
+        return np.asarray(error)
+    else:
         return np.asarray(error), np.asarray(comp_rate)
 
 def build_eval_rank_list(maxrank):

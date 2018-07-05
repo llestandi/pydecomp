@@ -39,7 +39,7 @@ def TSVD(F, epsilon = 1e-10, rank=100, solver='SVD'):
         s,v=truncate_modes(S, epsilon, rank, V)
 
     elif solver=='EVD':
-        u,s,v = SVD_by_EVD(F)
+        u,s,v = SVD_by_EVD(F,tol=epsilon,rank=rank)
 
     return u,s,v
 

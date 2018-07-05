@@ -72,9 +72,10 @@ def PGD(M,F, epenri=1e-12, maxfix=15):
         R,n_iter=fixed_point(M,C._tshape,C._U,F,n_iter ,C._rank,maxfix)
         C.add_enrich(R)
         if C.get_rank()==1:
-            REF=R[dim-1]
+            REF=norm(R[dim-1])
 
-        eps=norm(R[dim-1])/norm(REF)
+        R_norm=norm(R[dim-1])
+        eps=R_norm/REF
     # @Diego is this necessary?
     #Eliminating the first (zeros) row created to initiate the algorithm
     C._U=[x[1:,::] for x in C._U]

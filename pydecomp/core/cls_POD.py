@@ -36,7 +36,7 @@ class cls_POD:
             raise AttributeError("rank is incoherent"+str(Phi.shape[1])+"!="+str(self.rank))
         self._Phi=Phi
 
-    def build_POD_approx(self,r=0):
+    def build_POD_approx(self,r=-1):
         """
             This function computes the sum of the POD modes up to a given r
                 $$ F_approx = sum_i=1^r (sigma_i . X_i \times T_i) $$
@@ -125,7 +125,7 @@ def pod_error_data(F_pod,F,int_matrices=None):
     maxrank=F_pod.rank
     error=[]
     norm_F=norm(F)
-    for r in range(maxrank):
+    for r in range(1,maxrank+1):
         F_approx=F_pod.build_POD_approx(r)
         if int_matrices:
             pass
