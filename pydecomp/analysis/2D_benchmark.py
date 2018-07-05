@@ -68,7 +68,7 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
         raise ValueError('output_variable_name must be a string')
 
     X,F=testf(test_function, shape, dim, domain)
-
+    modes_dict={}
     #########################END OF TESTS##########################################
     for ii in range(number_of_methods):
         reduction_method=list_reduction_method[ii]
@@ -95,8 +95,11 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
             else:
                 approx=init_POD_class_from_decomp(Result[0],Result[1],Result[2])
                 approx_data[reduction_method]=np.stack(pod_error_data(approx,F))
+                modes_dict[reduction_method]=Result[0][:2]
     if plot:
         rank_benchmark_plotter(approx_data, show_plot, plot_name)
+        mode_1D_plot(modes_dict)
+
 
     return
 

@@ -8,18 +8,17 @@ def mode_1D_plot(modes_dict,show=True,plot_name=None):
     xlim=[0,0]
     ylim=[0.1,0.1]
     k=0
-    plt.yscale('lin')
-    plt.xlabel("Compresion rate (%)")
+    plt.xlabel("x")
     plt.ylabel('Relative Error')
     plt.grid()
-
-    for label, data in approx_data.items():
+    grid=None
+    for label, data in modes_dict.items():
         if not grid:
-            grid=np.arange(0,1,data[:,0].size)
-        for i in range(1):
-            mode=data[:,0]
-            ax=fig.add_subplot(111)
-            plt.plot(grid, mode , styles[k], label=label)
+            grid=np.arange(0,1,data[0,:].size)
+        mode=data[0,:]
+        print(mode.size,grid.size)
+        ax=fig.add_subplot(111)
+        plt.plot(grid, mode , styles[k], label=label)
         k+=1
     #saving plot as pdf
     plt.legend()
