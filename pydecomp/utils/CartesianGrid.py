@@ -26,15 +26,16 @@ class CartesianGrid:
 
         if (dim != np.size(tshape)):
             print('####### ERROR ####')
-            print('Declared dimention is not congruent with div_tshape \
+            print(dim,tshape)
+            raise AttributeError('Declared dimention is not congruent with div_tshape \
                   number of elements, they have to be equals')
         if (dim != np.size(lower_limit)):
             print('####### ERROR ####')
-            print('Declared dimention is not congruent with lower_limit \
+            raise AttributeError('Declared dimention is not congruent with lower_limit \
                   number of elements, they have to be equals')
         if (dim != np.size(upper_limit)):
             print('####### ERROR ####')
-            print('Declared dimention is not congruent with upper_limit \
+            raise AttributeError('Declared dimention is not congruent with upper_limit \
                   number of elements, they have to be equals')
 
         self.dim = dim
@@ -44,7 +45,6 @@ class CartesianGrid:
         self.upper_limit = upper_limit
 
     def SpaceCreator(self):
-
         for i in range(self.dim):
             self.X.append(np.linspace(self.lower_limit[i],self.upper_limit[i],
                                       self.tshape[i]))

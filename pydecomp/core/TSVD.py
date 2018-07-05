@@ -6,7 +6,7 @@ Created on Tue Apr  3 14:19:09 2018
 """
 import numpy as np
 from scipy.sparse import diags
-from tensor_algebra import truncate_modes
+from core.tensor_algebra import truncate_modes
 def TSVD(F, epsilon = 1e-10, rank=100, solver='SVD'):
     """
     This function calculates a matrix decomposition by using the truncated SVD
@@ -69,7 +69,6 @@ def SVD_by_EVD(F,tol=0,rank=-1):
 
     if Transposed_POD:
         U,phi=phi,U
-
 
     return phi, sigma, U
 

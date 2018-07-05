@@ -6,6 +6,9 @@ Created on Thu May  3 10:30:18 2018
 
 """
 # @TODO Likely to endup in full tensor file
+# @Diego TODO Incorporate wrapper for norm and scalar product easy computing
+# (from multilinear multiplications, especially on ndarrays)
+
 import numpy as np
 import scipy.sparse
 import operator
@@ -82,7 +85,7 @@ def multi_kathri_rao(matrices):
     if type(matrices)==np.ndarray:
         return matrices
     if len(matrices)==1:
-        return matrices[1]
+        return matrices[0]
 
     prod=np.ones((1,matrices[0].shape[1]))
     for M in matrices:

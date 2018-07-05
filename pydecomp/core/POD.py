@@ -9,7 +9,7 @@ from scipy.sparse import diags
 import scipy.sparse
 import numpy as np
 from scipy.linalg import norm
-from tensor_algebra import truncate_modes
+from core.tensor_algebra import truncate_modes
 
 def POD(F, Mx, Mt, tol=1e-17, rank=-1):
     """
