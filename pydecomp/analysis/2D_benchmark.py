@@ -83,7 +83,7 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
 
         t=time.time()
         if reduction_method=='PGD':
-            Result=PGD(M,F,epenri=tol)
+            Result=PGD(M,F,epenri=np.sqrt(tol))
         elif reduction_method=='POD':
             Result=POD(F,M[0],M[1],tol=tol)
         elif reduction_method=='SVD':
@@ -103,9 +103,9 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
                 modes_dictX[reduction_method]=Result[0][:,:2]
                 modes_dictY[reduction_method]=Result[2][:,:2]
     if plot:
-        rank_benchmark_plotter(approx_data, show_plot, plot_name)
-        # mode_1D_plot(modes_dictX)
-        # mode_1D_plot(modes_dictY)
+        # rank_benchmark_plotter(approx_data, show_plot, plot_name)
+        # mode_1D_plot(modes_dictX,plot_name="../plots/Xmodes_2D.pdf")
+        mode_1D_plot(modes_dictY,plot_name="../plots/Ymodes_2D.pdf")
 
 
     return
@@ -113,4 +113,4 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
 if __name__ == '__main__':
     decomp_methods=["POD","PGD","SVD","SVD_by_EVD"]
     benchmark_2D(decomp_methods ,shape=[32,32], test_function=2, plot=True,
-                plot_name='../output/2D_approx_benchmark.pdf',tol=1e-16)
+                plot_name='../plots/2D_approx_benchmark.pdf',tol=1e-32)

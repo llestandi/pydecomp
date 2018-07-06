@@ -3,8 +3,15 @@ import numpy as np
 
 def mode_1D_plot(modes_dict,show=True,plot_name=None):
     """This function plots 1D modes and gives PDF and plot"""
+
+    font = {'family' : 'normal',
+        'size'   : 14}
+
+    plt.rc('font', **font)
+    plt.rc('legend', fontsize=12)
+    linestyle={'linewidth':2,'markersize':6, 'markeredgewidth':2}
+    fig=plt.figure(figsize=(7,6))
     styles=['r1-','b1--','r2-','b2--','r3-','b3--','r4-','b4-']
-    fig=plt.figure()
     xlim=[0,0]
     ylim=[0.1,0.1]
     k=0
@@ -22,7 +29,7 @@ def mode_1D_plot(modes_dict,show=True,plot_name=None):
                 grid=np.linspace(0,1,mode.size)
                 def_grid=True
             ax=fig.add_subplot(111)
-            plt.plot(grid, mode , styles[k], label=label+" Y_{}".format(i))
+            plt.plot(grid, mode , styles[k], label=label+" Y_{}".format(i+1))
             # plt.plot(grid, mode , styles[k], label=label)
             k+=1
     #saving plot as pdf
@@ -49,8 +56,13 @@ def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pd
     *show* [bool]        whether the plot is shown or not
     *plot_name* [str]    plot output location, if empty string, no plot
     """
-    styles=['r+-','bx--','k8-','gs--','m3--']
-    fig=plt.figure()
+    font = {'family' : 'normal',
+        'size'   : 13}
+
+    plt.rc('font', **font)
+    linestyle={'linewidth':2,'markersize':6, 'markeredgewidth':2}
+    styles=['r+-','bx--','k1-','g2--','m3--']
+    fig=plt.figure(figsize=(7,6))
     xmax=1
     ylim=[0.1,0.1]
     k=0
@@ -66,7 +78,7 @@ def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pd
         ax=fig.add_subplot(111)
         ax.set_xlim(0,xmax)
         ax.set_ylim(ylim)
-        plt.plot(ranks, err , styles[k], label=label)
+        plt.plot(ranks, err , styles[k],**linestyle, label=label)
 
         k+=1
     #saving plot as pdf
