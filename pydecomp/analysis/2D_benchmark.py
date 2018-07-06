@@ -68,7 +68,8 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
         raise ValueError('output_variable_name must be a string')
 
     X,F=testf(test_function, shape, dim, domain)
-    modes_dict={}
+    modes_dictX={}
+    modes_dictY={}
     #########################END OF TESTS##########################################
     for ii in range(number_of_methods):
         reduction_method=list_reduction_method[ii]
@@ -76,7 +77,9 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
             raise AttributeError("Wrong reduction method: "+reduction_method)
 
         if reduction_method in ['POD','PGD']:
-            M=mm.mass_matrices_creator(X)
+            X=[np.ones(x) for x in shape]
+            M=[diags(x) for x in X]
+            # M=mm.mass_matrices_creator(X)
 
         t=time.time()
         if reduction_method=='PGD':
@@ -92,18 +95,22 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
         if plot:
             if type(Result)==CanonicalTensor:
                 approx_data[reduction_method]=np.stack(canonical_error_data(Result,F,rank_based=True))
+                modes_dictX[reduction_method]=Result._U[0][:2,:].T
+                modes_dictY[reduction_method]=Result._U[1][:2,:].T
             else:
                 approx=init_POD_class_from_decomp(Result[0],Result[1],Result[2])
                 approx_data[reduction_method]=np.stack(pod_error_data(approx,F))
-                modes_dict[reduction_method]=Result[0][:2]
+                modes_dictX[reduction_method]=Result[0][:,:2]
+                modes_dictY[reduction_method]=Result[2][:,:2]
     if plot:
         rank_benchmark_plotter(approx_data, show_plot, plot_name)
-        mode_1D_plot(modes_dict)
+        # mode_1D_plot(modes_dictX)
+        # mode_1D_plot(modes_dictY)
 
 
     return
 
 if __name__ == '__main__':
     decomp_methods=["POD","PGD","SVD","SVD_by_EVD"]
-    benchmark_2D(decomp_methods ,shape=[32,3200], test_function=2, plot=True,
+    benchmark_2D(decomp_methods ,shape=[32,32], test_function=2, plot=True,
                 plot_name='../output/2D_approx_benchmark.pdf',tol=1e-16)

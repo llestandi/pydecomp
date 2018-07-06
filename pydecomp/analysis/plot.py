@@ -3,7 +3,7 @@ import numpy as np
 
 def mode_1D_plot(modes_dict,show=True,plot_name=None):
     """This function plots 1D modes and gives PDF and plot"""
-    styles=['r+-','b*-','ko-','gh:','mh--']
+    styles=['r1-','b1--','r2-','b2--','r3-','b3--','r4-','b4-']
     fig=plt.figure()
     xlim=[0,0]
     ylim=[0.1,0.1]
@@ -11,17 +11,25 @@ def mode_1D_plot(modes_dict,show=True,plot_name=None):
     plt.xlabel("x")
     plt.ylabel('Relative Error')
     plt.grid()
-    grid=None
+    def_grid=False
+    for i in range(modes_dict['PGD'].shape[1]):
+        correlation=modes_dict['PGD'][:,i].T @ modes_dict['POD'][:,i]
+        modes_dict['PGD'][:,i]=modes_dict['PGD'][:,i]/correlation
     for label, data in modes_dict.items():
-        if not grid:
-            grid=np.arange(0,1,data[0,:].size)
-        mode=data[0,:]
-        print(mode.size,grid.size)
-        ax=fig.add_subplot(111)
-        plt.plot(grid, mode , styles[k], label=label)
-        k+=1
+        for i in range(data.shape[1]):
+            mode=data[:,i]
+            if not def_grid:
+                grid=np.linspace(0,1,mode.size)
+                def_grid=True
+            ax=fig.add_subplot(111)
+            plt.plot(grid, mode , styles[k], label=label+" Y_{}".format(i))
+            # plt.plot(grid, mode , styles[k], label=label)
+            k+=1
     #saving plot as pdf
-    plt.legend()
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+          ncol=4, fancybox=True, shadow=True)
+    # ax.legend(bbox_to_anchor=(1.05, 1), loc=2)
+    # plt.legend()
     if show:
         plt.show()
     if plot_name:
