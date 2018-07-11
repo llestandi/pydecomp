@@ -9,15 +9,13 @@ from scipy.sparse import diags
 import scipy.sparse
 import numpy as np
 
-from Tucker import TuckerTensor
-from POD import POD
-from TSVD import TSVD
+from core.Tucker import TuckerTensor
+from core.POD import POD
+from core.TSVD import TSVD
 
-import tensor_algebra as ta
-import MassMatrices as mm
-import sys
-sys.path.append('/media/diego/OS/Users/Diego Britez/Documents/stage/pydecomp_V2/pydecomp/utils')
-import misc as misc
+import core.tensor_algebra as ta
+import core.MassMatrices as mm
+import utils.misc as misc
 
 def HOPOD(F,M, tol=1e-10, sparse=False):
     """
@@ -102,22 +100,17 @@ def SHOPOD(F,MM, tol=1e-10,rank=-1):
         Wshape=[x for x in W.shape]
         Wmat=ta.matricize(W,dim,0)
         Mx,Mt = mm.matricize_mass_matrix(dim,0,M)
-        phi,sigma,A=POD(Wmat.T,Mt,Mx,tol=tol,rank=rank)
-        
+        phi,sigma,A=POD(Wmat.T,Mt,Mx,tol=tol,rank=rank)       
         W=(sigma*phi).T
-
-
         Wshape[0]=W.shape[0]
         W=W.reshape(Wshape)
         #changing the first mass matrix for a unit vector and send it to the 
-        #back
-        
+        #back        
         M[0]=np.ones(Wshape[0])
         if SPARSE:
             M[0]=diags(M[0])
         M.insert((dim-1),M.pop(0))
         W=np.moveaxis(W,0,-1)
-
         PHI.append(A)
     
     Decomposed_Tensor=TuckerTensor(W,PHI)
@@ -125,13 +118,16 @@ def SHOPOD(F,MM, tol=1e-10,rank=-1):
     return Decomposed_Tensor
 
 
-def STHOSVD(F):
+def STHOSVD(F,epsilon = 1e-10, rank=100, solver='SVD'):
     """
     This method decomposes a ndarray type data (multivariable) in a Tucker
     class element by using the Secuentialy Tuncated High Order Singular Value
     Decomposition method.\n
     **Paramameter**\n
     F: ndarray type element.\n
+    epsilon: stoping criteria of the algorithm.\n
+    rank: maximal number of ranks if the stoping criteria was not reached.\n
+    solver:
     **Returns**
     Decomposed_Tensor: Tucker class type object. To read more information about
     this object type, more information could be found in Tucker class
@@ -144,19 +140,16 @@ def STHOSVD(F):
     for i in range(dim):
         Wshape=[x for x in W.shape]
         Wmat=ta.matricize(W,dim,0)
-        phi,sigma,A=TSVD(Wmat)
-        
-        W=sigma@A.T
-
+        phi,sigma,A=TSVD(Wmat, epsilon=epsilon, rank=rank, solver=solver)
+        W=(sigma*A).T
         Wshape[0]=W.shape[0]
         W=W.reshape(Wshape)
         W=np.moveaxis(W,0,-1)
-
         PHI.append(phi)
-
     Decomposed_Tensor=TuckerTensor(W,PHI)
 
     return Decomposed_Tensor
+
 
 def THOSVD(F):
     """

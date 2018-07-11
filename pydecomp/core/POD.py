@@ -9,12 +9,13 @@ from scipy.sparse import diags
 import scipy.sparse
 import numpy as np
 from scipy.linalg import norm
-from tensor_algebra import truncate_modes
-from MassMatrices import DiaMatrix
+from core.tensor_algebra import truncate_modes
+from core.MassMatrices import DiaMatrix
+from core.TSVD import TSVD
 import timeit
 #import MassMatrix
 
-def POD(F, Mx=[], Mt=[], tol=1e-10, rank=-1):
+def POD(F, Mx=None, Mt=None, tol=1e-10, rank=-1):
     """
     This function decompose a matrix as the productphi * diag(sigma) * A^t
     excuting the  POD method. Here the problem is treated as an apparent 2
@@ -42,46 +43,44 @@ def POD(F, Mx=[], Mt=[], tol=1e-10, rank=-1):
     """
     start=timeit.default_timer()
     tshape=F.shape
-    #Creating mass matrices for l2 vectorial space if there is no mass matrices
-    #declared
-    if Mx==[]:
-        Mx=np.ones(tshape[0])
-    if Mt==[]:
-        Mt=np.ones(tshape[1])
-    mx=DiaMatrix(Mx)
-    mt=DiaMatrix(Mt)
-   
-    Transposed_POD=False
-    if tshape[1]>tshape[0]:
-        F=F.T
-        mx.M, mt.M = mt.M, mx.M
-        Transposed_POD=True 
-    C=build_correlation(F, mx, mt)
-    Lambda , U =np.linalg.eigh(C)
-    # Reversing order
-    Lambda = Lambda[::-1]
-    U=U[::,::-1]
-    Lambda, U=truncate_modes(Lambda,tol,rank,U)
-    sigma=np.sqrt(Lambda)
     
-    #Mtsq is has the square root of the Mt elements
-    A=(((mt.sqrt()).inv()).transpose())@U
-    
-    if type(mx.M)==scipy.sparse.dia.dia_matrix:
-        phi=(F@mt.M@A)
-        #Now we normalise phi
-        #phi=the operation phi[:,np.newaxis] allows to multiply a matrix to a 
-        # a vector simulating product of a matrix with a diagonal matrix
-        phi=phi*(1/sigma)
-        if Transposed_POD:
-            A,phi=phi,A
+    if Mx==None:
+     phi,sigma,A=TSVD(F,epsilon=tol,solver='EVD')
     else:
-        phi=F*mt.M@A
-        phi=phi*(1/sigma)
-        if Transposed_POD:
-            A,phi=phi,A
-    stop=timeit.default_timer()
-    print(stop-start)
+        mx=DiaMatrix(Mx)
+        mt=DiaMatrix(Mt)
+       
+        Transposed_POD=False
+        if tshape[1]>tshape[0]:
+            F=F.T
+            mx.M, mt.M = mt.M, mx.M
+            Transposed_POD=True 
+        C=build_correlation(F, mx, mt)
+        Lambda , U =np.linalg.eigh(C)
+        # Reversing order
+        Lambda = Lambda[::-1]
+        U=U[::,::-1]
+        Lambda, U=truncate_modes(Lambda,tol,rank,U)
+        sigma=np.sqrt(Lambda)
+        
+        #Mtsq is has the square root of the Mt elements
+        A=(((mt.sqrt()).inv()).transpose())@U
+        
+        if type(mx.M)==scipy.sparse.dia.dia_matrix:
+            phi=(F@mt.M@A)
+            #Now we normalise phi
+            #phi=the operation phi[:,np.newaxis] allows to multiply a matrix to a 
+            # a vector simulating product of a matrix with a diagonal matrix
+            phi=phi*(1/sigma)
+            if Transposed_POD:
+                A,phi=phi,A
+        else:
+            phi=F*mt.M@A
+            phi=phi*(1/sigma)
+            if Transposed_POD:
+                A,phi=phi,A
+        stop=timeit.default_timer()
+        print(stop-start)
     return phi, sigma, A
 
 def build_correlation(F,mx,mt):

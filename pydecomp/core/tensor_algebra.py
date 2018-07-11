@@ -11,15 +11,14 @@ Created on Thu May  3 10:30:18 2018
 
 import numpy as np
 import scipy.sparse
-import operator
 from scipy.sparse import diags
 
 def multilinear_multiplication(phi,F,dim):
     """
     **Parameters**:_ \n
 
-    phi= Is a list with n-array type elements as the elements.\n \n
-    F  = 2d Array type (unfolded Tensor expresed as a matrix). \n
+    phi= Is a list with matrices type elements as the elements.\n 
+    F  = nd Array type . \n
     dim = tuple, list or array type that its value must be coherent with
     the number of elements of phi. \n \n
     **Return**:_ \n
@@ -45,7 +44,7 @@ def multilinear_multiplication(phi,F,dim):
        formeW=actual_dimention
        W=np.reshape(W,formeW)
     return W.T
-# @Diego Please test the fastest one and remove the other
+# @Diego Please test the fastest one and remove the other
 #optional algorithm for multilinear_multiplication
 # def multilinear_multiplication(PHI, F, dim):
 #     index=finding_biggest_mode(PHI)

@@ -5,7 +5,7 @@ Created on Wed May  2 09:25:40 2018
 @author: Diego Britez
 """
 
-from tensor_algebra import multilinear_multiplication
+from core.tensor_algebra import multilinear_multiplication
 import pickle
 import numpy as np
 
