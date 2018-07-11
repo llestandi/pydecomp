@@ -7,7 +7,7 @@ Created on Tue Jun 19 13:19:41 2018
 """
 import numpy as np
 from core.TSVD import TSVD
-from core.TensorTrain import TensorTrain, TT_init_from_decomp
+from core.TensorTrain import  TT_init_from_decomp
 from scipy.sparse import diags
 from core.POD import POD
 
@@ -41,18 +41,14 @@ def TT_SVD(F, eps=1e-8, rank=100):
        Csize=C.size
        C=C.reshape(aux,int(Csize/aux))
        if rank!=100:
-           u,sigma,v=TSVD(C, rank=rank)
+           u,sigma,v=TSVD(C, rank=rank, solver='EVD')
        else:
-           mass1=np.ones(aux)
-           mass1=diags(mass1)
-           mass2=np.ones(int(Csize/aux))
-           mass2=diags(mass2)
-           u,sigma,v=POD(C, mass1,mass2,tol=eps)
+           u,sigma,v=TSVD(C, epsilon = eps, rank=100, solver='EVD')
 
        new_rank=sigma.shape[0]
        r.append(new_rank)
        G.append(u.reshape(r[i],tshape[i],r[i+1]))
-       C=sigma@v.T
+       C=(sigma*v).T
     G.append(C)
     Gdshape=list(G[dim-1].shape)
     Gdshape.append(1)

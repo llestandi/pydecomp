@@ -15,7 +15,7 @@ from core.TSVD import TSVD
 import timeit
 #import MassMatrix
 
-def POD(F, Mx=None, Mt=None, tol=1e-10, rank=-1):
+def POD(F, Mx=[], Mt=[], tol=1e-10, rank=-1):
     """
     This function decompose a matrix as the productphi * diag(sigma) * A^t
     excuting the  POD method. Here the problem is treated as an apparent 2
@@ -44,7 +44,7 @@ def POD(F, Mx=None, Mt=None, tol=1e-10, rank=-1):
     start=timeit.default_timer()
     tshape=F.shape
     
-    if Mx==None:
+    if Mx==[]:
      phi,sigma,A=TSVD(F,epsilon=tol,solver='EVD')
     else:
         mx=DiaMatrix(Mx)
@@ -75,12 +75,13 @@ def POD(F, Mx=None, Mt=None, tol=1e-10, rank=-1):
             if Transposed_POD:
                 A,phi=phi,A
         else:
-            phi=F*mt.M@A
+            #phi=F*mt.M@A
+            phi=F@(mt@A)
             phi=phi*(1/sigma)
             if Transposed_POD:
                 A,phi=phi,A
         stop=timeit.default_timer()
-        print(stop-start)
+       # print(stop-start)
     return phi, sigma, A
 
 def build_correlation(F,mx,mt):
@@ -107,7 +108,7 @@ def build_correlation(F,mx,mt):
         #C=C*(np.sqrt(mt.M.T))
     return C
 
-"""
+
 if __name__=="__main__":
     print("\n Testing POD with random matrix and Identity weights\n")
     n,m=5,6
@@ -119,4 +120,3 @@ if __name__=="__main__":
     F_approx = phi*sigma@A.T
     err=np.linalg.norm(F_approx-F)
     print("\n Should be small : {}".format(err))
-"""

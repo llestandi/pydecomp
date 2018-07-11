@@ -8,7 +8,7 @@ Fusion of all tucker related decomposition methods performed by Lucas on 28/06/1
 from scipy.sparse import diags
 import scipy.sparse
 import numpy as np
-
+import timeit
 from core.Tucker import TuckerTensor
 from core.POD import POD
 from core.TSVD import TSVD
@@ -34,6 +34,7 @@ def HOPOD(F,M, tol=1e-10, sparse=False):
     **Returns:** \n
     Tucker class element\n
     """
+    start=timeit.default_timer()
     tshape=F.shape
     dim=len(tshape)
     PHI=[]
@@ -51,7 +52,8 @@ def HOPOD(F,M, tol=1e-10, sparse=False):
     PHIT=integrationphi(PHIT,M,sparse=SPARSE)
     W =ta.multilinear_multiplication(PHIT, F, dim)
     Decomposed_Tensor=TuckerTensor(W,PHI)
-
+    stop=timeit.default_timer()
+    print(stop-start)
     return Decomposed_Tensor
 
 def integrationphi(PHIT,M,sparse=False):
@@ -118,7 +120,7 @@ def SHOPOD(F,MM, tol=1e-10,rank=-1):
     return Decomposed_Tensor
 
 
-def STHOSVD(F,epsilon = 1e-10, rank=100, solver='SVD'):
+def STHOSVD(F,epsilon = 1e-13, rank=100, solver='EVD'):
     """
     This method decomposes a ndarray type data (multivariable) in a Tucker
     class element by using the Secuentialy Tuncated High Order Singular Value
@@ -151,7 +153,7 @@ def STHOSVD(F,epsilon = 1e-10, rank=100, solver='SVD'):
     return Decomposed_Tensor
 
 
-def THOSVD(F):
+def THOSVD(F,epsilon = 1e-13, rank=100, solver='EVD'):
     """
     This method decomposes a ndarray type data (multivariable) in a Tucker
     class element by using the Tuncated High Order Singular Value Decomposition
@@ -169,7 +171,7 @@ def THOSVD(F):
     PHI=[]
     for i in range(dim):
         Fmat=ta.matricize(F,dim,i)
-        phi,sigma,A=TSVD(Fmat)
+        phi,sigma,A=TSVD(Fmat, epsilon=epsilon, rank=rank, solver=solver)
         PHI.append(phi)
     PHIT=misc.list_transpose(PHI)
     W=ta.multilinear_multiplication(PHIT,F,dim)
