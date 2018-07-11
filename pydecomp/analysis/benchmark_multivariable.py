@@ -256,7 +256,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
 
     if plot:
         benchmark_plotter(approx_data, show_plot)
-    return
+    return Result
 
 def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**kwargs):
     """
@@ -408,8 +408,8 @@ def testf(test_function, shape, dim, domain ):
 
 
 if __name__ == '__main__':
-    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]#,"PGD"]
-    solver=["trapezes","trapezes","trapezes","SVD"]#,'trapezes']
+    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+    solver=["trapezes","trapezes","trapezes","SVD",'trapezes']
     benchmark_multivariable(decomp_methods, solver ,shape=[32,32,32,32],
                             test_function=2, plot=True,output_decomp='',
                             plot_name='output/approx_benchmark.pdf',tol=1e-16)
