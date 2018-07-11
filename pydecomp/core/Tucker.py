@@ -4,14 +4,13 @@ Created on Wed May  2 09:25:40 2018
 
 @author: Diego Britez
 """
-from deprecated.tensor_descriptor_class import TensorDescriptor
-from core.tensor_algebra import multilinear_multiplication
-from deprecated.full_format import FullFormat
+
+from tensor_algebra import multilinear_multiplication
 import pickle
 import numpy as np
 
 # @Diego Need for uniformization with decided structure for full format (ndarray)
-class TuckerTensor(TensorDescriptor):
+class TuckerTensor():
     """
     This class is created to storage a decomposed Tensor in the Tucker
     Format, this is code is based in ttensor code from pytensor code package.\n
@@ -55,7 +54,6 @@ class TuckerTensor(TensorDescriptor):
                 raise ValueError(b.format(i));
 
         self._dim = core.ndim
-
         self.core = core.copy();
         self.rank = self.core.shape
         self.u = uIn;
@@ -90,10 +88,7 @@ class TuckerTensor(TensorDescriptor):
 
         dim=len(self.u)
         Fresult=multilinear_multiplication(self.u,self.core,dim)
-        tshape=Fresult.shape
-        Result=FullFormat(Fresult,tshape,dim)
-
-        return Result
+        return Fresult
 #-----------------------------------------------------------------------------
     def __str__(self):
         ret = "ttensor of size {0}\n".format(self.shape);

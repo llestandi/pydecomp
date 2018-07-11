@@ -57,7 +57,6 @@ class DiaMatrix:
         """
         reponse=np.sqrt(self.M)
         reponse=DiaMatrix(reponse)
-        
         return reponse
     
     def transpose(self):
@@ -67,16 +66,16 @@ class DiaMatrix:
         reponse=DiaMatrix(self.M.T)
         return reponse
 #------------------------------------------------------------------------------
-"""
+
 class MassMatrices:
-    
+    """
     Parameters: \n
     List of DiaMatrix objects.
-    
+    """
     def __init__(self,DiaMatrix_list):
         self.DiaMatrix_list=DiaMatrix_list
         self.shape=[x.size for x in DiaMatrix_list]
-"""        
+       
 
 #------------------------------------------------------------------------------
 
@@ -140,10 +139,9 @@ def mass_matrices_creator(X, sparse=False, integration_method='trapeze'):
     if sparse:
         for i in range (dim):
             M[i]=diags(M[i])
-   
     return M        
    
-def matricize_mass_matrix(dim,i,M,sparse=True):
+def matricize_mass_matrix(dim,i,M,sparse=False):
     """
     Returns the equivalent mass matrices of a matricized tensor.\n
     **Parameters** \n
@@ -168,7 +166,7 @@ def matricize_mass_matrix(dim,i,M,sparse=True):
     \otimes M_{d}`
     """
     #copy the list of mass matrices to M2
-    M2=M.DiaMatrix_list[:]
+    M2=M[:]
     #moving the actual indice to the first order
     M2.insert(0,M2.pop(i))
 
@@ -183,6 +181,6 @@ def matricize_mass_matrix(dim,i,M,sparse=True):
     if not sparse:
         var=2
         while var<=dim-1:
-            Mt=scipy.kron(Mt,M2[var],format='dia')
+            Mt=scipy.kron(Mt,M2[var])
             var=var+1
         return Mx,Mt      

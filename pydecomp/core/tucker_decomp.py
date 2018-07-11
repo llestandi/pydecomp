@@ -6,17 +6,20 @@ Created on Fri Apr 20 14:46:04 2018
 Fusion of all tucker related decomposition methods performed by Lucas on 28/06/18
 """
 from scipy.sparse import diags
+import scipy.sparse
 import numpy as np
 
-from core.Tucker import TuckerTensor
-from core.POD import POD
-from core.TSVD import TSVD
+from Tucker import TuckerTensor
+from POD import POD
+from TSVD import TSVD
 
-import core.tensor_algebra as ta
-import utils.MassMatrices as mm
-import utils.misc as misc
+import tensor_algebra as ta
+import MassMatrices as mm
+import sys
+sys.path.append('/media/diego/OS/Users/Diego Britez/Documents/stage/pydecomp_V2/pydecomp/utils')
+import misc as misc
 
-def HOPOD(F,M, tol=1e-5):
+def HOPOD(F,M, tol=1e-10, sparse=False):
     """
     Returns a decomposed tensor in the tucker format class.\n
 
@@ -36,6 +39,10 @@ def HOPOD(F,M, tol=1e-5):
     tshape=F.shape
     dim=len(tshape)
     PHI=[]
+    if type(M[0])==scipy.sparse.dia.dia_matrix:
+        SPARSE=True
+    else:
+        SPARSE=False
 
     for i in range(dim):
         Fmat=ta.matricize(F,dim,i)
@@ -43,25 +50,32 @@ def HOPOD(F,M, tol=1e-5):
         phi,sigma,A= POD(Fmat.T,Mt,Mx, tol=tol)
         PHI.append(A)
     PHIT=misc.list_transpose(PHI)
-    PHIT=integrationphi(PHIT,M)
+    PHIT=integrationphi(PHIT,M,sparse=SPARSE)
     W =ta.multilinear_multiplication(PHIT, F, dim)
     Decomposed_Tensor=TuckerTensor(W,PHI)
 
     return Decomposed_Tensor
 
-def integrationphi(PHIT,M):
+def integrationphi(PHIT,M,sparse=False):
+   """
+   This function integrates each projection (phi) by using the correspondent
+   mass matrix.
+   """
+   
    a="""
    Dimentions of decomposition values list and Mass matrices list are not
    coherents
    """
    if len(PHIT)!= len(M):
        raise ValueError(print(a))
-   integrated_phi=[phit@m for (phit,m) in zip(PHIT,M)]
-
+   if not sparse:
+       integrated_phi=[phit*m for (phit,m) in zip(PHIT,M)]
+   elif sparse:
+       integrated_phi=[phit@m for (phit,m) in zip(PHIT,M)]
    return integrated_phi
 
 
-def SHOPOD(F,MM, tol=1e-5,rank=-1):
+def SHOPOD(F,MM, tol=1e-10,rank=-1):
     """
     This method decomposes a ndarray type data (multivariable) in a Tucker
     class element by using the Secuentialy  High Order Proper Orthogonal
@@ -78,6 +92,10 @@ def SHOPOD(F,MM, tol=1e-5,rank=-1):
     M=MM[:]
     tshape=F.shape
     dim=len(tshape)
+    if type(M[0])==scipy.sparse.dia.dia_matrix:
+        SPARSE=True
+    else:
+        SPARSE=False
     PHI=[]
     W=F
     for i in range(dim):
@@ -85,18 +103,23 @@ def SHOPOD(F,MM, tol=1e-5,rank=-1):
         Wmat=ta.matricize(W,dim,0)
         Mx,Mt = mm.matricize_mass_matrix(dim,0,M)
         phi,sigma,A=POD(Wmat.T,Mt,Mx,tol=tol,rank=rank)
-        W=sigma@phi.T
+        
+        W=(sigma*phi).T
 
 
         Wshape[0]=W.shape[0]
         W=W.reshape(Wshape)
-        #cambiar matriz de masa y enviarlo al final
-        M[0]=diags(np.ones(Wshape[0]))
+        #changing the first mass matrix for a unit vector and send it to the 
+        #back
+        
+        M[0]=np.ones(Wshape[0])
+        if SPARSE:
+            M[0]=diags(M[0])
         M.insert((dim-1),M.pop(0))
         W=np.moveaxis(W,0,-1)
 
         PHI.append(A)
-
+    
     Decomposed_Tensor=TuckerTensor(W,PHI)
 
     return Decomposed_Tensor
@@ -122,6 +145,7 @@ def STHOSVD(F):
         Wshape=[x for x in W.shape]
         Wmat=ta.matricize(W,dim,0)
         phi,sigma,A=TSVD(Wmat)
+        
         W=sigma@A.T
 
         Wshape[0]=W.shape[0]
