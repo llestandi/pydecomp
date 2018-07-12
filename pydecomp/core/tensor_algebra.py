@@ -13,7 +13,7 @@ import numpy as np
 import scipy.sparse
 from scipy.sparse import diags
 
-def multilinear_multiplication(phi,F,dim):
+def multilinear_multiplication(PHI,F,dim):
     """
     **Parameters**:_ \n
 
@@ -33,44 +33,21 @@ def multilinear_multiplication(phi,F,dim):
     where
     :math:`\otimes` represents the Kronecker product.
     """
-    W=F
-    formeW=[x for x in F.shape]
-    for i in range(dim):
-       W=matricize(W,dim,i)
-       W=phi[i]@W
-       actual_dimention=[phi[i].shape[0]]
-       del formeW[i]
-       actual_dimention.extend(formeW)
-       formeW=actual_dimention
-       W=np.reshape(W,formeW)
-    return W.T
-# @Diego Please test the fastest one and remove the other
-#optional algorithm for multilinear_multiplication
-    
-#@Lucas I tested, both gave me the same result with similar time of execution
-#we can try to see wich of them consumes more memory before take the desition 
-#wich one is going to be erased. The advatage of the second one over the other
-#is that is the application of the theory, the first one is more an geometric
-#interpretation that I had and probably is going to be more difficult to under-
-#stand for a developer. 
-    
-def multilinear_multiplication2(PHI, F, dim):
-      index_number_modes=np.array([x.shape[0] for x in PHI])
-      maximal_index=np.argmax(index_number_modes)
-      #print(index)
-      PHI2=PHI[:]
-      PHI2.insert(0,PHI2.pop(maximal_index))
-      Fmat=matricize(F,dim,maximal_index)     
-      aux=PHI2[1]
-      for i in range(1,dim-1):
-          aux=np.kron(aux,PHI2[i+1])
-      aux=aux.T
-      MnX=PHI2[0]@Fmat
-      W=MnX@aux
-      forme_W=[i.shape[0] for i in PHI2]
-      W = W.reshape(forme_W)
-      W  =np.moveaxis(W,0,maximal_index)
-      return W
+    number_modes=np.array([x.shape[0] for x in PHI])
+    maximal_index=np.argmax(number_modes)
+    PHI2=PHI[:]
+    PHI2.insert(0,PHI2.pop(maximal_index))
+    Fmat=matricize(F,dim,maximal_index)     
+    aux=PHI2[1]
+    for i in range(1,dim-1):
+        aux=np.kron(aux,PHI2[i+1])
+    aux=aux.T
+    MnX=PHI2[0]@Fmat
+    W=MnX@aux
+    forme_W=[i.shape[0] for i in PHI2]
+    W = W.reshape(forme_W)
+    W  =np.moveaxis(W,0,maximal_index)
+    return W
 
 
 def kathri_rao(A,B):

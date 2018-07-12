@@ -12,7 +12,6 @@ import timeit
 from core.Tucker import TuckerTensor
 from core.POD import POD
 from core.TSVD import TSVD
-
 import core.tensor_algebra as ta
 import core.MassMatrices as mm
 import utils.misc as misc
@@ -49,19 +48,18 @@ def HOPOD(F,M, tol=1e-10, sparse=False):
         phi,sigma,A= POD(Fmat.T,Mt,Mx, tol=tol)
         PHI.append(A)
     PHIT=misc.list_transpose(PHI)
-    PHIT=integrationphi(PHIT,M,sparse=SPARSE)
-    W =ta.multilinear_multiplication(PHIT, F, dim)
+    W=tucker_weight_eval(PHIT,M,F,dim,sparse=SPARSE)
     Decomposed_Tensor=TuckerTensor(W,PHI)
     stop=timeit.default_timer()
     print(stop-start)
     return Decomposed_Tensor
 
-def integrationphi(PHIT,M,sparse=False):
+def tucker_weight_eval(PHIT,M,F,dim,sparse=False):
    """
-   This function integrates each projection (phi) by using the correspondent
-   mass matrix.
-   """
-   
+   This function reproduces the operation:\n
+   :math:`	(\phi_{1},\phi_{2},...,\phi{d})[(M_{1},M_{2},...,M_{d}).
+   \mathcal{F}]=(\phi_{1}M_{1},\phi_{2},M_{2},...,\phi{d}M_{d}).\mathcal{F}`
+   """ 
    a="""
    Dimentions of decomposition values list and Mass matrices list are not
    coherents
@@ -71,8 +69,9 @@ def integrationphi(PHIT,M,sparse=False):
    if not sparse:
        integrated_phi=[phit*m for (phit,m) in zip(PHIT,M)]
    elif sparse:
-       integrated_phi=[phit@m for (phit,m) in zip(PHIT,M)]
-   return integrated_phi
+       integrated_phi=[phit@m for (phit,m) in zip(PHIT,M)]  
+   W =ta.multilinear_multiplication(integrated_phi, F, dim)
+   return W
 
 
 def SHOPOD(F,MM, tol=1e-10,rank=-1):
@@ -116,7 +115,6 @@ def SHOPOD(F,MM, tol=1e-10,rank=-1):
         PHI.append(A)
     
     Decomposed_Tensor=TuckerTensor(W,PHI)
-
     return Decomposed_Tensor
 
 
@@ -149,7 +147,6 @@ def STHOSVD(F,epsilon = 1e-13, rank=100, solver='EVD'):
         W=np.moveaxis(W,0,-1)
         PHI.append(phi)
     Decomposed_Tensor=TuckerTensor(W,PHI)
-
     return Decomposed_Tensor
 
 

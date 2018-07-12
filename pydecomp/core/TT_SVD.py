@@ -8,8 +8,6 @@ Created on Tue Jun 19 13:19:41 2018
 import numpy as np
 from core.TSVD import TSVD
 from core.TensorTrain import  TT_init_from_decomp
-from scipy.sparse import diags
-from core.POD import POD
 
 def TT_SVD(F, eps=1e-8, rank=100):
     """
@@ -44,7 +42,6 @@ def TT_SVD(F, eps=1e-8, rank=100):
            u,sigma,v=TSVD(C, rank=rank, solver='EVD')
        else:
            u,sigma,v=TSVD(C, epsilon = eps, rank=100, solver='EVD')
-
        new_rank=sigma.shape[0]
        r.append(new_rank)
        G.append(u.reshape(r[i],tshape[i],r[i+1]))
@@ -52,6 +49,5 @@ def TT_SVD(F, eps=1e-8, rank=100):
     G.append(C)
     Gdshape=list(G[dim-1].shape)
     Gdshape.append(1)
-
     G[dim-1]=G[dim-1].reshape(Gdshape)
     return TT_init_from_decomp(G)
