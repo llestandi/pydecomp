@@ -6,7 +6,7 @@ Created on Tue Mar 27 17:24:54 2018
 """
 
 import numpy as np
-import utils.CartesianGrid as CartesianGrid
+import CartesianGrid as cg
 
 """
 This code serve to create a tensor with its grid of any dimention from
@@ -51,7 +51,7 @@ def funcx(V,case):
         #1/(1+V[0]**2+V[1]**2+V[2]**2)
         #np.sin(np.sqrt(V[0]**2+V[1]**2+V[2]**2))
         #V[0]*V[1]*V[2]
-# @Diego Okay, why not use a class. Please cleanup and document !!!!!
+# @Diego Okay, why not use a class. Please cleanup and document !!!!!
 class TensorCreator():
     def __init__(self):
         self.tshape=[]
@@ -92,7 +92,7 @@ class TensorCreator():
                 print("The number of dimetions used in lower and upper limits \
                       are not equals")
 
-        self.dim=self.lower_limit.size
+        
 
     """
     tshape=is an array that contains the information of the number of divitions
@@ -106,16 +106,12 @@ class TensorCreator():
         _CartesianGrid: is the mode that calls the class with the same name.
         CartesianGrid: is the class where all the variables that define
         the space grid is storage.
-        SpaceCreator: is a mode in CartesianGrid class that creates the vectors
-        hat represent the discretized domaine.
+        
         """
 
-        self._dim()
-        Vector = CartesianGrid.CartesianGrid(self.dim, self.tshape, self.lower_limit,
-                                             self.upper_limit)
-        aux=Vector.SpaceCreator()
-
-        self.X = aux
+        self.dim=len(self.lower_limit)
+        aux=cg.GridCreator(self.lower_limit,self.upper_limit,self.tshape,self.dim)
+        self.X = aux.X
 
 
     def _meshgrid(self):

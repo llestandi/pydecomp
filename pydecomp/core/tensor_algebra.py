@@ -114,7 +114,27 @@ def truncate_modes(Lambda,tol,rank,U):
     U=U[::,:i]
     return Lambda, U
 
-
+def normeL2(T,M):
+    """
+    This function returns the norm defined in :math:`L^{2}`\n
+    **Parameters**\n
+    T= ndarray type. Tensor which its norme is going to be evaluated.
+    M= list type with ndarrays elements. It's elements should be the integration
+    points.     
+    """
+    dim=len(T.shape)
+    dim2=len(M)
+    if dim!=dim2:
+        a="""
+        Dimentions of the mass list is not coherent with the tensor dimension
+        number
+        """
+        raise AttributeError(a)
+    Rep=multilinear_multiplication(M,T,dim)
+    Rep=T.T@Rep
+    return Rep
+    
+#------------------------------------------------------------------------------
 if __name__=="__main__":
     A=np.random.rand(3,4)
     B=np.random.rand(5,4)
