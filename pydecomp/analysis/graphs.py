@@ -45,7 +45,7 @@ def plot_rpod_rec_tree(graph, upper_node, tree, depth,pos, cutoff_tol=1e-16):
         r+=1
         pos.append(r)
         index="".join(map(str,pos))
-        edge_width=str(0.5*np.log(1000*child.branch_weight))
+        edge_width=str(0.7*np.log(1000*child.branch_weight))
         label="{:2.3f}".format(child.branch_weight)
         graph.attr('node',shape="ellipse",style="empty",color="black")
         if child.branch_weight>cutoff_tol or r==1:
@@ -69,7 +69,7 @@ if __name__=="__main__":
     decomp_methods=["RPOD"]
     solver=["trapezes"]
     approx=benchmark_multivariable(decomp_methods, solver ,shape=[32,32,32,32,32],
-                                test_function=2, plot=True,output_decomp='',
-                                plot_name='',tol=5e-3)
+                                test_function=2, plot=False,output_decomp='',
+                                plot_name='',tol=1e-5)
     plot_rpod_tree(approx, cutoff_tol=1e-16)
     print(approx)
