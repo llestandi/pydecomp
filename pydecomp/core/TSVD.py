@@ -7,7 +7,7 @@ Created on Tue Apr  3 14:19:09 2018
 import numpy as np
 from scipy.sparse import diags
 from core.tensor_algebra import truncate_modes
-def TSVD(F, epsilon = 1e-10, rank=100, solver='SVD'):
+def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
     """
     This function calculates a matrix decomposition by using the truncated SVD
     method.\n

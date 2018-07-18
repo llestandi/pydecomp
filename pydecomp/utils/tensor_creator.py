@@ -6,7 +6,7 @@ Created on Tue Mar 27 17:24:54 2018
 """
 
 import numpy as np
-import CartesianGrid as cg
+import utils.CartesianGrid as cg
 
 """
 This code serve to create a tensor with its grid of any dimention from
@@ -92,7 +92,7 @@ class TensorCreator():
                 print("The number of dimetions used in lower and upper limits \
                       are not equals")
 
-        
+
 
     """
     tshape=is an array that contains the information of the number of divitions
@@ -106,7 +106,7 @@ class TensorCreator():
         _CartesianGrid: is the mode that calls the class with the same name.
         CartesianGrid: is the class where all the variables that define
         the space grid is storage.
-        
+
         """
 
         self.dim=len(self.lower_limit)

@@ -9,22 +9,21 @@ import numpy as np
 from scipy.sparse import diags
 import scipy.sparse
 import sys
-sys.path.append('/media/diego/OS/Users/Diego Britez/Documents/stage/pydecomp_V2/pydecomp/utils')
-import integrationpoints
+import utils.integrationpoints as ip
 
 class DiaMatrix:
     """
     This class is created to simplify operations with mass matrices. Mass
-    matrices can be defined either as a sparse matrix, as a list or as 
+    matrices can be defined either as a sparse matrix, as a list or as
     a numpy.ndarray.
-    This class will unify the matmul operation for any of this formats. 
+    This class will unify the matmul operation for any of this formats.
     """
     def __init__(self,M):
         self.M=M
     def __matmul__(self,Matrix):
         if type(self.M)==scipy.sparse.dia.dia_matrix:
             result=self.M@Matrix
-        elif (type(self.M)==np.ndarray):     
+        elif (type(self.M)==np.ndarray):
             result=Matrix*self.M[:,np.newaxis]
         elif type(self.M)==list:
             M1=np.array(self.M)
@@ -37,9 +36,9 @@ class DiaMatrix:
         """
         #possible_mass_matrix_format=[list, scipy.sparse.dia.dia_matrix,
                                 # numpy.ndarray]
-        
+
         list_or_array=[list, np.ndarray]
-        
+
         if type(self.M)==scipy.sparse.dia.dia_matrix:
             Maux=self.M
             Maux=Maux.diagonal()
@@ -50,7 +49,7 @@ class DiaMatrix:
             inv=1/self.M
             inv=DiaMatrix(inv)
         return inv
-    
+
     def sqrt(self):
         """
         Returns the square root of the input mass matrix
@@ -58,7 +57,7 @@ class DiaMatrix:
         reponse=np.sqrt(self.M)
         reponse=DiaMatrix(reponse)
         return reponse
-    
+
     def transpose(self):
         """
         Returns the transpose of a MassMatrix as an MassMatrix object
@@ -75,11 +74,11 @@ class MassMatrices:
     def __init__(self,DiaMatrix_list):
         self.DiaMatrix_list=DiaMatrix_list
         self.shape=[x.size for x in DiaMatrix_list]
-       
+
 
 #------------------------------------------------------------------------------
 
-        
+
 def mass_matrices_creator(X, sparse=False, integration_method='trapeze'):
     """
     Returns a list of   sparse diagonals matrices with the integration points
@@ -88,9 +87,9 @@ def mass_matrices_creator(X, sparse=False, integration_method='trapeze'):
 
     **Parameter**\n
     X: list of Cartesian grids vectors. \n
-    sparse: if False, the data is going to be expresed as ndarray vector if 
+    sparse: if False, the data is going to be expresed as ndarray vector if
     True as sparse vectors.
-    integration_method: Default method 'trapeze'. Simpson option is not yet 
+    integration_method: Default method 'trapeze'. Simpson option is not yet
     avaible.
     **Return**
     M:list of mass matrices (integration points for trapeze integration method)
@@ -134,13 +133,13 @@ def mass_matrices_creator(X, sparse=False, integration_method='trapeze'):
         aux=X[i].size
         tshape.append(aux)
 
-    M=integrationpoints.IntegrationPoints(X,dim,tshape)
+    M=ip.IntegrationPoints(X,dim,tshape)
     M=M.IntegrationPointsCreation()
     if sparse:
         for i in range (dim):
             M[i]=diags(M[i])
-    return M        
-   
+    return M
+
 def matricize_mass_matrix(dim,i,M,sparse=False):
     """
     Returns the equivalent mass matrices of a matricized tensor.\n
@@ -172,7 +171,7 @@ def matricize_mass_matrix(dim,i,M,sparse=False):
 
     Mt=M2[1]
     Mx=M2[0]
- 
+
     if sparse:
         var=2
         while var<=dim-1:
@@ -183,4 +182,4 @@ def matricize_mass_matrix(dim,i,M,sparse=False):
         while var<=dim-1:
             Mt=scipy.kron(Mt,M2[var])
             var=var+1
-        return Mx,Mt      
+        return Mx,Mt

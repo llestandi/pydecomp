@@ -125,7 +125,7 @@ def tucker_error_data(T_tucker, T_full):
         T_trunc=truncate(T_tucker,r)
         comp_rate.append(T_trunc.memory_eval()/F_volume)
 
-        T_approx=T_trunc.reconstruction().tondarray()
+        T_approx=T_trunc.reconstruction()
 
         actual_error=norm(T_full-T_approx)/norm(T_full)
         error.append(actual_error)

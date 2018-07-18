@@ -23,13 +23,13 @@ def POD(F, Mx=[], Mt=[], tol=1e-10, rank=-1):
     *Parameters:*
         F= Array like, Matrix with the values normaly aranged in [0]
         dimention for space and [1] dimention for time if the case.
-        
+
         Mx=numpy.ndarray, list or scipy.sparse diagonal matrix with t
-        he integration points as thediagonal elements for the trapezoidal 
-        method. If there is no input, solution equivalent to the SVD method 
+        he integration points as thediagonal elements for the trapezoidal
+        method. If there is no input, solution equivalent to the SVD method
         is going to be generated.
-        Mt=ion points as thediagonal elements for the trapezoidal 
-        method. If there is no input, solution equivalent to the SVD method 
+        Mt=ion points as thediagonal elements for the trapezoidal
+        method. If there is no input, solution equivalent to the SVD method
         is going to be generated.
         tol= maximal tolerance for the eigenvalues.
         rank= maiximal number of modes to be taken as long the maximal
@@ -41,20 +41,20 @@ def POD(F, Mx=[], Mt=[], tol=1e-10, rank=-1):
 
     *@todo* Improve efficiency of mass matrix handling
     """
-    start=timeit.default_timer()
+    # start=timeit.default_timer()
     tshape=F.shape
-    
+
     if Mx==[]:
      phi,sigma,A=TSVD(F,epsilon=tol,solver='EVD')
     else:
         mx=DiaMatrix(Mx)
         mt=DiaMatrix(Mt)
-       
+
         Transposed_POD=False
         if tshape[1]>tshape[0]:
             F=F.T
             mx.M, mt.M = mt.M, mx.M
-            Transposed_POD=True 
+            Transposed_POD=True
         C=build_correlation(F, mx, mt)
         Lambda , U =np.linalg.eigh(C)
         # Reversing order
@@ -62,14 +62,14 @@ def POD(F, Mx=[], Mt=[], tol=1e-10, rank=-1):
         U=U[::,::-1]
         Lambda, U=truncate_modes(Lambda,tol,rank,U)
         sigma=np.sqrt(Lambda)
-        
+
         #Mtsq is has the square root of the Mt elements
         A=(((mt.sqrt()).inv()).transpose())@U
-        
+
         if type(mx.M)==scipy.sparse.dia.dia_matrix:
             phi=(F@mt.M@A)
             #Now we normalise phi
-            #phi=the operation phi[:,np.newaxis] allows to multiply a matrix to a 
+            #phi=the operation phi[:,np.newaxis] allows to multiply a matrix to a
             # a vector simulating product of a matrix with a diagonal matrix
             phi=phi*(1/sigma)
             if Transposed_POD:
@@ -80,22 +80,18 @@ def POD(F, Mx=[], Mt=[], tol=1e-10, rank=-1):
             phi=phi*(1/sigma)
             if Transposed_POD:
                 A,phi=phi,A
-        stop=timeit.default_timer()
-       # print(stop-start)
+        # stop=timeit.default_timer()
+        # print(stop-start)
     return phi, sigma, A
 
 def build_correlation(F,mx,mt):
-    
     """
     This function creates the C matrix of correlation in the POD method
     """
     if type(mx.M)==scipy.sparse.dia.dia_matrix:
         C=mt.sqrt()@F.T@mx.M@F@np.sqrt(mt.M.T)
-    
-        
     else:
         #C=mt.sqrt()@F.T*mx.M@F*(np.sqrt(mt.M.T))
-        
         C1=mt.sqrt()@F.T
         C2=mx@F
         C=C1@C2
@@ -103,8 +99,8 @@ def build_correlation(F,mx,mt):
         Mtsqrt_transpose=MTsqrt.transpose()
         C=Mtsqrt_transpose@C.T
         C=np.transpose(C)
-       
-        
+
+
         #C=C*(np.sqrt(mt.M.T))
     return C
 

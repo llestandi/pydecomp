@@ -11,7 +11,7 @@ import scipy
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-import utils.MassMatrices as mm
+import core.MassMatrices as mm
 from deprecated.tensor_descriptor_class import TensorDescriptor
 from core.cls_RpodTree import  RpodTree
 from core.POD import POD
@@ -118,14 +118,17 @@ def rpod_rec(f, rpod_approx, int_weights, node_index, POD_tol=1e-10, cutoff_tol=
     pod_rank = U.shape[1]
 
     ######## Preparing recursive call ########
-    sigma_vec=sigma.diagonal()
+    try :
+        sigma_vec=sigma.diagonal()
+    except:
+        sigma_vec=sigma.copy()
     if rpod_approx.tree_weight==None: #initial
         rpod_approx.tree_weight=sigma_vec.sum()
 
     at_leaf=(len(f.shape[1:]) == 1)
     eval_sigma_max(rpod_approx,sigma_vec,at_leaf,node_index)
     if not at_leaf:
-        V = V@sigma
+        V = V*sigma
 
     Phi_shape = np.append(f.shape[1:], pod_rank)
     Phi_next = [np.reshape(V[:, i], f.shape[1:]) for i in range(pod_rank)]
@@ -223,7 +226,7 @@ def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8):
             pass
         elif loc_rate==comp_rate[-1]:
             continue
-        
+
         err.append(np.linalg.norm(T_rec.to_full(tol)-T_full)/norm_T)
         comp_rate.append(loc_rate)
     return np.asarray(err), np.asarray(comp_rate)

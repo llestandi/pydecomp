@@ -19,7 +19,8 @@ from core.RPOD import rpod, RecursiveTensor, plot_rpod_approx,rpod_error_data
 from core.Canonical import CanonicalTensor, canonical_error_data
 from core.Tucker import TuckerTensor, tucker_error_data
 from core.TensorTrain import TensorTrain, error_TT_data
-# from plot_error_tt import plot_error_tt
+
+from plot import benchmark_plotter
 
 def benchmark_multivariable(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,
@@ -257,45 +258,6 @@ def benchmark_multivariable(list_reduction_method, integration_method,
     if plot:
         benchmark_plotter(approx_data, show_plot)
     return Result
-
-def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**kwargs):
-    """
-    Plotter routine for benchmark function.
-
-    **Parameters**:
-    *approx_data* [dict] whose labels are the lines labels, and data is
-                         a 2-column array with first column compression rate,
-                         second one is the approximation error associated.
-    *show* [bool]        whether the plot is shown or not
-    *plot_name* [str]    plot output location, if empty string, no plot
-    """
-    styles=['r+-','b*-','ko-','gh:','mh--']
-    fig=plt.figure()
-    xmax=1
-    ylim=[0.1,0.1]
-    k=0
-    plt.yscale('log')
-    plt.xlabel("Compresion rate (%)")
-    plt.ylabel('Relative Error')
-    plt.grid()
-
-    for label, data in approx_data.items():
-        err=data[0,:]
-        comp_rate=100*data[1,:]
-        xmax=max(xmax,comp_rate[-1])
-        ylim=[min(ylim[0],err[-1]),max(ylim[1],err[0])]
-        ax=fig.add_subplot(111)
-        ax.set_xlim(0,xmax)
-        ax.set_ylim(ylim)
-        plt.plot(comp_rate, err , styles[k], label=label)
-
-        k+=1
-    #saving plot as pdf
-    plt.legend()
-    if show:
-        plt.show()
-    fig.savefig(plot_name)
-    plt.close()
 
 
 
