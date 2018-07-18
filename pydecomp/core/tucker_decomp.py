@@ -14,7 +14,10 @@ from core.POD import POD
 from core.TSVD import TSVD
 import core.tensor_algebra as ta
 import core.MassMatrices as mm
+from core.MassMatrices import identity_mass_matrix
 import utils.misc as misc
+
+from copy import deepcopy
 
 def HOPOD(F,M, tol=1e-10, sparse=False):
     """
@@ -59,7 +62,7 @@ def tucker_weight_eval(PHIT,M,F,dim,sparse=False):
    This function reproduces the operation:\n
    :math:`	(\phi_{1},\phi_{2},...,\phi{d})[(M_{1},M_{2},...,M_{d}).
    \mathcal{F}]=(\phi_{1}M_{1},\phi_{2},M_{2},...,\phi{d}M_{d}).\mathcal{F}`
-   """ 
+   """
    a="""
    Dimentions of decomposition values list and Mass matrices list are not
    coherents
@@ -69,7 +72,7 @@ def tucker_weight_eval(PHIT,M,F,dim,sparse=False):
    if not sparse:
        integrated_phi=[phit*m for (phit,m) in zip(PHIT,M)]
    elif sparse:
-       integrated_phi=[phit@m for (phit,m) in zip(PHIT,M)]  
+       integrated_phi=[phit@m for (phit,m) in zip(PHIT,M)]
    W =ta.multilinear_multiplication(integrated_phi, F, dim)
    return W
 
@@ -88,32 +91,26 @@ def SHOPOD(F,MM, tol=1e-10,rank=-1):
     this object type, more information could be found in Tucker class
     documentation.
     """
-    M=MM[:]
+    M=MM
     tshape=F.shape
     dim=len(tshape)
-    if type(M[0])==scipy.sparse.dia.dia_matrix:
-        SPARSE=True
-    else:
-        SPARSE=False
     PHI=[]
     W=F
     for i in range(dim):
         Wshape=[x for x in W.shape]
         Wmat=ta.matricize(W,dim,0)
-        Mx,Mt = mm.matricize_mass_matrix(dim,0,M)
-        phi,sigma,A=POD(Wmat.T,Mt,Mx,tol=tol,rank=rank)       
+        Mx,Mt = mm.matricize_mass_matrix(dim,i,M)
+        phi,sigma,A=POD(Wmat.T,Mt,Mx,tol=tol,rank=rank)
         W=(sigma*phi).T
         Wshape[0]=W.shape[0]
         W=W.reshape(Wshape)
-        #changing the first mass matrix for a unit vector and send it to the 
-        #back        
-        M[0]=np.ones(Wshape[0])
-        if SPARSE:
-            M[0]=diags(M[0])
-        M.insert((dim-1),M.pop(0))
+        #changing the first mass matrix for a unit vector and send it to the
+        #back
+        M.update_mass_matrix(i, identity_mass_matrix(Wshape[0],M.is_sparse))
+        # M.insert((dim-1),M.pop(0))
         W=np.moveaxis(W,0,-1)
         PHI.append(A)
-    
+
     Decomposed_Tensor=TuckerTensor(W,PHI)
     return Decomposed_Tensor
 
