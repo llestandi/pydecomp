@@ -19,52 +19,51 @@ class DiaMatrix:
     This class will unify the matmul operation for any of this formats.
     """
     def __init__(self,M):
+        type_msg="Wrong type for M : {}".format(type(M))
+        if type(M)==scipy.sparse.dia.dia_matrix:
+            self.is_sparse=True
+            self.shape=M.shape
+            self.dia_size=M.shape[0]
+        elif type(M)==np.ndarray:
+            if M.ndim==1:
+                self.is_sparse=False
+                self.shape=(M.size,M.size)
+                self.dia_size=M.size
+            else:
+                raise TypeError(type_msg)
+        else:
+            raise TypeError(type_msg)
         self.M=M
+
     def __matmul__(self,Matrix):
-        if type(self.M)==scipy.sparse.dia.dia_matrix:
-            result=self.M@Matrix
-        elif (type(self.M)==np.ndarray):
-            result=Matrix*self.M[:,np.newaxis]
-        elif type(self.M)==list:
-            M1=np.array(self.M)
-            result=Matrix*M1[:,np.newaxis]
-        return result
+        if self.is_sparse:
+            return self.M@Matrix
+        else:
+            return Matrix*self.M[:,np.newaxis]
+
     def inv(self):
         """
         This fonction will return the inverse of mass matrix as an DiaMatrix
         object
         """
-        #possible_mass_matrix_format=[list, scipy.sparse.dia.dia_matrix,
-                                # numpy.ndarray]
-
-        list_or_array=[list, np.ndarray]
-
-        if type(self.M)==scipy.sparse.dia.dia_matrix:
+        if self.is_sparse:
             Maux=self.M
             Maux=Maux.diagonal()
             inv=1/Maux
             inv=diags(inv)
             inv=DiaMatrix(inv)
-        if type(self.M) in list_or_array:
+        else:
             inv=1/self.M
             inv=DiaMatrix(inv)
         return inv
 
     def sqrt(self):
-        """
-        Returns the square root of the input mass matrix
-        """
-        reponse=np.sqrt(self.M)
-        reponse=DiaMatrix(reponse)
-        return reponse
+        """  Returns the square root of the input mass matrix  """
+        return DiaMatrix(np.sqrt(self.M))
 
     def transpose(self):
-        """
-        Returns the transpose of a MassMatrix as an MassMatrix object
-        """
-        reponse=DiaMatrix(self.M.T)
-        return reponse
-#------------------------------------------------------------------------------
+        """ Returns the transpose of a MassMatrix as an MassMatrix object """
+        return DiaMatrix(self.M.T)
 
 class MassMatrices:
     """
@@ -72,11 +71,27 @@ class MassMatrices:
     List of DiaMatrix objects.
     """
     def __init__(self,DiaMatrix_list):
-        self.DiaMatrix_list=DiaMatrix_list
-        self.shape=[x.size for x in DiaMatrix_list]
+        if all(mat.is_sparse for mat in DiaMatrix_list):
+            self.is_sparse=True
+        elif all(not mat.is_sparse for mat in DiaMatrix_list):
+            self.is_sparse=False
+        else:
+            raise NotImplementedError("All mass matrices need to be of the same sparseness")
+        self.Mat_list=DiaMatrix_list
+        self.shape=[x.dia_size for x in DiaMatrix_list]
 
+    def update_mass_matrix(self,id,M_new):
+        """Allows the user to change mass matrix M[id] with M_new"""
+        if M_new.is_sparse!=self.is_sparse:
+            raise AttributeError("self and M_new are of the same sparseness")
+        self.shape[id]=M_new.shape
+        self.Mat_list[id]=M_new
 
-#------------------------------------------------------------------------------
+def identity_mass_matrix(size,sparse=False):
+    if sparse==True:
+        return diag(np.ones(size))
+    else:
+        return DiaMatrix(np.ones(size))
 
 
 def mass_matrices_creator(X, sparse=False, integration_method='trapeze'):
@@ -135,12 +150,14 @@ def mass_matrices_creator(X, sparse=False, integration_method='trapeze'):
 
     M=ip.IntegrationPoints(X,dim,tshape)
     M=M.IntegrationPointsCreation()
-    if sparse:
-        for i in range (dim):
+    for i in range (dim):
+        if sparse:
             M[i]=diags(M[i])
+        M[i]=DiaMatrix(M[i])
+    M=MassMatrices(M)
     return M
 
-def matricize_mass_matrix(dim,i,M,sparse=False):
+def matricize_mass_matrix(dim,i,M):
     """
     Returns the equivalent mass matrices of a matricized tensor.\n
     **Parameters** \n
@@ -164,22 +181,20 @@ def matricize_mass_matrix(dim,i,M,sparse=False):
     :math:`M_{t}=M_{1} \otimes M_{2} \otimes...M_{i-1} \otimes M_{i+1} \otimes..
     \otimes M_{d}`
     """
+    if type(M) != MassMatrices:
+        raise AttributeError('M must be a MassMatrices')
     #copy the list of mass matrices to M2
-    M2=M[:]
+    M2=M.Mat_list[:]
     #moving the actual indice to the first order
     M2.insert(0,M2.pop(i))
 
-    Mt=M2[1]
-    Mx=M2[0]
+    Mx=M2[0].M
+    Mt=M2[1].M
 
-    if sparse:
-        var=2
-        while var<=dim-1:
-            Mt=scipy.sparse.kron(Mt,M2[var],format='dia')
-            var=var+1
-    if not sparse:
-        var=2
-        while var<=dim-1:
-            Mt=scipy.kron(Mt,M2[var])
-            var=var+1
-        return Mx,Mt
+    if M.is_sparse:
+        for i in range (2,dim):
+            Mt=scipy.sparse.kron(Mt,M2[i],format='dia')
+    else :
+        for i in range (2,dim):
+            Mt=np.kron(Mt,M2[i].M)
+    return Mx,Mt
