@@ -29,6 +29,7 @@ from core.Tucker import TuckerTensor, tucker_error_data
 from core.TensorTrain import TensorTrain, error_TT_data
 
 from plot import benchmark_plotter
+from utils.tensor_creator import testg,testf
 
 def multi_var_decomp_analysis(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,
@@ -75,7 +76,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
 
     #########################END OF TESTS##########################################
 
-    X,F=testf(test_function, shape, dim, domain)
+    X,F=testg(test_function, shape, dim, domain)
 
     for ii in range(number_of_methods):
         reduction_method=list_reduction_method[ii]
@@ -87,6 +88,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
         elif integration_method=='trapezes':
             M=mm.mass_matrices_creator(X)
 
+        print(type(M))
         t=time.time()
         if reduction_method=='PGD':
             Result=PGD(M,F,epenri=np.sqrt(tol))
@@ -125,8 +127,9 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
     return approx_data
 
 if __name__ == '__main__':
-    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]
-    solver=["trapezes","trapezes","trapezes","SVD"]
-    multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32,32],
-                            test_function=2, plot=True,output='../output',
-                            plot_name='output/approx_benchmark.pdf',tol=1e-16)
+    decomp_methods=["RPOD"]#,"HO_POD","SHO_POD","TT_SVD"]
+    # decomp_methods=["SHO_POD"]
+    solver=["trapezes"]#,"trapezes","trapezes","SVD"]
+    multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
+                            test_function=3, plot=True,output='../output',
+                            plot_name='output/approx_benchmark.pdf',tol=1e-8)

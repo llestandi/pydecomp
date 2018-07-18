@@ -89,7 +89,7 @@ def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pd
     plt.close()
 
 
-def benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**kwargs):
+def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     """
     Plotter routine for benchmark function.
 
