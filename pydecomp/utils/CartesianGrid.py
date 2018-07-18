@@ -23,14 +23,10 @@ class CartesianGrid:
     # grid either equispaced or not.
 
     def __init__(self, dim, tshape, lower_limit, upper_limit):
-
         if (dim != np.size(tshape)):
-            print('####### ERROR ####')
-            print(dim,tshape)
             raise AttributeError('Declared dimention is not congruent with div_tshape \
-                  number of elements, they have to be equals')
+            number of elements, they have to be equals {} /={}'.format(dim,len(tshape)))
         if (dim != np.size(lower_limit)):
-            print('####### ERROR ####')
             raise AttributeError('Declared dimention is not congruent with lower_limit \
                   number of elements, they have to be equals')
         if (dim != np.size(upper_limit)):
@@ -42,10 +38,10 @@ class CartesianGrid:
         self.tshape = tshape
         self.lower_limit = lower_limit
         self.upper_limit = upper_limit
-    
+
     def append(self, new_array):
         self.X.append(new_array)
-        
+
 
     def SpaceCreator(self):
         for i in range(self.dim):

@@ -30,15 +30,22 @@ For more information how to use this code just type TensorCreator.help()
 
 """
 
-def funcx(V,case):
+def funcx(X,case):
+    d=X.shape[0]
     if case==1:
-        return 1/(1+np.sum([v**2 for v in V])) #1/(1+x1^2+x2^2...)
+        return 1/(1+np.sum([X[i]**2 for i in range(d)],axis=0))
     elif case==2:
-        return np.sin(np.sqrt(np.sum([v**2 for v in V])))
+        return np.sin(np.sqrt(np.sum([X[i]**2 for i in range(d)],axis=0)))
     elif case==3:
-        return 1/(1+np.prod(V,0))
+        return 1/(1+np.prod(X,0))
+    elif case=='Vega' and d==5:
+        return X[0]**2*(np.sin(5*X[1]*np.pi + 3*np.log(X[0]**3+X[1]**2+X[3]**3+ \
+                X[2]+np.pi**2))-1)**2 +(X[0]+X[2]-1)*(2*X[1]-X[2])*(4*X[4]-X[3])* \
+                np.cos(30*(X[0]+X[2]+X[3]+X[4])) * np.log(6+X[0]**2*X[1]**2+X[2]**3) \
+                -4*X[0]**2*X[1]*X[4]**3*(-X[2]+1)**1.5
     else:
         raise AttributeError("Case {} is not in list".format(case))
+
         #Fonctions tets à utiliser
         # V[0]*V[1]                              #fonction test 1
         # 1/(1+(V[0]*V[1]))                      #fonction test 2
@@ -51,6 +58,9 @@ def funcx(V,case):
         #1/(1+V[0]**2+V[1]**2+V[2]**2)
         #np.sin(np.sqrt(V[0]**2+V[1]**2+V[2]**2))
         #V[0]*V[1]*V[2]
+
+
+
 # @Diego Okay, why not use a class. Please cleanup and document !!!!!
 class TensorCreator():
     def __init__(self):
@@ -101,14 +111,11 @@ class TensorCreator():
     """
 
     def _CartesianGrid(self):
-
         """
         _CartesianGrid: is the mode that calls the class with the same name.
         CartesianGrid: is the class where all the variables that define
         the space grid is storage.
-
         """
-
         self.dim=len(self.lower_limit)
         aux=cg.GridCreator(self.lower_limit,self.upper_limit,self.tshape,self.dim)
         self.X = aux.X
@@ -140,6 +147,7 @@ class TensorCreator():
     def _Generator(self,num_f):
         self._CartesianGrid()
         self._meshgrid()
+        print(self.Grid.shape)
         self.F=funcx(self.Grid,num_f)
 
         return self.X,self.F
@@ -153,11 +161,126 @@ class TensorCreator():
         self.F=func2(self.Grid,equation)
         return self.X, self.F
 
+    def __str__(self):
+        str= "Shape: {} \n".format(self.tshape)
+        str+="dim: {} \n".format( self.dim)
+        str+="lower limit: {} \n".format( self.lower_limit)
+        str+="upper limit: {} \n".format( self.upper_limit)
+        str+="X: {} \n".format( self.X)
+        str+="Grid: {} \n".format( self.Grid)
+        str+="F: {} \n".format( self.F)
+        return str
+
 def func2(V,equation):
     return eval(equation)
 
+#------------------------------------------------------------------------------
+def testg(test_function, shape, dim, domain ):
+    # @Diego FIXME
+    """
+    This function propose several models of function to be chosen to build a
+    multivariable tensor (synthetic data) , the output
+    depends only on the function selected (1,2..) and the number of dimention
+    to work with.\n
+    **Parameters**\n
+    test_function: integer type, describes the format of the function selected:
+    \n
+    Formule 1 \n
+    :math:`1\(1+X_{1}^{2}+X_{2}^{2}+...+X_{n}^{2})`
+    \n
+    Formule 2 \
+    :math:`1\(1+X_{1}^{2}X_{2}^{2}...X_{n}^{2})`
+    \n
+    Formule 3 \n
+    :math:`\sin(\sqrt {X_{1}^{2}+X_{2}^{2}+...+X_{n}^{2}})`
+    \n
+    **shape**: array or list type number of elements to be taken
+    in each subspace. \n
+    **dim**:Integer type. Number of dimentions.
+    """
+    Function=TensorCreator()
+    #Creating the variables required for TensorCreator from the data
+    Function.lower_limit=np.ones(dim)*domain[0]
+    Function.upper_limit=np.ones(dim)*domain[1]
+    Function.tshape=shape
+    print(Function)
+    X,F= Function._Generator(test_function)
+    print("X\n", X,'\n F: \n',F)
+    return X,F
+
+def testf(test_function, shape, dim, domain ):
+    """
+    This function propose several models of function to be chosen to build a
+    multivariable tensor (synthetic data) , the output
+    depends only on the function selected (1,2..) and the number of dimention
+    to work with.\n
+    **Parameters**\n
+    test_function: integer type, describes the format of the function selected:
+    \n
+    Formule 1 \n
+    :math:`1\(1+X_{1}^{2}+X_{2}^{2}+...+X_{n}^{2})`
+    \n
+    Formule 2 \n
+    :math:`\sin(\sqrt {X_{1}^{2}+X_{2}^{2}+...+X_{n}^{2}})`
+    \n
+    Formule 3 \
+    :math:`X_{1}*X_{2}*...*X_{n}`
+    \n
+    **shape**: array or list type number of elements to be taken
+    in each subspace. \n
+    **dim**:Integer type. Number of dimentions.
+    """
+    test_function_possibilities=[1,2,3]
+    if test_function not in test_function_possibilities:
+        note="""
+        Only 3 multivariable test functions are defined, please introduce
+        introduce a valid value.
+        """
+        raise ValueError(note)
+    if test_function==1:
+        equation='(1'
+        for i in range(dim):
+            if i<dim-1:
+               aux='+V['+str(i)+']**2'
+               equation=equation+aux
+            else:
+               aux='+V['+str(i)+']**2)'
+               equation=equation+aux
+        equation='1/'+equation
+    elif test_function==2:
+        equation='np.sin(np.sqrt('
+        for i in range(dim):
+            if i<dim-1:
+                aux='V['+str(i)+']**2+'
+                equation=equation+aux
+            else:
+                aux='V['+str(i)+']**2)'
+                equation=equation+aux
+        equation=equation+')'
+    elif test_function==3:
+        equation=''
+        for i in range(dim):
+            if i<dim-1:
+                aux='V['+str(i)+']*'
+                equation=equation+aux
+            else:
+                aux='V['+str(i)+']'
+                equation=equation+aux
 
 
+    Function=TensorCreator()
+    #Creating the variables required for TensorCreator from the data
+    lowerlimit=np.ones(dim)
+    lowerlimit=lowerlimit*domain[0]
+    upperlimit=np.ones(dim)
+    upperlimit=upperlimit*domain[1]
+    Function.lower_limit=lowerlimit
+    Function.upper_limit=upperlimit
+    Function.tshape=shape
+    print(Function)
+    X,F= Function._Generator2(equation)
+
+    return X,F
 a="""
 
 HELP
