@@ -39,7 +39,7 @@ def HOPOD(F,M, tol=1e-10, sparse=False):
     tshape=F.shape
     dim=len(tshape)
     PHI=[]
-    if type(M[0])==scipy.sparse.dia.dia_matrix:
+    if M.is_sparse:
         SPARSE=True
     else:
         SPARSE=False
@@ -55,24 +55,24 @@ def HOPOD(F,M, tol=1e-10, sparse=False):
 
     return Decomposed_Tensor
 
-def tucker_weight_eval(PHIT,M,F,dim,sparse=False):
-   """
-   This function reproduces the operation:\n
-   :math:`	(\phi_{1},\phi_{2},...,\phi{d})[(M_{1},M_{2},...,M_{d}).
-   \mathcal{F}]=(\phi_{1}M_{1},\phi_{2},M_{2},...,\phi{d}M_{d}).\mathcal{F}`
-   """
-   a="""
-   Dimentions of decomposition values list and Mass matrices list are not
-   coherents
-   """
-   if len(PHIT)!= len(M):
-       raise ValueError(print(a))
-   if not sparse:
-       integrated_phi=[phit*m for (phit,m) in zip(PHIT,M)]
-   elif sparse:
-       integrated_phi=[phit@m for (phit,m) in zip(PHIT,M)]
-   W =ta.multilinear_multiplication(integrated_phi, F, dim)
-   return W
+def tucker_weight_eval(PHIT,MM,F,dim,sparse=False):
+    """
+    This function reproduces the operation:\n
+    :math:`	(\phi_{1},\phi_{2},...,\phi{d})[(M_{1},M_{2},...,M_{d}).
+    \mathcal{F}]=(\phi_{1}M_{1},\phi_{2},M_{2},...,\phi{d}M_{d}).\mathcal{F}`
+    """
+    a="""
+    Dimentions of decomposition values list and Mass matrices list are not
+    coherents
+    """
+    if len(PHIT)!= len(MM.Mat_list):
+        raise ValueError(a)
+    if not sparse:
+        integrated_phi=[phit*m.M for (phit,m) in zip(PHIT,MM.Mat_list)]
+    elif sparse:
+        integrated_phi=[phit@m.M for (phit,m) in zip(PHIT,MM.Mat_list)]
+    W =ta.multilinear_multiplication(integrated_phi, F, dim)
+    return W
 
 
 def SHOPOD(F,MM, tol=1e-10,rank=-1):
