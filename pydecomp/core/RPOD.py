@@ -15,6 +15,7 @@ import core.MassMatrices as mm
 from deprecated.tensor_descriptor_class import TensorDescriptor
 from core.cls_RpodTree import  RpodTree
 from core.POD import POD
+from core.MassMatrices import pop_1_MM
 
 class RecursiveTensor(TensorDescriptor):
     """
@@ -147,7 +148,7 @@ def rpod_rec(f, rpod_approx, int_weights, node_index, POD_tol=1e-10, cutoff_tol=
         else:
             rpod_approx.tree.add_node(U[:, i], node_index, branch_weight)
             node_index.append(i)
-            rpod_rec(Phi_next[i], rpod_approx, int_weights[1:], node_index, POD_tol, cutoff_tol)
+            rpod_rec(Phi_next[i], rpod_approx, pop_1_MM(int_weights), node_index, POD_tol, cutoff_tol)
             node_index.pop()
         loc_rank+=1
     rpod_approx.rank[len(node_index)].append(loc_rank)

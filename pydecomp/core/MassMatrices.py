@@ -87,6 +87,14 @@ class MassMatrices:
         self.shape[id]=M_new.shape
         self.Mat_list[id]=M_new
 
+    def pop(self,i):
+        self.Mat_list.pop(i)
+        self.shape.pop(i)
+
+
+def pop_1_MM(MM):
+    return MassMatrices(MM.Mat_list[1:])
+
 def identity_mass_matrix(size,sparse=False):
     if sparse==True:
         return diag(np.ones(size))

@@ -36,7 +36,6 @@ def HOPOD(F,M, tol=1e-10, sparse=False):
     **Returns:** \n
     Tucker class element\n
     """
-    start=timeit.default_timer()
     tshape=F.shape
     dim=len(tshape)
     PHI=[]
@@ -53,8 +52,7 @@ def HOPOD(F,M, tol=1e-10, sparse=False):
     PHIT=misc.list_transpose(PHI)
     W=tucker_weight_eval(PHIT,M,F,dim,sparse=SPARSE)
     Decomposed_Tensor=TuckerTensor(W,PHI)
-    stop=timeit.default_timer()
-    print(stop-start)
+
     return Decomposed_Tensor
 
 def tucker_weight_eval(PHIT,M,F,dim,sparse=False):

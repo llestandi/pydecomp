@@ -127,9 +127,9 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
     return approx_data
 
 if __name__ == '__main__':
-    decomp_methods=["RPOD"]#,"HO_POD","SHO_POD","TT_SVD"]
-    # decomp_methods=["SHO_POD"]
-    solver=["trapezes"]#,"trapezes","trapezes","SVD"]
-    multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
+    decomp_methods=["RPOD","SHO_POD","SHO_POD","TT_SVD"]
+    # decomp_methods=["HO_POD"]
+    solver=["trapezes","trapezes","trapezes","SVD"]
+    multi_var_decomp_analysis(decomp_methods, solver ,shape=[16,16,16,16,16],
                             test_function=3, plot=True,output='../output',
                             plot_name='output/approx_benchmark.pdf',tol=1e-8)

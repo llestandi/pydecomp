@@ -56,7 +56,6 @@ def POD(F, Mx=[], Mt=[], tol=1e-10, rank=-1):
             mx.M, mt.M = mt.M, mx.M
             Transposed_POD=True
         C=build_correlation(F, mx, mt)
-
         Lambda , U =np.linalg.eigh(C)
         # Reversing order
         Lambda = Lambda[::-1]
