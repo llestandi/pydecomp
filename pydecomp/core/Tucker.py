@@ -121,8 +121,8 @@ def tucker_error_data(T_tucker, T_full,int_rules=None):
                 (compressed_size/ full_size).
     error       [list] Compression error in 'F' norm or "int_rules" norm
     """
-    from numpy.linalg import norm
-    from core.tensor_algebra import normL2
+    # from numpy.linalg import norm
+    from core.tensor_algebra import norm
     #We are going to calculate one average value of ranks
     d=T_full.ndim
     data_compression=[]
@@ -133,10 +133,7 @@ def tucker_error_data(T_tucker, T_full,int_rules=None):
     error=[]
     comp_rate=[]
 
-    if int_rules:
-        norm_full=normL2(T_full,int_rules)
-    else:
-        norm_full=norm(T_full)
+    norm_full=norm(T_full,int_rules)
     r=np.zeros(d)
     for i in range(maxrank):
         r=np.minimum(rank,r+1)
@@ -145,10 +142,7 @@ def tucker_error_data(T_tucker, T_full,int_rules=None):
         comp_rate.append(T_trunc.memory_eval()/F_volume)
 
         T_approx=T_trunc.reconstruction()
-        if int_rules:
-            actual_error=normL2(T_full-T_approx,int_rules)/norm_full
-        else:
-            actual_error=norm(T_full-T_approx)/norm_full
+        actual_error=norm(T_full-T_approx,int_rules)/norm_full
         error.append(actual_error)
     # print(error)
     return np.asarray(error), np.asarray(comp_rate)

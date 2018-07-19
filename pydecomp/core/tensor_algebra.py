@@ -128,6 +128,12 @@ def truncate_modes(Lambda,tol,rank,U):
     U=U[::,:i]
     return Lambda, U
 
+def norm(T,MM=None):
+    if MM:
+        return normL2(T,MM)
+    else:
+        return np.linalg.norm(T)
+
 def normL2(T,M):
     """
     This function returns the norm defined in :math:`L^{2}`\n

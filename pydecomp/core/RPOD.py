@@ -16,6 +16,7 @@ from deprecated.tensor_descriptor_class import TensorDescriptor
 from core.cls_RpodTree import  RpodTree
 from core.POD import POD
 from core.MassMatrices import pop_1_MM
+from core.tensor_algebra import norm
 
 class RecursiveTensor(TensorDescriptor):
     """
@@ -212,11 +213,11 @@ def rpod_size_rec(tree: RpodTree, cutoff_tol=1e-8):
                 size += child.u.size+ rpod_size_rec(child,cutoff_tol)
     return size
 
-def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8):
+def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8,M=None):
     """Computes error and compression rate with given tolerance"""
     err=[]
     comp_rate=[]
-    norm_T=np.linalg.norm(T_full)
+    norm_T=norm(T_full,M)
     tol_space=np.logspace(np.log10(min_tol), np.log10(max_tol))
 
     for tol in tol_space:
@@ -228,7 +229,7 @@ def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8):
         elif loc_rate==comp_rate[-1]:
             continue
 
-        err.append(np.linalg.norm(T_rec.to_full(tol)-T_full)/norm_T)
+        err.append(norm(T_rec.to_full(tol)-T_full,M)/norm_T)
         comp_rate.append(loc_rate)
     return np.asarray(err), np.asarray(comp_rate)
 
