@@ -147,7 +147,6 @@ class TensorCreator():
     def _Generator(self,num_f):
         self._CartesianGrid()
         self._meshgrid()
-        print(self.Grid.shape)
         self.F=funcx(self.Grid,num_f)
 
         return self.X,self.F
@@ -203,9 +202,7 @@ def testg(test_function, shape, dim, domain ):
     Function.lower_limit=np.ones(dim)*domain[0]
     Function.upper_limit=np.ones(dim)*domain[1]
     Function.tshape=shape
-    print(Function)
     X,F= Function._Generator(test_function)
-    print("X\n", X,'\n F: \n',F)
     return X,F
 
 def testf(test_function, shape, dim, domain ):

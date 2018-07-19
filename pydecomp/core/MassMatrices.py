@@ -65,6 +65,13 @@ class DiaMatrix:
         """ Returns the transpose of a MassMatrix as an MassMatrix object """
         return DiaMatrix(self.M.T)
 
+    def __str__(self):
+        str="Diamatrix\n"
+        str+="is_sparse: {} \n".format(self.is_sparse)
+        str+="of shape : {}\n".format(self.shape)
+        str+="and size : {}\n".format(self.dia_size)
+        str+="M :\n {}".format(self.M)
+        return str
 class MassMatrices:
     """
     Parameters: \n
@@ -88,14 +95,25 @@ class MassMatrices:
         self.Mat_list[id]=M_new
 
     def pop(self,i):
+        """Removes item i from MassMatrices """
         self.Mat_list.pop(i)
         self.shape.pop(i)
 
+    def __len__(self):
+        return len(self.Mat_list)
+
+
+
+    # def __iter__(self):
+    #     return(self.Mat_list)
+
 
 def pop_1_MM(MM):
+    """ Removes the first item of MM and returns a new mass matrices """
     return MassMatrices(MM.Mat_list[1:])
 
 def identity_mass_matrix(size,sparse=False):
+    """ Builds the identity mass matrix """
     if sparse==True:
         return diag(np.ones(size))
     else:
@@ -206,3 +224,14 @@ def matricize_mass_matrix(dim,i,M):
         for i in range (2,dim):
             Mt=np.kron(Mt,M2[i].M)
     return Mx,Mt
+
+def Kronecker(MM) :
+    """ Kronecker product of each matrices in massmatrix structure. """
+    M=MM.Mat_list[0].M
+    if MM.is_sparse:
+        for i in range (1,len(MM)):
+            M=scipy.sparse.kron(M,MM.Mat_list[i].M,format='dia')
+    else :
+        for i in range (1,len(MM)):
+            M=np.kron(M,MM.Mat_list[i].M)
+    return DiaMatrix(M)

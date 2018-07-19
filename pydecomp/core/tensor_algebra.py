@@ -12,12 +12,13 @@ Created on Thu May  3 10:30:18 2018
 import numpy as np
 import scipy.sparse
 from scipy.sparse import diags
+from core.MassMatrices import MassMatrices, DiaMatrix, Kronecker
 
 def multilinear_multiplication(PHI,F,dim):
     """
     **Parameters**:_ \n
 
-    phi= Is a list with matrices type elements as the elements.\n 
+    phi= Is a list with matrices type elements as the elements.\n
     F  = nd Array type . \n
     dim = tuple, list or array type that its value must be coherent with
     the number of elements of phi. \n \n
@@ -33,22 +34,35 @@ def multilinear_multiplication(PHI,F,dim):
     where
     :math:`\otimes` represents the Kronecker product.
     """
-    number_modes=np.array([x.shape[0] for x in PHI])
+    if type(PHI)==MassMatrices:
+        number_modes=np.array([PHI.Mat_list[i].dia_size for i in range(len(PHI))])
+        PHI2=[PHI.Mat_list[i] for i in range(len(PHI))]
+    else :
+        number_modes=np.array([x.shape[0] for x in PHI])
+        PHI2=PHI[:]
     maximal_index=np.argmax(number_modes)
-    PHI2=PHI[:]
     PHI2.insert(0,PHI2.pop(maximal_index))
-    Fmat=matricize(F,dim,maximal_index)     
+    Fmat=matricize(F,dim,maximal_index)
     aux=PHI2[1]
-    for i in range(1,dim-1):
-        aux=np.kron(aux,PHI2[i+1])
-    aux=aux.T
-    MnX=PHI2[0]@Fmat
-    W=MnX@aux
+    for i in range(2,dim):
+        aux=kron(aux,PHI2[i])
+    W=transpose(aux@transpose(PHI2[0]@Fmat)) #an ugly hack to bypass binary operators limits
     forme_W=[i.shape[0] for i in PHI2]
     W = W.reshape(forme_W)
     W  =np.moveaxis(W,0,maximal_index)
     return W
 
+def transpose(M):
+    if type(M)==DiaMatrix :
+        return M.transpose()
+    else:
+        return np.transpose(M)
+
+def kron(A,B):
+    if type(A)==DiaMatrix and type(A)==type(B):
+        return Kronecker(MassMatrices([A,B]))
+    else:
+        return np.kron(A,B)
 
 def kathri_rao(A,B):
     """
@@ -114,26 +128,21 @@ def truncate_modes(Lambda,tol,rank,U):
     U=U[::,:i]
     return Lambda, U
 
-def normeL2(T,M):
+def normL2(T,M):
     """
     This function returns the norm defined in :math:`L^{2}`\n
     **Parameters**\n
     T= ndarray type. Tensor which its norme is going to be evaluated.
-    M= list type with ndarrays elements. It's elements should be the integration
-    points.     
+    M= MassMatrices , i.e. integration rules
     """
     dim=len(T.shape)
     dim2=len(M)
     if dim!=dim2:
-        a="""
-        Dimentions of the mass list is not coherent with the tensor dimension
-        number
-        """
-        raise AttributeError(a)
-    Rep=multilinear_multiplication(M,T,dim)
-    Rep=T.T@Rep
-    return Rep
-    
+        raise AttributeError("Dimentions of the mass list is not coherent with \
+                             the tensor dimension number {} /= {}".format(dim, dim2))
+
+    return np.sum(T*multilinear_multiplication(M,T,dim))
+
 #------------------------------------------------------------------------------
 if __name__=="__main__":
     A=np.random.rand(3,4)

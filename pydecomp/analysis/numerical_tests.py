@@ -33,7 +33,7 @@ from utils.tensor_creator import testg,testf
 
 def multi_var_decomp_analysis(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,
-                              output=None,
+                              output=None,Frob_norm=False,
                               plot_name='output/approx_benchmark', tol=1e-5):
     """
     This is a useful routine for running multivariate decomposition algorithms.
@@ -85,10 +85,10 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
         if integration_method=='SVD':
             X=[np.ones(x) for x in shape]
             M=[diags(x) for x in X]
+            Frob_norm=True
         elif integration_method=='trapezes':
             M=mm.mass_matrices_creator(X)
 
-        print(type(M))
         t=time.time()
         if reduction_method=='PGD':
             Result=PGD(M,F,epenri=np.sqrt(tol))
@@ -106,9 +106,11 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
             Result=TT_SVD(F, tol)
         print("{} decompostion time: {:.2f} s".format(reduction_method,time.time()-t))
 
+        if Frob_norm:
+            M=None
         if plot:
             if type(Result)==TuckerTensor:
-                approx_data[reduction_method]=np.stack(tucker_error_data(Result,F))
+                approx_data[reduction_method]=np.stack(tucker_error_data(Result,F,M))
             elif type(Result)==RecursiveTensor:
                 approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
             elif type(Result)==CanonicalTensor:

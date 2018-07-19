@@ -106,8 +106,23 @@ class TuckerTensor():
         return mem
 
 
-def tucker_error_data(T_tucker, T_full):
+def tucker_error_data(T_tucker, T_full,int_rules=None):
+    """ Computes the error data (error and compression rate) for Tucker
+    decompositions
+
+    **Parameters**
+    T_tucker    [TuckerTensor] truncated tucker decomposition of T_full
+    T_full      [ndarray]      original data
+    int_rules   [MassMatrices] *optional*, if one wants to compute a norm diffrent
+                from the frobenius norm, for discrete L2.
+
+    **return**
+    comp_rate   [list] Contains the compression rates for each error level
+                (compressed_size/ full_size).
+    error       [list] Compression error in 'F' norm or "int_rules" norm
+    """
     from numpy.linalg import norm
+    from core.tensor_algebra import normL2
     #We are going to calculate one average value of ranks
     d=T_full.ndim
     data_compression=[]
@@ -118,6 +133,10 @@ def tucker_error_data(T_tucker, T_full):
     error=[]
     comp_rate=[]
 
+    if int_rules:
+        norm_full=normL2(T_full,int_rules)
+    else:
+        norm_full=norm(T_full)
     r=np.zeros(d)
     for i in range(maxrank):
         r=np.minimum(rank,r+1)
@@ -126,10 +145,12 @@ def tucker_error_data(T_tucker, T_full):
         comp_rate.append(T_trunc.memory_eval()/F_volume)
 
         T_approx=T_trunc.reconstruction()
-
-        actual_error=norm(T_full-T_approx)/norm(T_full)
+        if int_rules:
+            actual_error=normL2(T_full-T_approx,int_rules)/norm_full
+        else:
+            actual_error=norm(T_full-T_approx)/norm_full
         error.append(actual_error)
-
+    # print(error)
     return np.asarray(error), np.asarray(comp_rate)
 
 
