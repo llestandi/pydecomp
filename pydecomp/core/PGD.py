@@ -8,14 +8,18 @@ Major # REVIEW:  on 28/06/18
 import numpy as np
 from scipy.linalg import norm
 from core.Canonical import CanonicalTensor
+import utils.CartesianGrid as cg
+import core.tensor_algebra as ta
+import timeit
+import core.MassMatrices
 
-def PGD(M,F, epenri=1e-12, maxfix=15):
+def PGD(M,F, epenri=1e-10, maxfix=10):
     """
     This function use the PGD method for a multivariate problem decomposition,
     returning an Canonical class objet.
     \n
     **Parameters**:\n
-    **M**:list of mass matrices (integration points for trapeze integration
+    **M**  MassMatrices object.\n
     method) as sparse.diag type elements\n
     **F**: ndarray type, it's the tensor that its decomposition is wanted.\n
     **epenri**: Stop criteria value for the enrichment loop, default value=1e-10.
@@ -56,34 +60,32 @@ def PGD(M,F, epenri=1e-12, maxfix=15):
     equation and that are expoded in the fix point variables section.
 
     """
+    start=timeit.default_timer()
     tshape=F.shape
     dim=len(tshape)
     #Start value of epn that allows get in to the enrichment loop for the first iteration
     eps=1
-    n_iter=0
-    M=[x.toarray() for x in M]
-    M=[np.diag(x) for x in M]
-
+    n_iter=0    
     C=CanonicalTensor(tshape,dim)
     C.solution_initialization()
 
     while (eps>=epenri):
-        # C.rank_increment()
-        R,n_iter=fixed_point(M,C._tshape,C._U,F,n_iter ,C._rank,maxfix)
+        R=fixed_point(M,C._tshape,C._U,F,n_iter ,C._rank,maxfix)
         C.add_enrich(R)
         if C.get_rank()==1:
             REF=norm(R[dim-1])
 
         R_norm=norm(R[dim-1])
         eps=R_norm/REF
-    # @Diego is this necessary?
+   
     #Eliminating the first (zeros) row created to initiate the algorithm
     C._U=[x[1:,::] for x in C._U]
+    stop=timeit.default_timer()
+    print(stop-start)
     return C
 
 def fixed_point(M,tshape,U,F,z,r,max_iter):
-    # @Diego It would be great if you could put all arguments related to C (3 of
-    # them into a single arguments, C) easier to read, easier to debug
+    
     """
     This function calculates the n mode for each iteration in the
     enrichment loop for the PGD method. The definition of each variable
@@ -105,16 +107,12 @@ def fixed_point(M,tshape,U,F,z,r,max_iter):
     if it has converged.
     """
     dim=np.size(tshape)
-    # @TODO @Diego Replace this useless call to class, with use of rank ones
-    # tensors in canonical format. Much clearer
-    New_Solution=IterationSolution(tshape,dim)
-    New_Solution._current_solution_initialization()
-    R=New_Solution.R
-
-
+    R=[np.array([np.ones(x)]) for x in tshape]
+    New_Solution=R[:]
+    
     Old_Solution=New_Solution
     k=0
-    eppf=1e-8  # @TODO @Diego Variable naming should say what it does (without comment)
+    eppf=1e-8  # @TODO @Diego Variable naming should say what it does (without comment)
     epsilon=1
 
     while ((epsilon>=eppf) & (k<max_iter)):
@@ -123,41 +121,32 @@ def fixed_point(M,tshape,U,F,z,r,max_iter):
 
         for i in range(dim):
             Alpha=alpha(R,M,i,dim)
-            Gamma=gamma(R,F,M,i,dim)
+            Gamma=gamma(R,F,M,i,dim)       
             Betha=beta(M,R,U,i,dim)
-
             aux=np.dot(U[i].T,Betha)
             aux=np.transpose(aux)
             R[i]=(-aux+Gamma)/Alpha
-
+            
             if (i<(dim-1)):
                 R[i]=R[i]/(norm(R[i]))
 
         epsilon=norm(R[dim-1]-Old_Solution)/norm(Old_Solution)
-
-        # @TODO @Diego
-        # I don't see the point of having this z variable + it prevents more
-        # concise writing of enriching Canonical approx
-        if k==max_iter:
-            z=z+1
-    return  R,z
-
-# @TODO @Diego
-# This class is useless, please remove and rely on rank one tensors in canonical format
-class IterationSolution:
-    def __init__(self,tshape,dim):
-        self.R=[]
-        self.tshape=tshape
-        self.dim=dim
-    def _current_solution_initialization(self):
-        for i in range (self.dim):
-            self.R.append(np.array([np.ones(self.tshape[i])]))
-
+   
+        
+    return  R
 
 
 def alpha(R,M, i, dim):
     """
-    # @TODO @Diego This is a mathematical description, please document the function itself too
+    Gamma is a variable used in the fixed point algorithm that solves the 
+    PGD method.\n
+    R: Is a list of numpy arrays as its elements. Chaque element represents
+    the solution of the current mode treated in the PGD method, so the number
+    of elements of each array must be coincident with the discretisation of 
+    the respective subspace.\n
+    M: MassMatrices object.\n
+    i:the indice of the dimention that is treated in  this loop.\n
+    dim: number of dimention of the problem.\n
     This function calculates the value of the
     :math:`\\alpha`
     variable in the fix point algorithm:  \n
@@ -170,21 +159,36 @@ def alpha(R,M, i, dim):
     R1=R[:]
     alpha=1
     R1[0],R1[i]=R1[i],R1[0]
-    M1=M[:]
+    #M1=M[:]
+    M1=M.DiaMatrix_list[:]
+    M1=[m.M for m in M1]
     M1[0],M1[i]=M1[i],M1[0]
+    M1=[m[:,np.newaxis] for m in M1]
 
-    # @TODO @Diego Thats a weird integral, I think you need to uniformize it
-    # with the rest of the code. Remove loop if possible
-    for j in range(dim-1,0,-1):
+    for j in range(1,dim):
         R1[j]=np.multiply(R1[j],R1[j])
-        aux=R1[j]@M1[j]
+        aux=R1[j]@M1[j]    
         alpha=alpha*aux
     return alpha
 
 
 def gamma(R,F,M,i,dim):
     """
-    # @TODO @Diego This is a mathematical description, please document the function itself too
+    Gamma is a variable used in the fixed point algorithm that solves the 
+    PGD method.\n 
+    **Parameters** \n
+    R: Is a list of numpy arrays as its elements. Chaque element represents
+    the solution of the current mode treated in the PGD method, so the number
+    of elements of each array must be coincident with the discretisation of 
+    the respective subspace.\n
+    F: numpy array element. Is the full tensor that its decomposition is 
+    wanted. \n
+    M: MassMatrices object.\n
+    i:the indice of the dimention that is treated in  this loop.\n
+    dim: number of dimention of the problem.\n
+    F2: numpy array element, a vector that is function of the 'i' dimention, so
+    the number of elemens of this array will be equal to the number of elements
+    of any vector discretized in the 'i' dimention.
     This function will return the value of the
     :math:`gamma
     variable for each iteration in the fix poitn algorithm.
@@ -193,22 +197,45 @@ def gamma(R,F,M,i,dim):
     """
     F2=F
     F2=np.swapaxes(F2,0,i)
+    F2_shape=F2.shape
     R1=R[:]
     R1[0],R1[i]=R1[i],R1[0]
-    M1=M[:]
+    #M1=M[:]
+    M1=M.DiaMatrix_list[:]
+    M1=[m.M for m in M1]
     M1[0],M1[i]=M1[i],M1[0]
-
+     
     #@TODO improve this by removing loop (use Kronecker and matmul)
-    for j in range(dim-1,0,-1):
+    for j in range(1,dim):
 
-        F2=np.multiply(F2,R1[j])
-        F2=F2@M1[j]
-    return F2
+       F2=np.multiply(F2,R1[j])
+       F2=F2@M1[j]
+       
+    #@Lucas The other version using Kronecker and matmul, is not more efficient,
+    # its equivalent but I think its harder to understand how it works. 
+    
+    #integrated_r1=[r1*m1 for (r1,m1) in zip(R1[1:],M1[1:])]
+    #serie_kron=integrated_r1[0]
+    #for i in range(dim-2):
+    #    serie_kron=np.kron(serie_kron,integrated_r1[i+1])
 
+    #F2=F2.reshape([F2_shape[0],np.prod(F2_shape[1:])])
+    #F2=serie_kron@F2.T
+    return F2    
+    
 def beta(M,R,U,i,dim):
     """
-    # @TODO @Diego This is a mathematical description, please document the function itself too
-    This function calculates the value of the
+    Gamma is a variable used in the fixed point algorithm that solves the 
+    PGD method.\n 
+    M: MassMatrices object.\n
+    R: Is a list of numpy arrays as its elements. Chaque element represents
+    the solution of the current mode treated in the PGD method, so the number
+    of elements of each array must be coincident with the discretisation of 
+    the respective subspace.\n
+    U: Is a list of numpy arrays as its elements. Chalement contains all the
+    modes that had been solved until the actual iteration.\n
+    i:the indice of the dimention that is treated in  this loop.\n
+    dim: number of dimention of the problem.\n
     :math:`\\beta`
     variable in the fix point algorithm:  \n
 
@@ -219,65 +246,22 @@ def beta(M,R,U,i,dim):
     \prod_{i=s+1}^{d}\int_{\Omega_{s}}\prod_{i=s+1}^{d}(X_{i}^{k}
     X_{i}^{j})dx_{i}`
     """
-    M1=M[:]
+    #M1=M[:]
+    M1=M.DiaMatrix_list[:]
+    M1=[m.M for m in M1]
     M1[0],M1[i]=M1[i],M1[0]
     U1=U[:]
     U1[0],U1[i]=U1[i],U1[0]
     R1=R[:]
     R1[0],R1[i]=R1[i],R1[0]
-
-    #@TODO improve this by removing loop (use Kronecker and matmul)
+    
     Betha=1
     for j in range(1,dim):
+      
         aux2=np.multiply(U1[j],R1[j])
         aux2=aux2@M1[j]
         Betha=Betha*aux2
+        
+    
+        
     return Betha
-
-if __name__=="__main__":
-    # @TODO @Diego This is a simple copy paste of old files, please write a Simple
-    # test for PGD
-    tshape=np.array([5,4,8])
-    dim=3
-    R=IterationSolution(tshape,dim)
-    R._current_solution_initialization()
-    R=R.R
-
-    F=np.arange(120)
-    F=F.reshape(5,6,4)
-    lower_limit=np.array([0,0,0])
-    upper_limit =np.array([1,1,1])
-    tshape=np.array([5,6,4])
-    dim=3
-
-    Vector = CartesianGrid.CartesianGrid(dim, tshape, lower_limit, upper_limit)
-
-    X = Vector.SpaceCreator()
-    New_Solution=IterationSolution(tshape,dim)
-    New_Solution._current_solution_initialization()
-    R=New_Solution.R
-    i=1
-
-    F2=F
-    R2=R
-    R2[0],R2[i]=R2[i],R2[0]
-    X2=X
-    X2[0],X2[i]=X2[i],X2[0]
-    F2=np.swapaxes(F2,0,i)
-
-
-    for j in range(dim-1,1,-1):
-        F2=np.multiply(F2,R2[j])
-        F2=integration_1dtrap(F2,X2[j])
-
-
-    #Unmark commentary if Orthogonality Verification is desired
-    """
-    if (Verification==1):
-                print('Orthogonality between modes was verified')
-                print('----------------------------------------\n')
-    print('--------------------------------------------------------------\n')
-    print("Iteration's enrichment loops=",C.get_rank())
-    print("Iteration's enrichment loops in fixed-point loop with no convergence:",z)
-    print('Epsilon=',epn)
-    """

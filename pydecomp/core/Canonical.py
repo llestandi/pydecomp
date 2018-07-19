@@ -11,6 +11,7 @@ import pickle
 from deprecated.tensor_descriptor_class import TensorDescriptor
 import core.tensor_algebra as ta
 import deprecated.full_format
+import timeit
 #------------------------------------------------------------------------
 # @Diego, class is working but a lot of simplification work is needed with your
 # new python knowledge + homogeneisation of tensor format classes.
@@ -88,7 +89,7 @@ class CanonicalTensor(TensorDescriptor):
         """
         self.rank_increment()
         for i in range(self._dim):
-                       self._U[i]=np.append(self._U[i],np.array([R[i]]),axis=0)
+            self._U[i]=np.append(self._U[i],R[i],axis=0)
 
 #--------------------------------------------------------------------------
     def save(self, file_name):
@@ -175,6 +176,7 @@ class CanonicalTensor(TensorDescriptor):
         object introduced. \n
         **Deprecated**
         """
+        start=timeit.default_timer()
         tshape=self._tshape
         #tshape=tshape.astype(int)
         dim=len(tshape)
@@ -191,7 +193,8 @@ class CanonicalTensor(TensorDescriptor):
                 R.append(r)
             Resultat=new_iteration_result(R, tshape, Resultat)
             R=[]
-
+        stop=timeit.default_timer()
+        print(stop-start)
         return Resultat
 
     def to_full_quick(self,rank=-1):
@@ -209,6 +212,7 @@ class CanonicalTensor(TensorDescriptor):
 
         **Return** ndarray of shape = self._tshape
         """
+        start=timeit.default_timer()
         if rank < 0 or rank > self.get_rank():
             r=self.get_rank()
         else:
@@ -216,6 +220,8 @@ class CanonicalTensor(TensorDescriptor):
         U_trunc=[(np.stack(self._U[i][:r])).T for i in range(self._dim)]
         shape=self._tshape
         flat_eval=U_trunc[0] @ np.transpose(ta.multi_kathri_rao(U_trunc[1:]))
+        stop=timeit.default_timer()
+        print(stop-start)
         return np.reshape(flat_eval,shape)
 
 
@@ -299,15 +305,18 @@ def build_eval_rank_list(maxrank):
 
 
 def new_iteration_result(R, tshape, Resultat):
-    #FIXME @Diego : undocumented, seems deprecated
-     NewModeResultat=(np.transpose(np.array([R[0]])).dot(np.array([R[1]])))
+    """
+    This functions serves to initiate le process of reconstruction in 
+    the reconstruction 
+    """
+    NewModeResultat=(np.transpose(np.array([R[0]])).dot(np.array([R[1]])))
 
-     if len(R)>2:
+    if len(R)>2:
          for i in range(2,len(R)):
              NewModeResultat=np.kron(NewModeResultat,R[i])
          NewModeResultat=NewModeResultat.reshape(tshape)
-     Resultat=np.add(Resultat,NewModeResultat)
-     return Resultat
+    Resultat=np.add(Resultat,NewModeResultat)
+    return Resultat
 
 
 if __name__=="__main__":
