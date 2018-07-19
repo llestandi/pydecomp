@@ -109,7 +109,6 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
         if Frob_norm:
             M=None
         if plot:
-            print([M.Mat_list[i] for i in range(len(M))])
             if type(Result)==TuckerTensor:
                 approx_data[reduction_method]=np.stack(tucker_error_data(Result,F,M))
             elif type(Result)==RecursiveTensor:
@@ -135,5 +134,5 @@ if __name__ == '__main__':
     solver=["trapezes","trapezes","trapezes","SVD"]
     # solver=["trapezes"]
     multi_var_decomp_analysis(decomp_methods, solver ,shape=[16,16,16,16,16],
-                            test_function=3, plot=True,output='../output',
+                            test_function=3, plot=True,output='../output',Frob_norm=True,
                             plot_name='output/approx_benchmark.pdf',tol=1e-8)

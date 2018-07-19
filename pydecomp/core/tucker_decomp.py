@@ -89,7 +89,8 @@ def SHOPOD(F,MM, tol=1e-10,rank=-1):
     this object type, more information could be found in Tucker class
     documentation.
     """
-    M=MM
+    from copy import deepcopy,copy
+    M=deepcopy(MM)
     tshape=F.shape
     dim=len(tshape)
     PHI=[]
