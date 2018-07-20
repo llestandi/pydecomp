@@ -45,17 +45,17 @@ def HOPOD(F,M, tol=1e-10, sparse=False):
         SPARSE=False
 
     for i in range(dim):
-        Fmat=ta.matricize(F,dim,i)
+        Fmat=ta.matricize(F,i)
         Mx,Mt = mm.matricize_mass_matrix(dim,i,M)
         phi,sigma,A= POD(Fmat.T,Mt,Mx, tol=tol)
         PHI.append(A)
-    PHIT=misc.list_transpose(PHI)
-    W=tucker_weight_eval(PHIT,M,F,dim,sparse=SPARSE)
+    # PHIT=misc.list_transpose(PHI)
+    W=tucker_weight_eval(PHI,M,F,dim,sparse=SPARSE)
     Decomposed_Tensor=TuckerTensor(W,PHI)
 
     return Decomposed_Tensor
 
-def tucker_weight_eval(PHIT,MM,F,dim,sparse=False):
+def tucker_weight_eval(PHI,MM,F,dim,sparse=False):
     """
     This function reproduces the operation:\n
     :math:`	(\phi_{1},\phi_{2},...,\phi{d})[(M_{1},M_{2},...,M_{d}).
@@ -65,13 +65,9 @@ def tucker_weight_eval(PHIT,MM,F,dim,sparse=False):
     Dimentions of decomposition values list and Mass matrices list are not
     coherents
     """
-    if len(PHIT)!= len(MM.Mat_list):
+    if len(PHI)!= len(MM.Mat_list):
         raise ValueError(a)
-    if not sparse:
-        integrated_phi=[phit*m.M for (phit,m) in zip(PHIT,MM.Mat_list)]
-    elif sparse:
-        integrated_phi=[phit@m.M for (phit,m) in zip(PHIT,MM.Mat_list)]
-    W =ta.multilinear_multiplication(integrated_phi, F, dim)
+    W = ta.scal_prod_mem_save(PHI,F,MM)
     return W
 
 
@@ -97,7 +93,7 @@ def SHOPOD(F,MM, tol=1e-10,rank=-1):
     W=F
     for i in range(dim):
         Wshape=[x for x in W.shape]
-        Wmat=ta.matricize(W,dim,0)
+        Wmat=ta.matricize(W,0)
         Mx,Mt = mm.matricize_mass_matrix(dim,i,M)
         phi,sigma,A=POD(Wmat.T,Mt,Mx,tol=tol,rank=rank)
         W=(sigma*phi).T

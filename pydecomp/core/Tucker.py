@@ -105,7 +105,7 @@ class TuckerTensor():
             mem+=self.shape[i]*self.rank[i]
         return mem
 
-
+@profile
 def tucker_error_data(T_tucker, T_full,int_rules=None):
     """ Computes the error data (error and compression rate) for Tucker
     decompositions
@@ -137,14 +137,13 @@ def tucker_error_data(T_tucker, T_full,int_rules=None):
     r=np.zeros(d)
     for i in range(maxrank):
         r=np.minimum(rank,r+1)
-        # print(r)
         T_trunc=truncate(T_tucker,r)
         comp_rate.append(T_trunc.memory_eval()/F_volume)
 
         T_approx=T_trunc.reconstruction()
         actual_error=norm(T_full-T_approx,int_rules)/norm_full
         error.append(actual_error)
-    # print(error)
+        del(T_approx)
     return np.asarray(error), np.asarray(comp_rate)
 
 

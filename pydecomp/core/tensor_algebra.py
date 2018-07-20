@@ -41,15 +41,21 @@ def multilinear_multiplication(PHI,F,dim):
         number_modes=np.array([x.shape[0] for x in PHI])
         PHI2=PHI[:]
     maximal_index=np.argmax(number_modes)
-    PHI2.insert(0,PHI2.pop(maximal_index))
-    Fmat=matricize(F,dim,maximal_index)
-    aux=PHI2[1]
-    for i in range(2,dim):
-        aux=kron(aux,PHI2[i])
-    W=transpose(aux@transpose(PHI2[0]@Fmat)) #an ugly hack to bypass binary operators limits
-    forme_W=[i.shape[0] for i in PHI2]
-    W = W.reshape(forme_W)
-    W  =np.moveaxis(W,0,maximal_index)
+    W=F
+    shape_W=[i.shape[0] for i in PHI2]
+    for i in range(dim):
+        shape_W=list(W.shape)
+        shape_W[0],shape_W[i]=shape_W[i],shape_W[0]
+        W=PHI2[i]@matricize(W, i)
+        shape_W[0]=W.shape[0]
+    # PHI2.insert(0,PHI2.pop(maximal_index))
+    # Fmat=matricize(F,maximal_index)
+    # aux=PHI2[1]
+    # for i in range(2,dim):
+    #     aux=kron(aux,PHI2[i])
+    # W=transpose(aux@transpose(PHI2[0]@Fmat)) #an ugly hack to bypass binary operators limits
+        W = W.reshape(shape_W)
+        W  =np.moveaxis(W,0,maximal_index)
     return W
 
 def transpose(M):
@@ -93,14 +99,13 @@ def multi_kathri_rao(matrices):
     return prod
 
 #------------------------------------------------------------------------------
-def matricize(F,dim,i):
+def matricize(F,i):
     """
     Returns the tensor F rearanged as a matrix with the *"i"* dimention as
     the new principal (order 0) order. In other words it returns the unfolded
     tensor as a matrix with the "i" dimention as the new "0" dimention.  \n
     **Parameters**\n
     F= array type of n dimentions.\n
-    dim= number of dimentions of the tensor F.\n
     i= dimention that is going to be taken as the principal to matricize.
     """
     F1=np.moveaxis(F,i,0)
@@ -133,6 +138,28 @@ def norm(T,MM=None):
         return normL2(T,MM)
     else:
         return np.linalg.norm(T)
+
+def scal_prod_1d(Phi,T,M,i):
+    """1D scalar product between Phi (a matrix), T (a tensor) with integration
+    rule M at index i"""
+    if Phi.shape[0] != T.shape[i]:
+        raise AttributeError("Phi ({}) and T ({}) dimension do not match\
+                             ".format(Phi.shape[0],T.shape[i]))
+    if Phi.shape[0] != M.dia_size:
+        raise AttributeError("Phi ({}) and M ({}) dimension do not match\
+                             ".format(Phi.shape[0],M.diag_size))
+    r=Phi.shape[1]
+    shape=list(T.shape)
+    new_shape=shape[:i]+[r]+shape[i+1:]
+    return np.reshape(np.transpose(M@Phi) @ matricize(T,i),new_shape)
+
+
+def scal_prod_mem_save(Phi_list, T, MM):
+    buff=T
+    for i in range(T.ndim):
+        buff=scal_prod_1d(Phi_list[i],buff,MM.Mat_list[i],i)
+    print(buff.shape)
+    return buff
 
 def normL2(T,M):
     """

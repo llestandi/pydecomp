@@ -28,8 +28,19 @@ from core.Canonical import CanonicalTensor, canonical_error_data
 from core.Tucker import TuckerTensor, tucker_error_data
 from core.TensorTrain import TensorTrain, error_TT_data
 
-from plot import benchmark_plotter
+from analysis.plot import benchmark_plotter
 from utils.tensor_creator import testg,testf
+
+def numerics_for_thesis():
+    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]
+    solver=["trapezes","trapezes","trapezes","SVD"]
+    multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
+    # multi_var_decomp_analysis(decomp_methods, solver ,shape=[16,16,16,16,16],
+                            test_function=2, plot=True,output='../output',Frob_norm=False,
+                            plot_name='output/approx_benchmark.pdf',tol=1e-12)
+
+
+    return
 
 def multi_var_decomp_analysis(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,
@@ -129,10 +140,14 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
     return approx_data
 
 if __name__ == '__main__':
+    numerics_for_thesis()
+
+    exit()
     decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]
     # decomp_methods=["HO_POD"]
     solver=["trapezes","trapezes","trapezes","SVD"]
     # solver=["trapezes"]
-    multi_var_decomp_analysis(decomp_methods, solver ,shape=[16,16,16,16,16],
-                            test_function=3, plot=True,output='../output',Frob_norm=True,
-                            plot_name='output/approx_benchmark.pdf',tol=1e-8)
+    multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32,32,32],
+    # multi_var_decomp_analysis(decomp_methods, solver ,shape=[16,16,16,16,16],
+                            test_function='Vega', plot=True,output='../output',Frob_norm=False,
+                            plot_name='output/approx_benchmark.pdf',tol=1e-12)
