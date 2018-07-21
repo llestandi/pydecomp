@@ -105,7 +105,6 @@ class TuckerTensor():
             mem+=self.shape[i]*self.rank[i]
         return mem
 
-@profile
 def tucker_error_data(T_tucker, T_full,int_rules=None):
     """ Computes the error data (error and compression rate) for Tucker
     decompositions

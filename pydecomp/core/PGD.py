@@ -60,12 +60,11 @@ def PGD(M,F, epenri=1e-10, maxfix=10):
     equation and that are expoded in the fix point variables section.
 
     """
-    start=timeit.default_timer()
     tshape=F.shape
     dim=len(tshape)
     #Start value of epn that allows get in to the enrichment loop for the first iteration
     eps=1
-    n_iter=0    
+    n_iter=0
     C=CanonicalTensor(tshape,dim)
     C.solution_initialization()
 
@@ -77,15 +76,13 @@ def PGD(M,F, epenri=1e-10, maxfix=10):
 
         R_norm=norm(R[dim-1])
         eps=R_norm/REF
-   
+
     #Eliminating the first (zeros) row created to initiate the algorithm
     C._U=[x[1:,::] for x in C._U]
-    stop=timeit.default_timer()
-    print(stop-start)
     return C
 
 def fixed_point(M,tshape,U,F,z,r,max_iter):
-    
+
     """
     This function calculates the n mode for each iteration in the
     enrichment loop for the PGD method. The definition of each variable
@@ -109,7 +106,7 @@ def fixed_point(M,tshape,U,F,z,r,max_iter):
     dim=np.size(tshape)
     R=[np.array([np.ones(x)]) for x in tshape]
     New_Solution=R[:]
-    
+
     Old_Solution=New_Solution
     k=0
     eppf=1e-8  # @TODO @Diego Variable naming should say what it does (without comment)
@@ -121,28 +118,28 @@ def fixed_point(M,tshape,U,F,z,r,max_iter):
 
         for i in range(dim):
             Alpha=alpha(R,M,i,dim)
-            Gamma=gamma(R,F,M,i,dim)       
+            Gamma=gamma(R,F,M,i,dim)
             Betha=beta(M,R,U,i,dim)
             aux=np.dot(U[i].T,Betha)
             aux=np.transpose(aux)
             R[i]=(-aux+Gamma)/Alpha
-            
+
             if (i<(dim-1)):
                 R[i]=R[i]/(norm(R[i]))
 
         epsilon=norm(R[dim-1]-Old_Solution)/norm(Old_Solution)
-   
-        
+
+
     return  R
 
 
 def alpha(R,M, i, dim):
     """
-    Gamma is a variable used in the fixed point algorithm that solves the 
+    Gamma is a variable used in the fixed point algorithm that solves the
     PGD method.\n
     R: Is a list of numpy arrays as its elements. Chaque element represents
     the solution of the current mode treated in the PGD method, so the number
-    of elements of each array must be coincident with the discretisation of 
+    of elements of each array must be coincident with the discretisation of
     the respective subspace.\n
     M: MassMatrices object.\n
     i:the indice of the dimention that is treated in  this loop.\n
@@ -160,28 +157,28 @@ def alpha(R,M, i, dim):
     alpha=1
     R1[0],R1[i]=R1[i],R1[0]
     #M1=M[:]
-    M1=M.DiaMatrix_list[:]
+    M1=M.Mat_list[:]
     M1=[m.M for m in M1]
     M1[0],M1[i]=M1[i],M1[0]
     M1=[m[:,np.newaxis] for m in M1]
 
     for j in range(1,dim):
         R1[j]=np.multiply(R1[j],R1[j])
-        aux=R1[j]@M1[j]    
+        aux=R1[j]@M1[j]
         alpha=alpha*aux
     return alpha
 
 
 def gamma(R,F,M,i,dim):
     """
-    Gamma is a variable used in the fixed point algorithm that solves the 
-    PGD method.\n 
+    Gamma is a variable used in the fixed point algorithm that solves the
+    PGD method.\n
     **Parameters** \n
     R: Is a list of numpy arrays as its elements. Chaque element represents
     the solution of the current mode treated in the PGD method, so the number
-    of elements of each array must be coincident with the discretisation of 
+    of elements of each array must be coincident with the discretisation of
     the respective subspace.\n
-    F: numpy array element. Is the full tensor that its decomposition is 
+    F: numpy array element. Is the full tensor that its decomposition is
     wanted. \n
     M: MassMatrices object.\n
     i:the indice of the dimention that is treated in  this loop.\n
@@ -201,19 +198,19 @@ def gamma(R,F,M,i,dim):
     R1=R[:]
     R1[0],R1[i]=R1[i],R1[0]
     #M1=M[:]
-    M1=M.DiaMatrix_list[:]
+    M1=M.Mat_list[:]
     M1=[m.M for m in M1]
     M1[0],M1[i]=M1[i],M1[0]
-     
+
     #@TODO improve this by removing loop (use Kronecker and matmul)
     for j in range(1,dim):
 
        F2=np.multiply(F2,R1[j])
        F2=F2@M1[j]
-       
+
     #@Lucas The other version using Kronecker and matmul, is not more efficient,
-    # its equivalent but I think its harder to understand how it works. 
-    
+    # its equivalent but I think its harder to understand how it works.
+
     #integrated_r1=[r1*m1 for (r1,m1) in zip(R1[1:],M1[1:])]
     #serie_kron=integrated_r1[0]
     #for i in range(dim-2):
@@ -221,16 +218,16 @@ def gamma(R,F,M,i,dim):
 
     #F2=F2.reshape([F2_shape[0],np.prod(F2_shape[1:])])
     #F2=serie_kron@F2.T
-    return F2    
-    
+    return F2
+
 def beta(M,R,U,i,dim):
     """
-    Gamma is a variable used in the fixed point algorithm that solves the 
-    PGD method.\n 
+    Gamma is a variable used in the fixed point algorithm that solves the
+    PGD method.\n
     M: MassMatrices object.\n
     R: Is a list of numpy arrays as its elements. Chaque element represents
     the solution of the current mode treated in the PGD method, so the number
-    of elements of each array must be coincident with the discretisation of 
+    of elements of each array must be coincident with the discretisation of
     the respective subspace.\n
     U: Is a list of numpy arrays as its elements. Chalement contains all the
     modes that had been solved until the actual iteration.\n
@@ -247,21 +244,21 @@ def beta(M,R,U,i,dim):
     X_{i}^{j})dx_{i}`
     """
     #M1=M[:]
-    M1=M.DiaMatrix_list[:]
+    M1=M.Mat_list[:]
     M1=[m.M for m in M1]
     M1[0],M1[i]=M1[i],M1[0]
     U1=U[:]
     U1[0],U1[i]=U1[i],U1[0]
     R1=R[:]
     R1[0],R1[i]=R1[i],R1[0]
-    
+
     Betha=1
     for j in range(1,dim):
-      
+
         aux2=np.multiply(U1[j],R1[j])
         aux2=aux2@M1[j]
         Betha=Betha*aux2
-        
-    
-        
+
+
+
     return Betha

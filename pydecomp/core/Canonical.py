@@ -176,7 +176,6 @@ class CanonicalTensor(TensorDescriptor):
         object introduced. \n
         **Deprecated**
         """
-        start=timeit.default_timer()
         tshape=self._tshape
         #tshape=tshape.astype(int)
         dim=len(tshape)
@@ -193,8 +192,6 @@ class CanonicalTensor(TensorDescriptor):
                 R.append(r)
             Resultat=new_iteration_result(R, tshape, Resultat)
             R=[]
-        stop=timeit.default_timer()
-        print(stop-start)
         return Resultat
 
     def to_full_quick(self,rank=-1):
@@ -212,7 +209,6 @@ class CanonicalTensor(TensorDescriptor):
 
         **Return** ndarray of shape = self._tshape
         """
-        start=timeit.default_timer()
         if rank < 0 or rank > self.get_rank():
             r=self.get_rank()
         else:
@@ -220,8 +216,6 @@ class CanonicalTensor(TensorDescriptor):
         U_trunc=[(np.stack(self._U[i][:r])).T for i in range(self._dim)]
         shape=self._tshape
         flat_eval=U_trunc[0] @ np.transpose(ta.multi_kathri_rao(U_trunc[1:]))
-        stop=timeit.default_timer()
-        print(stop-start)
         return np.reshape(flat_eval,shape)
 
 
@@ -233,7 +227,7 @@ class CanonicalTensor(TensorDescriptor):
         return np.sum(self._tshape)*r
 
 
-def canonical_error_data(T_can, T_full,rank_based=False):
+def canonical_error_data(T_can, T_full,rank_based=False,tol=1e-16):
     """
     @author : Lucas 27/06/18
     Builds a set of approximation error and associated compression rate for a
@@ -272,7 +266,7 @@ def canonical_error_data(T_can, T_full,rank_based=False):
         error.append(actual_error)
         try:
             err_var=np.abs(error[-1]-error[-2])/error[-2]
-            if comp_rate[-1]>1 or err_var<1e-10:
+            if comp_rate[-1]>1 or err_var<1e-10 or actual_error < tol:
                 break
         except:
             pass
@@ -306,8 +300,8 @@ def build_eval_rank_list(maxrank):
 
 def new_iteration_result(R, tshape, Resultat):
     """
-    This functions serves to initiate le process of reconstruction in 
-    the reconstruction 
+    This functions serves to initiate le process of reconstruction in
+    the reconstruction
     """
     NewModeResultat=(np.transpose(np.array([R[0]])).dot(np.array([R[1]])))
 

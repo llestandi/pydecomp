@@ -31,21 +31,61 @@ from core.TensorTrain import TensorTrain, error_TT_data
 from analysis.plot import benchmark_plotter
 from utils.tensor_creator import testg,testf
 
-def numerics_for_thesis():
-    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]
-    solver=["trapezes","trapezes","trapezes","SVD"]
-    multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
-    # multi_var_decomp_analysis(decomp_methods, solver ,shape=[16,16,16,16,16],
-                            test_function=2, plot=True,output='../output',Frob_norm=False,
-                            plot_name='output/approx_benchmark.pdf',tol=1e-12)
+def numerics_for_thesis(test_list):
+    # General comparison separable function SVD everywhere
+    if "general_3D" in test_list:
+        for f in [1,2,3]:
+            decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+            solver=["SVD","SVD","SVD","SVD","SVD"]
+            plot_name='../output/approx_benchmark_function_{}.pdf'.format(f)
+            plot_title="f_{} decomposition, d=3, n={}".format(f,32)
+            multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
+                                test_function=f, plot=False,output='../output',Frob_norm=False,
+                                plot_name=plot_name,tol=1e-12)
 
+    ###########################################################################
+    if "num_dim_test_short" in test_list:
+        print("\n ===================================\
+              \nTest number of dimension, fixed n per dim\n")
+        err_data={}
+        for d in range(2,6):
+            print("===================\nd={}\n".format(d))
+            n=20
+            shape=[n for x in range(d)]
+            decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+            solver=["SVD","SVD","SVD","SVD","SVD"]
+            plot_name='../output/num_dim_test/func_2_withPGD_d_{}.pdf'.format(d)
+            plot_title="f_2 decomposition, d={}, n={}".format(d,n)
+            err_data[d]=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
+                                test_function=2, plot=False,output='../output/num_dim_test/',
+                                Frob_norm=True,  plot_name=plot_name,
+                                tol=1e-6, plot_title=plot_title)
+
+
+    if "num_dim_test_long" in test_list:
+        print("\n ===================================\
+              \nTest number of dimension, fixed n per dim\n")
+        err_data={}
+        for d in range(2,7):
+            print("===================\nd={}\n".format(d))
+            n=20
+            shape=[n for x in range(d)]
+            decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]#,"PGD"]
+            solver=["SVD","SVD","SVD","SVD"]#,"SVD"]
+            plot_name='../output/num_dim_test/func_2_d_{}.pdf'.format(d)
+            plot_title="f_2 decomposition, d={}, n={}".format(d,n)
+            err_data[d]=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
+                                test_function=2, plot=False,output='../output/num_dim_test/',
+                                Frob_norm=True,  plot_name=plot_name,
+                                tol=1e-6, plot_title=plot_title)
 
     return
 
 def multi_var_decomp_analysis(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,
                               output=None,Frob_norm=False,
-                              plot_name='output/approx_benchmark', tol=1e-5):
+                              plot_name='output/approx_benchmark',
+                              tol=1e-5, plot_title=None):
     """
     This is a useful routine for running multivariate decomposition algorithms.
     """
@@ -62,19 +102,6 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
 
     if type(integration_method)==str:
          list_integration_method=[integration_method for i in range(number_of_methods)]
-    elif type(integration_method)==list:
-         list_integration_method=integration_method
-         if len(integration_method)!=number_of_methods:
-             error_number_of_integration_methods="""  The number of integration
-             methods are not coherent with the number  of the list of reduction
-             methods  """
-             raise ValueError(error_number_of_integration_methods)
-    else:
-        error_integration_method="""  Variable integration method must be 'SVD'
-        or 'trapezes' strig variable or  a list of these two options as many
-        times as the number of integration  methods selected.  """
-        raise ValueError(error_integration_method)
-
 
     if type(plot_name)!= str:
         raise ValueError('output_variable_name must be a string variable')
@@ -94,15 +121,14 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
         integration_method=list_integration_method[ii]
 
         if integration_method=='SVD':
-            X=[np.ones(x) for x in shape]
-            M=[diags(x) for x in X]
+            M=mm.MassMatrices([mm.identity_mass_matrix(x.size) for x in X])
             Frob_norm=True
         elif integration_method=='trapezes':
             M=mm.mass_matrices_creator(X)
 
         t=time.time()
         if reduction_method=='PGD':
-            Result=PGD(M,F,epenri=np.sqrt(tol))
+            Result=PGD(M,F,epenri=tol)
         elif reduction_method=='HO_POD':
             Result=HOPOD(F,M,tol=tol)
         elif reduction_method=='SHO_POD':
@@ -123,31 +149,24 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
             if type(Result)==TuckerTensor:
                 approx_data[reduction_method]=np.stack(tucker_error_data(Result,F,M))
             elif type(Result)==RecursiveTensor:
-                approx_data[reduction_method]=np.stack(rpod_error_data(Result,F,M=M))
+                approx_data[reduction_method]=np.stack(rpod_error_data(Result,F,M=M, max_tol=tol))
             elif type(Result)==CanonicalTensor:
-                approx_data[reduction_method]=np.stack(canonical_error_data(Result,F))
+                approx_data[reduction_method]=np.stack(canonical_error_data(Result,F,tol=tol))
             elif type(Result)==TensorTrain:
                 approx_data[reduction_method]=np.stack(error_TT_data(Result,F))
         try:
             if output!='':
-                np.savetxt(reduction_method+".csv",approx_data[reduction_method][0],
+                np.savetxt(ouput+"/"+reduction_method+".csv",approx_data[reduction_method][0],
                            approx_data[reduction_method][1],delimiter=',')
         except:
+            print("Failed to save data")
             pass
 
     if plot:
-        benchmark_plotter(approx_data, show_plot)
+        benchmark_plotter(approx_data, show_plot, plot_name=plot_name,title=plot_title)
     return approx_data
 
 if __name__ == '__main__':
-    numerics_for_thesis()
-
-    exit()
-    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]
-    # decomp_methods=["HO_POD"]
-    solver=["trapezes","trapezes","trapezes","SVD"]
-    # solver=["trapezes"]
-    multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32,32,32],
-    # multi_var_decomp_analysis(decomp_methods, solver ,shape=[16,16,16,16,16],
-                            test_function='Vega', plot=True,output='../output',Frob_norm=False,
-                            plot_name='output/approx_benchmark.pdf',tol=1e-12)
+    avail_test=["general_3D","num_dim_test_short","num_dim_test_long"]
+    test_list=avail_test[:2]
+    numerics_for_thesis(test_list)

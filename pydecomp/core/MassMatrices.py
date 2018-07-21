@@ -72,6 +72,7 @@ class DiaMatrix:
         str+="and size : {}\n".format(self.dia_size)
         str+="M :\n {}".format(self.M)
         return str
+        
 class MassMatrices:
     """
     Parameters: \n

@@ -100,7 +100,11 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     *show* [bool]        whether the plot is shown or not
     *plot_name* [str]    plot output location, if empty string, no plot
     """
-    styles=['r+-','b*-','ko-','gh:','mh--']
+    styles={"HO_POD":'r+-',
+            "SHO_POD":'gh:',
+            "RPOD":'b*-',
+            "TT_SVD":'ko-',
+            "PGD":'mh--'}
     fig=plt.figure()
     xmax=1
     ylim=[0.1,0.1]
@@ -110,6 +114,10 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     plt.ylabel('Relative Error')
     plt.grid()
 
+    title=kwargs.get('title',None)
+    if title:
+        plt.title(title)
+
     for label, data in approx_data.items():
         err=data[0,:]
         comp_rate=100*data[1,:]
@@ -118,9 +126,8 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
         ax=fig.add_subplot(111)
         ax.set_xlim(0,xmax)
         ax.set_ylim(ylim)
-        plt.plot(comp_rate, err , styles[k], label=label)
+        plt.plot(comp_rate, err , styles[label], label=label)
 
-        k+=1
     #saving plot as pdf
     plt.legend()
     if show:
