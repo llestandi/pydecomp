@@ -16,6 +16,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.sparse import diags
 import time
+import os
 
 import utils.tensor_creator as tensor_creator
 import core.tensor_algebra as ta
@@ -30,14 +31,16 @@ from core.TensorTrain import TensorTrain, error_TT_data
 
 from analysis.plot import benchmark_plotter
 from utils.tensor_creator import testg,testf
+import utils.IO as IO
 
 def numerics_for_thesis(test_list):
     # General comparison separable function SVD everywhere
     if "general_3D" in test_list:
+        path ="../output/general_3D/"
+        decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+        solver=["SVD","SVD","SVD","SVD","SVD"]
         for f in [1,2,3]:
-            decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
-            solver=["SVD","SVD","SVD","SVD","SVD"]
-            plot_name='../output/approx_benchmark_function_{}.pdf'.format(f)
+            plot_name=path+'approx_benchmark_function_{}.pdf'.format(f)
             plot_title="f_{} decomposition, d=3, n={}".format(f,32)
             multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
                                 test_function=f, plot=False,output='../output',Frob_norm=False,
@@ -47,41 +50,46 @@ def numerics_for_thesis(test_list):
     if "num_dim_test_short" in test_list:
         print("\n ===================================\
               \nTest number of dimension, fixed n per dim\n")
+        n=20
         err_data={}
+        decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+        solver=["SVD","SVD","SVD","SVD","SVD"]
+        path='../output/num_dim_test_short/'
+
         for d in range(2,6):
             print("===================\nd={}\n".format(d))
-            n=20
             shape=[n for x in range(d)]
-            decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
-            solver=["SVD","SVD","SVD","SVD","SVD"]
-            plot_name='../output/num_dim_test/func_2_withPGD_d_{}.pdf'.format(d)
+            plot_name=path+'func_2_d_{}.pdf'.format(d)
             plot_title="f_2 decomposition, d={}, n={}".format(d,n)
             err_data[d]=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
                                 test_function=2, plot=False,output='../output/num_dim_test/',
                                 Frob_norm=True,  plot_name=plot_name,
                                 tol=1e-6, plot_title=plot_title)
+        IO.save(err_data,path+"saved_decomp_data.dat")
 
 
     if "num_dim_test_long" in test_list:
         print("\n ===================================\
               \nTest number of dimension, fixed n per dim\n")
         err_data={}
-        for d in range(2,7):
+        decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]
+        solver=["SVD","SVD","SVD","SVD"]
+        path='../output/num_dim_test_long/'
+
+        n=20
+        for d in range(2,8):
             print("===================\nd={}\n".format(d))
-            n=20
             shape=[n for x in range(d)]
-            decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]#,"PGD"]
-            solver=["SVD","SVD","SVD","SVD"]#,"SVD"]
-            plot_name='../output/num_dim_test/func_2_d_{}.pdf'.format(d)
+            plot_name=path+'func_2_d_{}.pdf'.format(d)
             plot_title="f_2 decomposition, d={}, n={}".format(d,n)
             err_data[d]=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
                                 test_function=2, plot=False,output='../output/num_dim_test/',
                                 Frob_norm=True,  plot_name=plot_name,
                                 tol=1e-6, plot_title=plot_title)
-
+        IO.save(err_data,path+"saved_decomp_data.dat")
     return
 
-def multi_var_decomp_analysis(list_reduction_method, integration_method,
+def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                               shape,test_function=1, plot=False,
                               output=None,Frob_norm=False,
                               plot_name='output/approx_benchmark',
@@ -96,12 +104,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
     number_plot=0
     approx_data={}
 
-    if type(list_reduction_method) == str:
-        list_reduction_method=[list_reduction_method]
     number_of_methods=len(list_reduction_method)
-
-    if type(integration_method)==str:
-         list_integration_method=[integration_method for i in range(number_of_methods)]
 
     if type(plot_name)!= str:
         raise ValueError('output_variable_name must be a string variable')
@@ -115,16 +118,18 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
     #########################END OF TESTS##########################################
 
     X,F=testg(test_function, shape, dim, domain)
-
     for ii in range(number_of_methods):
         reduction_method=list_reduction_method[ii]
-        integration_method=list_integration_method[ii]
+        integration_method=integration_methods[ii]
 
         if integration_method=='SVD':
             M=mm.MassMatrices([mm.identity_mass_matrix(x.size) for x in X])
             Frob_norm=True
         elif integration_method=='trapezes':
             M=mm.mass_matrices_creator(X)
+        else:
+            raise NotImplementedError("integration_method '{}' \
+                                      not implemented".format(integration_method))
 
         t=time.time()
         if reduction_method=='PGD':
@@ -156,10 +161,8 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
                 approx_data[reduction_method]=np.stack(error_TT_data(Result,F))
         try:
             if output!='':
-                np.savetxt(ouput+"/"+reduction_method+".csv",approx_data[reduction_method][0],
-                           approx_data[reduction_method][1],delimiter=',')
+                np.savetxt(output+"/"+reduction_method+".csv",np.asaray([approx_data[reduction_method][0],approx_data[reduction_method][1]]), delimiter=',')
         except:
-            print("Failed to save data")
             pass
 
     if plot:
@@ -168,5 +171,5 @@ def multi_var_decomp_analysis(list_reduction_method, integration_method,
 
 if __name__ == '__main__':
     avail_test=["general_3D","num_dim_test_short","num_dim_test_long"]
-    test_list=avail_test[:2]
+    test_list=avail_test[:]
     numerics_for_thesis(test_list)

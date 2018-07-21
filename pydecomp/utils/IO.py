@@ -1,3 +1,5 @@
+import pickle
+
 def load(file_name):
     """
     This function will load a file (variable, classe object, etc) in pickle
