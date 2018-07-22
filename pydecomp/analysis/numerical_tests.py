@@ -29,7 +29,7 @@ from core.Canonical import CanonicalTensor, canonical_error_data
 from core.Tucker import TuckerTensor, tucker_error_data
 from core.TensorTrain import TensorTrain, error_TT_data
 
-from analysis.plot import benchmark_plotter
+from analysis.plot import benchmark_plotter, several_d_plotter
 from utils.tensor_creator import testg,testf
 import utils.IO as IO
 
@@ -77,7 +77,7 @@ def numerics_for_thesis(test_list):
         path='../output/num_dim_test_long/'
 
         n=20
-        for d in range(2,8):
+        for d in range(2,6):
             print("===================\nd={}\n".format(d))
             shape=[n for x in range(d)]
             plot_name=path+'func_2_d_{}.pdf'.format(d)
@@ -87,6 +87,8 @@ def numerics_for_thesis(test_list):
                                 Frob_norm=True,  plot_name=plot_name,
                                 tol=1e-6, plot_title=plot_title)
         IO.save(err_data,path+"saved_decomp_data.dat")
+        several_d_plotter(err_data, show=True)
+
     return
 
 def multi_var_decomp_analysis(list_reduction_method, integration_methods,
@@ -171,5 +173,5 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
 
 if __name__ == '__main__':
     avail_test=["general_3D","num_dim_test_short","num_dim_test_long"]
-    test_list=avail_test[:]
+    test_list=avail_test[2]
     numerics_for_thesis(test_list)
