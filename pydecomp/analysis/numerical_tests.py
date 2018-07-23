@@ -36,29 +36,40 @@ import utils.IO as IO
 def numerics_for_thesis(test_list):
     # General comparison separable function SVD everywhere
     if "general_3D" in test_list:
-        print("\n ===================================\
-        \nTest number of dimension, fixed n per dim\n")
-        path ="../output/general_3D/"
-        decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
-        solver=["SVD","SVD","SVD","SVD","SVD"]
-        for f in [1,2,3]:
-            print("\n F{} \n".format(f))
-            plot_name=path+'approx_benchmark_function_{}_Frob.pdf'.format(f)
-            plot_title="f_{} decomposition, d=3, n={}, Frob norm".format(f,32)
-            multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
-                                test_function=f, plot=False,output='../output',Frob_norm=False,
-                                plot_name=plot_name,tol=1e-12)
+        general_test_3D(["SVD","trapezes"])
 
-        solver=["trapezes" for i in range(5)]
-        for f in [1,2,3]:
-            print("\n F{} \n".format(f))
-            plot_name=path+'approx_benchmark_function_{}_L2.pdf'.format(f)
-            plot_title="f_{} decomposition, d=3, n={}, L2 norm".format(f,32)
-            multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
-                                test_function=f, plot=False,output='../output',Frob_norm=False,
-                                plot_name=plot_name,tol=1e-12)
-    ###########################################################################
     if "num_dim_test_short" in test_list:
+        num_dim_test_short()
+
+    if "num_dim_test_long" in test_list:
+        num_dim_test_long()
+
+    if "Vega" in test_list:
+        Vega_test()
+
+    return
+
+
+def Vega_test():
+    print("\n ===================================\
+          \n Vega function test\n")
+    n=20
+    d=5
+    err_data={}
+    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+    solver=["trapezes" for i in range(len(decomp_methods))]
+    path='../output/vega_func/'
+    shape=[n for x in range(d)]
+    plot_name=path+'vega_all_methods_n20.pdf'.format(d)
+    plot_title="Vega function decomposition, n={}".format(n)
+    err_data=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
+                        test_function=2, plot=False,output='../output/num_dim_test/',
+                        Frob_norm=True,  plot_name=plot_name,
+                        tol=1e-12, plot_title=plot_title)
+    # IO.save(err_data,path+"saved_decomp_data.dat")
+    # several_d_plotter(err_data, show=True,plot_name=path+"full_view.pdf")
+
+def num_dim_test_short():
         print("\n ===================================\
               \nTest number of dimension, fixed n per dim\n")
         n=20
@@ -67,7 +78,7 @@ def numerics_for_thesis(test_list):
         solver=["SVD","SVD","SVD","SVD","SVD"]
         path='../output/num_dim_test_short/'
 
-        for d in range(2,6):
+        for d in range(2,5):
             print("===================\nd={}\n".format(d))
             shape=[n for x in range(d)]
             plot_name=path+'func_2_d_{}.pdf'.format(d)
@@ -79,29 +90,52 @@ def numerics_for_thesis(test_list):
         IO.save(err_data,path+"saved_decomp_data.dat")
         several_d_plotter(err_data, show=True,plot_name=path+"full_view.pdf")
 
+def num_dim_test_long():
+    print("\n ===================================\
+          \nTest number of dimension, fixed n per dim\n")
+    err_data={}
+    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]
+    solver=["SVD","SVD","SVD","SVD"]
+    path='../output/num_dim_test_long/'
 
-    if "num_dim_test_long" in test_list:
-        print("\n ===================================\
-              \nTest number of dimension, fixed n per dim\n")
-        err_data={}
-        decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]
-        solver=["SVD","SVD","SVD","SVD"]
-        path='../output/num_dim_test_long/'
+    n=32
+    for d in range(3,6):
+        print("===================\nd={}\n".format(d))
+        shape=[n for x in range(d)]
+        plot_name=path+'func_2_d_{}.pdf'.format(d)
+        plot_title="f_2 decomposition, d={}, n={}".format(d,n)
+        err_data[d]=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
+                            test_function=2, plot=False,output='../output/num_dim_test/',
+                            Frob_norm=True,  plot_name=plot_name,
+                            tol=1e-16, plot_title=plot_title)
+    IO.save(err_data,path+"saved_decomp_data.dat")
+    several_d_plotter(err_data, show=True,plot_name=path+"full_view.pdf")
 
-        n=32
-        for d in range(3,6):
-            print("===================\nd={}\n".format(d))
-            shape=[n for x in range(d)]
-            plot_name=path+'func_2_d_{}.pdf'.format(d)
-            plot_title="f_2 decomposition, d={}, n={}".format(d,n)
-            err_data[d]=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
-                                test_function=2, plot=False,output='../output/num_dim_test/',
-                                Frob_norm=True,  plot_name=plot_name,
-                                tol=1e-16, plot_title=plot_title)
-        IO.save(err_data,path+"saved_decomp_data.dat")
-        several_d_plotter(err_data, show=True,plot_name=path+"full_view.pdf")
 
-    return
+def general_test_3D(cases):
+    print("\n ===================================\
+    \nTest number of dimension, fixed n per dim\n")
+    path ="../output/general_3D/"
+    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+
+    if "SVD" in cases:
+        solver=["SVD","SVD","SVD","SVD","SVD"]
+        for f in [1,2,3]:
+            print("\n F{} \n".format(f))
+            plot_name=path+'approx_benchmark_function_{}_Frob.pdf'.format(f)
+            plot_title="f_{} decomposition, d=3, n={}, Frob norm".format(f,32)
+            multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
+                                test_function=f, plot=False,output='../output',Frob_norm=False,
+                                plot_name=plot_name,tol=1e-12)
+    if "trapezes" in cases:
+        solver=["trapezes" for i in range(5)]
+        for f in [1,2,3]:
+            print("\n F{} \n".format(f))
+            plot_name=path+'approx_benchmark_function_{}_L2.pdf'.format(f)
+            plot_title="f_{} decomposition, d=3, n={}, L2 norm".format(f,32)
+            multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
+                                test_function=f, plot=False,output='../output',Frob_norm=False,
+                                plot_name=plot_name,tol=1e-12)
 
 def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                               shape,test_function=1, plot=False,
@@ -184,6 +218,6 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
     return approx_data
 
 if __name__ == '__main__':
-    avail_test=["general_3D","num_dim_test_short","num_dim_test_long"]
-    test_list=avail_test[1]
+    avail_test=["general_3D","num_dim_test_short","num_dim_test_long","Vega"]
+    test_list=avail_test[3]
     numerics_for_thesis(test_list)
