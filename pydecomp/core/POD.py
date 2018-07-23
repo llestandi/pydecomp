@@ -46,42 +46,45 @@ def POD(F, Mx=[], Mt=[], tol=1e-10, rank=-1):
 
     if Mx==[]:
         phi,sigma,A=TSVD(F,epsilon=tol,solver='EVD')
-    else:
+    elif type(Mx)!=DiaMatrix:
         mx=DiaMatrix(Mx)
         mt=DiaMatrix(Mt)
+    else:
+        mx=Mx
+        mt=Mt
 
-        Transposed_POD=False
-        if tshape[1]>tshape[0]:
-            F=F.T
-            mx.M, mt.M = mt.M, mx.M
-            Transposed_POD=True
-        C=build_correlation(F, mx, mt)
-        Lambda , U =np.linalg.eigh(C)
-        # Reversing order
-        Lambda = Lambda[::-1]
-        U=U[::,::-1]
-        Lambda, U=truncate_modes(Lambda,tol,rank,U)
-        sigma=np.sqrt(Lambda)
+    Transposed_POD=False
+    if tshape[1]>tshape[0]:
+        F=F.T
+        mx.M, mt.M = mt.M, mx.M
+        Transposed_POD=True
+    C=build_correlation(F, mx, mt)
+    Lambda , U =np.linalg.eigh(C)
+    # Reversing order
+    Lambda = Lambda[::-1]
+    U=U[::,::-1]
+    Lambda, U=truncate_modes(Lambda,tol,rank,U)
+    sigma=np.sqrt(Lambda)
 
-        #Mtsq is has the square root of the Mt elements
-        A=(((mt.sqrt()).inv()).transpose())@U
+    #Mtsq is has the square root of the Mt elements
+    A=(((mt.sqrt()).inv()).transpose())@U
 
-        if type(mx.M)==scipy.sparse.dia.dia_matrix:
-            phi=(F@mt.M@A)
-            #Now we normalise phi
-            #phi=the operation phi[:,np.newaxis] allows to multiply a matrix to a
-            # a vector simulating product of a matrix with a diagonal matrix
-            phi=phi*(1/sigma)
-            if Transposed_POD:
-                A,phi=phi,A
-        else:
-            #phi=F*mt.M@A
-            phi=F@(mt@A)
-            phi=phi*(1/sigma)
-            if Transposed_POD:
-                A,phi=phi,A
-        # stop=timeit.default_timer()
-        # print(stop-start)
+    if type(mx.M)==scipy.sparse.dia.dia_matrix:
+        phi=(F@mt.M@A)
+        #Now we normalise phi
+        #phi=the operation phi[:,np.newaxis] allows to multiply a matrix to a
+        # a vector simulating product of a matrix with a diagonal matrix
+        phi=phi*(1/sigma)
+        if Transposed_POD:
+            A,phi=phi,A
+    else:
+        #phi=F*mt.M@A
+        phi=F@(mt@A)
+        phi=phi*(1/sigma)
+        if Transposed_POD:
+            A,phi=phi,A
+    # stop=timeit.default_timer()
+    # print(stop-start)
     return phi, sigma, A
 
 def build_correlation(F,mx,mt):
