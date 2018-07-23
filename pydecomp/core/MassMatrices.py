@@ -72,7 +72,7 @@ class DiaMatrix:
         str+="and size : {}\n".format(self.dia_size)
         str+="M :\n {}".format(self.M)
         return str
-        
+
 class MassMatrices:
     """
     Parameters: \n
@@ -87,6 +87,7 @@ class MassMatrices:
             raise NotImplementedError("All mass matrices need to be of the same sparseness")
         self.Mat_list=DiaMatrix_list
         self.shape=[x.dia_size for x in DiaMatrix_list]
+        self.ndim=len(self.shape)
 
     def update_mass_matrix(self,id,M_new):
         """Allows the user to change mass matrix M[id] with M_new"""
@@ -103,7 +104,15 @@ class MassMatrices:
     def __len__(self):
         return len(self.Mat_list)
 
-
+    def __str__(self):
+        string="----------------------------------\n"
+        string+="Mass matrices list"
+        string+="\n is_sparse={}".format(self.is_sparse)
+        string+="\n Of shape: {}".format(self.shape)
+        for i in range(len(self.shape)):
+            string+= "\n"+str(self.Mat_list[i])
+        string+="\n----------------------------------\n"
+        return string
 
     # def __iter__(self):
     #     return(self.Mat_list)
@@ -184,11 +193,10 @@ def mass_matrices_creator(X, sparse=False, integration_method='trapeze'):
     M=MassMatrices(M)
     return M
 
-def matricize_mass_matrix(dim,i,M):
+def matricize_mass_matrix(i,M):
     """
     Returns the equivalent mass matrices of a matricized tensor.\n
     **Parameters** \n
-    dim= number of dimentions of the problem. \n
     i = dimension number to arange the function. \n
     M= MassMatrices object element.
     **Return** \n
@@ -213,11 +221,11 @@ def matricize_mass_matrix(dim,i,M):
     #copy the list of mass matrices to M2
     M2=M.Mat_list[:]
     #moving the actual indice to the first order
+    dim=M.ndim
+    print(M)
     M2.insert(0,M2.pop(i))
-
     Mx=M2[0].M
     Mt=M2[1].M
-
     if M.is_sparse:
         for i in range (2,dim):
             Mt=scipy.sparse.kron(Mt,M2[i],format='dia')
@@ -225,6 +233,48 @@ def matricize_mass_matrix(dim,i,M):
         for i in range (2,dim):
             Mt=np.kron(Mt,M2[i].M)
     return Mx,Mt
+
+def matricize_mass_matrix_for_TT(M,is_first=True):
+    """
+    Returns the equivalent mass matrices of a matricized tensor, special case for
+    TT-SVD.\n
+    **Parameters** \n
+    dim= number of dimentions of the problem. \n
+    M= MassMatrices object element.
+    is_first= true for first matricizatin, then simple call to the usual matricize_mass_matrix
+            false then actually do the special matricization
+
+    **Return** \n
+    :math:`M_{x}` =
+    The mass matrix  of the *"i"* dimention.\n
+    :math:`M_{t}` =
+    The equivalent mass matrix  of n-1 dimentions.\n
+
+    """
+    if type(M) != MassMatrices:
+        raise AttributeError('M must be a MassMatrices')
+    d=M.ndim
+    if is_first:
+        return matricize_mass_matrix(0, M)
+    else:
+        M1=MassMatrices(M.Mat_list[:1])
+        M2=MassMatrices(M.Mat_list[2:])
+        Mx=Kronecker(M1)
+        Mt=Kronecker(M2)
+
+
+        # M2=M.Mat_list[:]
+        # Mt=M2[2].M
+        # if M.is_sparse:
+        #     Mx=scipy.sparse.kron(M2[0].M,M2[1].M,format='dia')
+        #     for i in range (2,d):
+        #         Mt=scipy.sparse.kron(Mt,M2[i],format='dia')
+        # else :
+        #     Mx=np.kron(M2[0].M,M2[1].M)
+        #     for i in range (2,d):
+        #         Mt=np.kron(Mt,M2[i].M)
+
+        return Mx,Mt
 
 def Kronecker(MM) :
     """ Kronecker product of each matrices in massmatrix structure. """
