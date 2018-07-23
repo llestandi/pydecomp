@@ -36,10 +36,14 @@ import utils.IO as IO
 def numerics_for_thesis(test_list):
     # General comparison separable function SVD everywhere
     if "general_3D" in test_list:
+        print("\n ===================================\
+        \nTest number of dimension, fixed n per dim\n")
         path ="../output/general_3D/"
         decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
         solver=["SVD","SVD","SVD","SVD","SVD"]
+        solver=["trapezes" for i in range(5)]
         for f in [1,2,3]:
+            print("\n F{} \n".format(f))
             plot_name=path+'approx_benchmark_function_{}.pdf'.format(f)
             plot_title="f_{} decomposition, d=3, n={}".format(f,32)
             multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
@@ -64,8 +68,9 @@ def numerics_for_thesis(test_list):
             err_data[d]=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
                                 test_function=2, plot=False,output='../output/num_dim_test/',
                                 Frob_norm=True,  plot_name=plot_name,
-                                tol=1e-6, plot_title=plot_title)
+                                tol=1e-16, plot_title=plot_title)
         IO.save(err_data,path+"saved_decomp_data.dat")
+        several_d_plotter(err_data, show=True,plot_name=path+"full_view.pdf")
 
 
     if "num_dim_test_long" in test_list:
@@ -76,8 +81,8 @@ def numerics_for_thesis(test_list):
         solver=["SVD","SVD","SVD","SVD"]
         path='../output/num_dim_test_long/'
 
-        n=20
-        for d in range(2,6):
+        n=32
+        for d in range(3,6):
             print("===================\nd={}\n".format(d))
             shape=[n for x in range(d)]
             plot_name=path+'func_2_d_{}.pdf'.format(d)
@@ -85,9 +90,9 @@ def numerics_for_thesis(test_list):
             err_data[d]=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
                                 test_function=2, plot=False,output='../output/num_dim_test/',
                                 Frob_norm=True,  plot_name=plot_name,
-                                tol=1e-6, plot_title=plot_title)
+                                tol=1e-16, plot_title=plot_title)
         IO.save(err_data,path+"saved_decomp_data.dat")
-        several_d_plotter(err_data, show=True)
+        several_d_plotter(err_data, show=True,plot_name=path+"full_view.pdf")
 
     return
 
@@ -147,7 +152,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
         elif reduction_method=='RPOD':
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=tol)
         elif reduction_method=='TT_SVD':
-            Result=TT_SVD(F, tol)
+            Result=TT_SVD(F, tol, MM=M)
         print("{} decompostion time: {:.2f} s".format(reduction_method,time.time()-t))
 
         if Frob_norm:
@@ -156,7 +161,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
             if type(Result)==TuckerTensor:
                 approx_data[reduction_method]=np.stack(tucker_error_data(Result,F,M))
             elif type(Result)==RecursiveTensor:
-                approx_data[reduction_method]=np.stack(rpod_error_data(Result,F,M=M, max_tol=tol))
+                approx_data[reduction_method]=np.stack(rpod_error_data(Result,F,M=M, max_tol=1e-8))
             elif type(Result)==CanonicalTensor:
                 approx_data[reduction_method]=np.stack(canonical_error_data(Result,F,tol=tol))
             elif type(Result)==TensorTrain:
@@ -173,5 +178,5 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
 
 if __name__ == '__main__':
     avail_test=["general_3D","num_dim_test_short","num_dim_test_long"]
-    test_list=avail_test[2]
+    test_list=avail_test[0]
     numerics_for_thesis(test_list)

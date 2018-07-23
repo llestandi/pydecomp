@@ -7,9 +7,12 @@ Created on Tue Jun 19 13:19:41 2018
 """
 import numpy as np
 from core.TSVD import TSVD
+import core.MassMatrices as mm
+from core.POD import POD
 from core.TensorTrain import  TT_init_from_decomp
+from copy import deepcopy
 
-def TT_SVD(F, eps=1e-8, rank=100):
+def TT_SVD(F, eps=1e-8, rank=-1, MM=None):
     """
     Returns the decomposed form of a Tensor in the Tensor Train format by
     using the TT-SVD decomposition method described by I. V. Oseledets. \n
@@ -34,18 +37,30 @@ def TT_SVD(F, eps=1e-8, rank=100):
     r=[1]
     C=F
     G=[]
+    if MM:
+        M=deepcopy(MM)
+        is_first=True
+
     for i in range(dim-1):
-       aux=r[i]*tshape[i]
-       Csize=C.size
-       C=C.reshape(aux,int(Csize/aux))
-       if rank!=100:
-           u,sigma,v=TSVD(C, rank=rank, solver='EVD')
-       else:
-           u,sigma,v=TSVD(C, epsilon = eps, rank=100, solver='EVD')
-       new_rank=sigma.shape[0]
-       r.append(new_rank)
-       G.append(u.reshape(r[i],tshape[i],r[i+1]))
-       C=(sigma*v).T
+        Cshape=(r[i]*tshape[i],C.size/(r[i]*tshape[i]))
+        C=np.reshape(C,Cshape)
+        if not MM:
+            u,sigma,v=TSVD(C,epsilon=eps, rank=rank, solver='EVD')
+        else:
+            Mx,Mt = mm.matricize_mass_matrix_for_TT(M,is_first)
+            u,sigma,v=POD(C, Mx, Mt, tol=eps, rank=rank)
+
+        new_rank=sigma.shape[0]
+        r.append(new_rank)
+        G.append(u.reshape(r[i],tshape[i],r[i+1]))
+        C =(sigma*v).T
+
+        if MM:
+            if i>1:
+                M=mm.pop_1_MM(M)
+            M.update_mass_matrix(0, mm.identity_mass_matrix(C.shape[0],M.is_sparse))
+            is_first=False
+
     G.append(C)
     Gdshape=list(G[dim-1].shape)
     Gdshape.append(1)

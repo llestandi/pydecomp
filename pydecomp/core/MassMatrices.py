@@ -222,7 +222,6 @@ def matricize_mass_matrix(i,M):
     M2=M.Mat_list[:]
     #moving the actual indice to the first order
     dim=M.ndim
-    print(M)
     M2.insert(0,M2.pop(i))
     Mx=M2[0].M
     Mt=M2[1].M
@@ -257,23 +256,8 @@ def matricize_mass_matrix_for_TT(M,is_first=True):
     if is_first:
         return matricize_mass_matrix(0, M)
     else:
-        M1=MassMatrices(M.Mat_list[:1])
-        M2=MassMatrices(M.Mat_list[2:])
-        Mx=Kronecker(M1)
-        Mt=Kronecker(M2)
-
-
-        # M2=M.Mat_list[:]
-        # Mt=M2[2].M
-        # if M.is_sparse:
-        #     Mx=scipy.sparse.kron(M2[0].M,M2[1].M,format='dia')
-        #     for i in range (2,d):
-        #         Mt=scipy.sparse.kron(Mt,M2[i],format='dia')
-        # else :
-        #     Mx=np.kron(M2[0].M,M2[1].M)
-        #     for i in range (2,d):
-        #         Mt=np.kron(Mt,M2[i].M)
-
+        Mx=Kronecker(MassMatrices(M.Mat_list[:2]))
+        Mt=Kronecker(MassMatrices(M.Mat_list[2:]))
         return Mx,Mt
 
 def Kronecker(MM) :
