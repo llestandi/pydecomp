@@ -113,7 +113,7 @@ def rpod_rec(f, rpod_approx, int_weights, node_index, POD_tol=1e-10, cutoff_tol=
     **tol**: float, POD tolerance \n
     """
     ######## POD part ################
-    Mx,Mt = mm.matricize_mass_matrix(f.ndim,0,int_weights)
+    Mx,Mt = mm.matricize_mass_matrix(0,int_weights)
     Phi = np.reshape(f, [f.shape[0], -1])
 
     U, sigma, V = POD(Phi, Mx, Mt, POD_tol)
