@@ -56,11 +56,11 @@ def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pd
     *show* [bool]        whether the plot is shown or not
     *plot_name* [str]    plot output location, if empty string, no plot
     """
-    font = {'family' : 'normal',
-        'size'   : 13}
+    font = {'family' : 'normal',  'size'   : 13}
 
     plt.rc('font', **font)
     linestyle={'linewidth':2,'markersize':6, 'markeredgewidth':2}
+    plt.rc('legend', fontsize=12)
     styles=['r+-','bx--','k1-','g2--','m3--']
     fig=plt.figure(figsize=(7,6))
     xmax=1
@@ -106,13 +106,18 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
             "TT_SVD":'ko-',
             "PGD":'mh--'}
     fig=plt.figure()
-    xmax=1
+    xmax=0.1
     ylim=[0.1,0.1]
     k=0
     plt.yscale('log')
     plt.xlabel("Compresion rate (%)")
     plt.ylabel('Relative Error')
     plt.grid()
+
+    font = {'family' : 'normal',  'size'   : 13}
+    plt.rc('font', **font)
+    linestyle={'linewidth':2}
+    plt.rc('legend', fontsize=12)
 
     title=kwargs.get('title',None)
     if title:
@@ -126,7 +131,7 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
         ax=fig.add_subplot(111)
         ax.set_xlim(0,xmax)
         ax.set_ylim(ylim)
-        plt.plot(comp_rate, err , styles[label], label=label)
+        plt.plot(comp_rate, err , styles[label], **linestyle, label=label)
 
     #saving plot as pdf
     plt.legend()
@@ -151,15 +156,25 @@ def several_d_plotter(approx_data, show=True, plot_name="",**kwargs):
             "RPOD":'b',
             "TT_SVD":'k',
             "PGD":'m'}
-    linestyle={2:"-",
+    linestyles={2:"-",
                3:"--",
                4:":",
-               5:"_"}
+               5:"-",
+               6:"-",
+               7:"--",
+               8:":",
+               9:"-"}
 
     fig=plt.figure()
-    xmax=1
+    xmax=0.1
     ylim=[0.1,0.1]
     k=0
+    font = {'family' : 'normal',  'size'   : 13}
+    plt.rc('font', **font)
+    linestyle={'linewidth':2,'markersize':6, 'markeredgewidth':2}
+    plt.rc('legend', fontsize=12)
+    fig=plt.figure(figsize=(7,6))
+
     plt.yscale('log')
     plt.xlabel("Compresion rate (%)")
     plt.ylabel('Relative Error')
@@ -169,8 +184,7 @@ def several_d_plotter(approx_data, show=True, plot_name="",**kwargs):
     if title:
         plt.title(title)
     for d,ddata in approx_data.items():
-        print(d,ddata)
-        ls=linestyle[d]
+        ls=linestyles[d]
         for label, data in ddata.items():
             err=data[0,:]
             comp_rate=100*data[1,:]
@@ -180,7 +194,7 @@ def several_d_plotter(approx_data, show=True, plot_name="",**kwargs):
             ax.set_xlim(0,xmax)
             ax.set_ylim(ylim)
             lc=styles[label]
-            plt.plot(comp_rate, err ,lc+ls , label=label)
+            plt.plot(comp_rate, err ,lc+ls ,**linestyle, label=label+"_{}".format(d))
 
     #saving plot as pdf
     plt.legend()
