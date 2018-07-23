@@ -89,9 +89,9 @@ def rpod(f, int_weights=None, POD_tol=1e-10, cutoff_tol=1e-10):
 
     **Return ** recursive tensor containing the decomposition tree.
     """
-    if int_weights==None:
-        X=[np.ones(x) for x in f.shape]
-        int_weights=[scipy.sparse.diags(x) for x in X]
+    # if int_weights==None:
+    #     X=[np.ones(x) for x in f.shape]
+    #     int_weights=[scipy.sparse.diags(x) for x in X]
 
     rpod_approx=RecursiveTensor(f.shape)
     rpod_approx.tree = RpodTree(np.zeros(0))
@@ -113,7 +113,12 @@ def rpod_rec(f, rpod_approx, int_weights, node_index, POD_tol=1e-10, cutoff_tol=
     **tol**: float, POD tolerance \n
     """
     ######## POD part ################
-    Mx,Mt = mm.matricize_mass_matrix(0,int_weights)
+    if int_weights:
+        Mx,Mt = mm.matricize_mass_matrix(0,int_weights)
+    else:
+        Mx,Mt = [],[]
+        print(Mx,Mt)
+
     Phi = np.reshape(f, [f.shape[0], -1])
 
     U, sigma, V = POD(Phi, Mx, Mt, POD_tol)

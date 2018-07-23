@@ -120,7 +120,10 @@ class MassMatrices:
 
 def pop_1_MM(MM):
     """ Removes the first item of MM and returns a new mass matrices """
-    return MassMatrices(MM.Mat_list[1:])
+    try:
+        return MassMatrices(MM.Mat_list[1:])
+    except:
+        return None #this is a hack to allow RSVD
 
 def identity_mass_matrix(size,sparse=False):
     """ Builds the identity mass matrix """

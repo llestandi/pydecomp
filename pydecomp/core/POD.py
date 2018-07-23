@@ -45,7 +45,7 @@ def POD(F, Mx=[], Mt=[], tol=1e-10, rank=-1):
     tshape=F.shape
 
     if Mx==[]:
-        phi,sigma,A=TSVD(F,epsilon=tol,solver='EVD')
+        return TSVD(F,epsilon=tol,solver='EVD')
     elif type(Mx)!=DiaMatrix:
         mx=DiaMatrix(Mx)
         mt=DiaMatrix(Mt)

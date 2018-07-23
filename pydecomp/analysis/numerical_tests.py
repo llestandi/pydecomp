@@ -45,30 +45,44 @@ def numerics_for_thesis(test_list):
         num_dim_test_long()
 
     if "Vega" in test_list:
-        Vega_test()
+        Vega_test([2])
 
     return
 
 
-def Vega_test():
-    print("\n ===================================\
-          \n Vega function test\n")
-    n=20
-    d=5
-    err_data={}
-    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
-    solver=["trapezes" for i in range(len(decomp_methods))]
-    path='../output/vega_func/'
-    shape=[n for x in range(d)]
-    plot_name=path+'vega_all_methods_n20.pdf'.format(d)
-    plot_title="Vega function decomposition, n={}".format(n)
-    err_data=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
-                        test_function=2, plot=False,output='../output/num_dim_test/',
-                        Frob_norm=True,  plot_name=plot_name,
-                        tol=1e-12, plot_title=plot_title)
-    # IO.save(err_data,path+"saved_decomp_data.dat")
-    # several_d_plotter(err_data, show=True,plot_name=path+"full_view.pdf")
-
+def Vega_test(cases):
+    if 1 in cases:
+        print("\n ===================================\
+              \n Vega function test\n Case 1 \n ==============================")
+        n=20
+        d=5
+        err_data={}
+        decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+        solver=["trapezes" for i in range(len(decomp_methods))]
+        path='../output/vega_func/'
+        shape=[n for x in range(d)]
+        plot_name=path+'vega_all_methods_n20.pdf'.format(d)
+        plot_title="Vega function decomposition, n={}".format(n)
+        err_data=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
+                            test_function=2, plot=False,output='../output/num_dim_test/',
+                            Frob_norm=True,  plot_name=plot_name,
+                            tol=1e-12, plot_title=plot_title)
+    if 2 in cases:
+        print("\n ===================================\
+              \n Vega function test\n Case 2 \n ==============================")
+        n=20
+        d=5
+        err_data={}
+        decomp_methods=["RPOD",'RSVD',"HO_POD","SHO_POD","TT_SVD","TT_POD"]
+        solver=["trapezes" for i in range(len(decomp_methods))]
+        path='../output/vega_func/'
+        shape=[n for x in range(d)]
+        plot_name=path+'vega_all_methods_case2.pdf'.format(d)
+        plot_title="Vega function decomposition, n={}".format(n)
+        err_data=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
+                            test_function=2, plot=False,output='../output/num_dim_test/',
+                            Frob_norm=True,  plot_name=plot_name,
+                            tol=1e-12, plot_title=plot_title)
 def num_dim_test_short():
         print("\n ===================================\
               \nTest number of dimension, fixed n per dim\n")
@@ -147,7 +161,8 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
     """
     dim=len(shape)
     domain=[0,1]
-    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'SHO_POD','RPOD','TT_SVD']
+    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'SHO_POD',
+                              'RPOD','TT_POD','RSVD','TT_SVD']
     acepted_integration_methods=['trapezes','SVD']
     number_plot=0
     approx_data={}
@@ -192,10 +207,15 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
             Result=STHOSVD(F)
         elif reduction_method=='RPOD':
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=tol)
-        elif reduction_method=='TT_SVD':
+        elif reduction_method=='TT_POD':
             Result=TT_SVD(F, tol, MM=M)
-        print("{} decompostion time: {:.2f} s".format(reduction_method,time.time()-t))
-
+        elif reduction_method=='RSVD':
+            Result=rpod(F, POD_tol=1e-16,cutoff_tol=tol)
+        elif reduction_method=='TT_SVD':
+            Result=TT_SVD(F, tol)
+        print("{} decompostion time: {:.3f} s".format(reduction_method,time.time()-t))
+        print(Result.rank)
+        t=time.time()
         if Frob_norm:
             M=None
         if plot:
@@ -207,6 +227,8 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                 approx_data[reduction_method]=np.stack(canonical_error_data(Result,F,tol=tol,M=M))
             elif type(Result)==TensorTrain:
                 approx_data[reduction_method]=np.stack(error_TT_data(Result,F,M=M))
+            print("{} Error evaluation time: {:.2f} s".format(reduction_method,time.time()-t))
+
         try:
             if output!='':
                 np.savetxt(output+"/"+reduction_method+".csv",np.transpose([approx_data[reduction_method][0],approx_data[reduction_method][1]]), delimiter=',')
