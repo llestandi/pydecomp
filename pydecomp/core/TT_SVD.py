@@ -56,7 +56,7 @@ def TT_SVD(F, eps=1e-8, rank=-1, MM=None):
         C =(sigma*v).T
 
         if MM:
-            if i>1:
+            if i>0:
                 M=mm.pop_1_MM(M)
             M.update_mass_matrix(0, mm.identity_mass_matrix(C.shape[0],M.is_sparse))
             is_first=False

@@ -228,7 +228,6 @@ def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8,M=None):
             pass
         elif loc_rate==comp_rate[-1]:
             continue
-        print(M)
         err.append(norm(T_rec.to_full(tol)-T_full,M)/norm_T)
         comp_rate.append(loc_rate)
     return np.asarray(err), np.asarray(comp_rate)

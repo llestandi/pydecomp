@@ -41,15 +41,22 @@ def numerics_for_thesis(test_list):
         path ="../output/general_3D/"
         decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
         solver=["SVD","SVD","SVD","SVD","SVD"]
-        solver=["trapezes" for i in range(5)]
         for f in [1,2,3]:
             print("\n F{} \n".format(f))
-            plot_name=path+'approx_benchmark_function_{}.pdf'.format(f)
-            plot_title="f_{} decomposition, d=3, n={}".format(f,32)
+            plot_name=path+'approx_benchmark_function_{}_Frob.pdf'.format(f)
+            plot_title="f_{} decomposition, d=3, n={}, Frob norm".format(f,32)
             multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
                                 test_function=f, plot=False,output='../output',Frob_norm=False,
                                 plot_name=plot_name,tol=1e-12)
 
+        solver=["trapezes" for i in range(5)]
+        for f in [1,2,3]:
+            print("\n F{} \n".format(f))
+            plot_name=path+'approx_benchmark_function_{}_L2.pdf'.format(f)
+            plot_title="f_{} decomposition, d=3, n={}, L2 norm".format(f,32)
+            multi_var_decomp_analysis(decomp_methods, solver ,shape=[32,32,32],
+                                test_function=f, plot=False,output='../output',Frob_norm=False,
+                                plot_name=plot_name,tol=1e-12)
     ###########################################################################
     if "num_dim_test_short" in test_list:
         print("\n ===================================\
@@ -178,5 +185,5 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
 
 if __name__ == '__main__':
     avail_test=["general_3D","num_dim_test_short","num_dim_test_long"]
-    test_list=avail_test[0]
+    test_list=avail_test[1]
     numerics_for_thesis(test_list)
