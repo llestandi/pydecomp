@@ -46,7 +46,7 @@ def HOPOD(F,M, tol=1e-10, sparse=False):
 
     for i in range(dim):
         Fmat=ta.matricize(F,i)
-        Mx,Mt = mm.matricize_mass_matrix(dim,i,M)
+        Mx,Mt = mm.matricize_mass_matrix(i,M)
         phi,sigma,A= POD(Fmat.T,Mt,Mx, tol=tol)
         PHI.append(A)
     # PHIT=misc.list_transpose(PHI)
@@ -94,7 +94,7 @@ def SHOPOD(F,MM, tol=1e-10,rank=-1):
     for i in range(dim):
         Wshape=[x for x in W.shape]
         Wmat=ta.matricize(W,0)
-        Mx,Mt = mm.matricize_mass_matrix(dim,i,M)
+        Mx,Mt = mm.matricize_mass_matrix(i,M)
         phi,sigma,A=POD(Wmat.T,Mt,Mx,tol=tol,rank=rank)
         W=(sigma*phi).T
         Wshape[0]=W.shape[0]
