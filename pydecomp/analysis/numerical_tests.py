@@ -140,7 +140,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
 
         t=time.time()
         if reduction_method=='PGD':
-            Result=PGD(M,F,epenri=tol)
+            Result=PGD(M,F,epenri=np.sqrt(tol))
         elif reduction_method=='HO_POD':
             Result=HOPOD(F,M,tol=tol)
         elif reduction_method=='SHO_POD':
@@ -163,12 +163,12 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
             elif type(Result)==RecursiveTensor:
                 approx_data[reduction_method]=np.stack(rpod_error_data(Result,F,M=M, max_tol=1e-8))
             elif type(Result)==CanonicalTensor:
-                approx_data[reduction_method]=np.stack(canonical_error_data(Result,F,tol=tol))
+                approx_data[reduction_method]=np.stack(canonical_error_data(Result,F,tol=tol,M=M))
             elif type(Result)==TensorTrain:
-                approx_data[reduction_method]=np.stack(error_TT_data(Result,F))
+                approx_data[reduction_method]=np.stack(error_TT_data(Result,F,M=M))
         try:
             if output!='':
-                np.savetxt(output+"/"+reduction_method+".csv",np.asaray([approx_data[reduction_method][0],approx_data[reduction_method][1]]), delimiter=',')
+                np.savetxt(output+"/"+reduction_method+".csv",np.transpose([approx_data[reduction_method][0],approx_data[reduction_method][1]]), delimiter=',')
         except:
             pass
 

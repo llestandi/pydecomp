@@ -155,11 +155,20 @@ def scal_prod_1d(Phi,T,M,i):
 
 
 def scal_prod_mem_save(Phi_list, T, MM):
+    """ Matrix list against tensor product weighted by integration matrices MM """
     buff=T
     for i in range(T.ndim):
         buff=scal_prod_1d(Phi_list[i],buff,MM.Mat_list[i],i)
-    print(buff.shape)
     return buff
+
+def scal_prod_full_T_weighted(X,Y,MM):
+    """ This is the scalar product between tensors X and Y weighted by  MM """
+    d=X.ndim
+    if np.any(X.shape != Y.shape):
+        raise AttributeError( "X and Y shape don't align, {} {}".format(X.shape, Y.shape))
+
+    return np.sum(multilinear_multiplication(MM,X*Y,d))
+
 
 def normL2(T,M):
     """
@@ -174,7 +183,7 @@ def normL2(T,M):
         raise AttributeError("Dimentions of the mass list is not coherent with \
                              the tensor dimension number {} /= {}".format(dim, dim2))
 
-    return np.sum(T*multilinear_multiplication(M,T,dim))
+    return np.sqrt(scal_prod_full_T_weighted(T,T,M))
 
 #------------------------------------------------------------------------------
 if __name__=="__main__":

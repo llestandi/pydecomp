@@ -125,7 +125,7 @@ def TT_init_from_decomp(G):
     TT.fill(G)
     return TT
 
-def error_TT_data(T_tt,T_full):
+def error_TT_data(T_tt,T_full, M=None):
     """
     @author : Lucas 27/06/18
     Builds a set of approximation error and associated compression rate for a
@@ -140,7 +140,7 @@ def error_TT_data(T_tt,T_full):
     **Todo** Add integration matrices to compute actual error associated with
     discrete integration operator
     """
-    from numpy.linalg import norm
+    from core.tensor_algebra import norm
     if np.any(T_full.shape != T_tt.shape):
         raise AttributeError("T_full (shape={}) and TT (shape={}) should have \
                              the same shape".format(T_full.shape,T_tt.shape))
@@ -153,13 +153,14 @@ def error_TT_data(T_tt,T_full):
     maxrank=max(rank)
     error=[]
     comp_rate=[]
+    norm_T=norm(T_full,M)
 
     r=np.zeros(d+1)
     for i in range(maxrank):
         r=np.minimum(rank,r+1)
         comp_rate.append(T_tt.mem_eval(r)/F_volume)
         T_approx=T_tt.to_full(r)
-        actual_error=norm(T_full-T_approx)/norm(T_full)
+        actual_error=norm(T_full-T_approx, M)/norm_T
         error.append(actual_error)
 
     return np.asarray(error), np.asarray(comp_rate)
