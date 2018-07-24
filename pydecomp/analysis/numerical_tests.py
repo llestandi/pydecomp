@@ -70,10 +70,10 @@ def Vega_test(cases):
     if 2 in cases:
         print("\n ===================================\
               \n Vega function test\n Case 2 \n ==============================")
-        n=20
+        n=40
         d=5
         err_data={}
-        decomp_methods=["RPOD",'RSVD',"HO_POD","SHO_POD","TT_SVD","TT_POD"]
+        decomp_methods=["RPOD",'RSVD',"SHO_POD","SHO_SVD","TT_SVD","TT_POD"]
         solver=["trapezes" for i in range(len(decomp_methods))]
         path='../output/vega_func/'
         shape=[n for x in range(d)]
@@ -214,7 +214,6 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
         elif reduction_method=='TT_SVD':
             Result=TT_SVD(F, tol)
         print("{} decompostion time: {:.3f} s".format(reduction_method,time.time()-t))
-        print(Result.rank)
         t=time.time()
         if Frob_norm:
             M=None
@@ -241,5 +240,5 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
 
 if __name__ == '__main__':
     avail_test=["general_3D","num_dim_test_short","num_dim_test_long","Vega"]
-    test_list=avail_test[3]
+    test_list=avail_test[0]
     numerics_for_thesis(test_list)

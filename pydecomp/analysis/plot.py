@@ -101,9 +101,12 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     *plot_name* [str]    plot output location, if empty string, no plot
     """
     styles={"HO_POD":'r+-',
-            "SHO_POD":'gh:',
-            "RPOD":'b*-',
-            "TT_SVD":'ko-',
+            "SHO_POD":'g+-',
+            "SHO_SVD":'g*:',
+            "RPOD":'b+-',
+            "RSVD":'b*',
+            "TT_SVD":'k+-',
+            "TT_POD":"k*",
             "PGD":'mh--'}
     fig=plt.figure()
     xmax=0.1

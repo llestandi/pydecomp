@@ -117,7 +117,6 @@ def rpod_rec(f, rpod_approx, int_weights, node_index, POD_tol=1e-10, cutoff_tol=
         Mx,Mt = mm.matricize_mass_matrix(0,int_weights)
     else:
         Mx,Mt = [],[]
-        print(Mx,Mt)
 
     Phi = np.reshape(f, [f.shape[0], -1])
 
