@@ -35,12 +35,9 @@ def multilinear_multiplication(PHI,F,dim):
     :math:`\otimes` represents the Kronecker product.
     """
     if type(PHI)==MassMatrices:
-        number_modes=np.array([PHI.Mat_list[i].dia_size for i in range(len(PHI))])
         PHI2=[PHI.Mat_list[i] for i in range(len(PHI))]
     else :
-        number_modes=np.array([x.shape[0] for x in PHI])
         PHI2=PHI[:]
-    maximal_index=np.argmax(number_modes)
     W=F
     shape_W=[i.shape[0] for i in PHI2]
     for i in range(dim):
@@ -48,14 +45,8 @@ def multilinear_multiplication(PHI,F,dim):
         shape_W[0],shape_W[i]=shape_W[i],shape_W[0]
         W=PHI2[i]@matricize(W, i)
         shape_W[0]=W.shape[0]
-    # PHI2.insert(0,PHI2.pop(maximal_index))
-    # Fmat=matricize(F,maximal_index)
-    # aux=PHI2[1]
-    # for i in range(2,dim):
-    #     aux=kron(aux,PHI2[i])
-    # W=transpose(aux@transpose(PHI2[0]@Fmat)) #an ugly hack to bypass binary operators limits
         W = W.reshape(shape_W)
-        W  =np.moveaxis(W,0,maximal_index)
+    W  =np.moveaxis(W,0,-1)
     return W
 
 def transpose(M):
