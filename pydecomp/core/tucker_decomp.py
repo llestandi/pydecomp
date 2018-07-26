@@ -131,7 +131,7 @@ def STHOSVD(F,epsilon = 1e-13, rank=100, solver='EVD'):
     W=F
     for i in range(dim):
         Wshape=[x for x in W.shape]
-        Wmat=ta.matricize(W,dim,0)
+        Wmat=ta.matricize(W,0)
         phi,sigma,A=TSVD(Wmat, epsilon=epsilon, rank=rank, solver=solver)
         W=(sigma*A).T
         Wshape[0]=W.shape[0]

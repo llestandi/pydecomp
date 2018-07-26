@@ -85,7 +85,6 @@ class TuckerTensor():
     def reconstruction(self):
         """returns a FullFormat object that is represented by the
         tucker tensor"""
-
         dim=len(self.u)
         Fresult=multilinear_multiplication(self.u,self.core,dim)
         return Fresult
