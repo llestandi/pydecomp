@@ -93,11 +93,11 @@ def grid_imbalance_test(case):
               \n Grid imbalance test function test\n ==============================")
 
         shape=[50,20,15,17]
-        shape=[20 for i in range(4)]
+        # shape=[20 for i in range(4)]
         d=4
         f=2
         err_data={}
-        decomp_methods=['RPOD',"SHO_SVD","TT_SVD"]
+        decomp_methods=['RPOD',"SHO_POD","TT_SVD"]
         solver=["SVD" for i in range(len(decomp_methods))]
         path='../output/grid_imbalance/'
         plot_name=path+'grid_imbalance_1.pdf'
@@ -108,7 +108,7 @@ def grid_imbalance_test(case):
                             tol=1e-12, plot_title=plot_title)
 
     if 2 in case:
-        shape=[150,20,20,20,20]
+        shape=[100,20,20,20,20]
         d=5
         err_data={}
         decomp_methods=['RSVD',"SHO_SVD","TT_SVD"]
@@ -273,7 +273,6 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                 np.savetxt(output+"/"+reduction_method+".csv",np.transpose([approx_data[reduction_method][0],approx_data[reduction_method][1]]), delimiter=',')
         except:
             pass
-
     if plot:
         benchmark_plotter(approx_data, show_plot, plot_name=plot_name,title=plot_title)
     return approx_data

@@ -39,13 +39,14 @@ def multilinear_multiplication(PHI,F,dim):
     else :
         PHI2=PHI[:]
     W=F
-    shape_W=[i.shape[0] for i in PHI2]
+    shape_W=list(W.shape)
     for i in range(dim):
-        shape_W=list(W.shape)
         shape_W[0],shape_W[i]=shape_W[i],shape_W[0]
-        W=PHI2[i]@matricize(W, i)
+        W=np.swapaxes(W,0,i)
+        W=PHI2[i]@matricize(W, 0)
         shape_W[0]=W.shape[0]
         W = W.reshape(shape_W)
+
     W  =np.moveaxis(W,0,-1)
     return W
 
