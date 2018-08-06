@@ -45,10 +45,10 @@ def numerics_for_thesis(test_list):
         num_dim_test_long()
 
     if "Vega" in test_list:
-        Vega_test([2])
+        Vega_test([1])
 
     if "grid_imbalance" in test_list:
-        grid_imbalance_test([1])
+        grid_imbalance_test([1,2])
 
     return
 
@@ -57,10 +57,11 @@ def Vega_test(cases):
     if 1 in cases:
         print("\n ===================================\
               \n Vega function test\n Case 1 \n ==============================")
-        n=20
+        n=40
         d=5
         err_data={}
-        decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+        decomp_methods=["SHO_POD","SHO_SVD","TT_POD","TT_SVD"]
+        decomp_methods=["RPOD",'RSVD',"SHO_POD","SHO_SVD","TT_SVD","TT_POD"]
         solver=["trapezes" for i in range(len(decomp_methods))]
         path='../output/vega_func/'
         shape=[n for x in range(d)]
@@ -68,7 +69,7 @@ def Vega_test(cases):
         plot_title="Vega function decomposition, n={}".format(n)
         err_data=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
                             test_function=2, plot=False,output='../output/num_dim_test/',
-                            Frob_norm=True,  plot_name=plot_name,
+                            Frob_norm=True,  plot_name='',
                             tol=1e-12, plot_title=plot_title)
     if 2 in cases:
         print("\n ===================================\
@@ -92,18 +93,18 @@ def grid_imbalance_test(case):
         print("\n ===================================\
               \n Grid imbalance test function test\n ==============================")
 
-        shape=[50,20,15,17]
+        shape=[1000,20,15,12]
         # shape=[20 for i in range(4)]
         d=4
         f=2
         err_data={}
-        decomp_methods=['RPOD',"SHO_POD","TT_SVD"]
+        decomp_methods=['RPOD',"SHO_POD","TT_POD"]
         solver=["SVD" for i in range(len(decomp_methods))]
         path='../output/grid_imbalance/'
         plot_name=path+'grid_imbalance_1.pdf'
         plot_title="f_{} function decomposition, shape={}".format(f,shape)
         err_data=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
-                            test_function=2, plot=False,output='../output/num_dim_test/',
+                            test_function=2, plot=True,output='../output/num_dim_test/',
                             Frob_norm=True,  plot_name=plot_name,
                             tol=1e-12, plot_title=plot_title)
 
@@ -117,7 +118,7 @@ def grid_imbalance_test(case):
         plot_name=path+'grid_imbalance_2.pdf'
         plot_title="Vega function decomposition, shape={}".format(shape)
         err_data=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
-                            test_function=2, plot=False,output='../output/num_dim_test/',
+                            test_function=2, plot=True,output='../output/num_dim_test/',
                             Frob_norm=True,  plot_name=plot_name,
                             tol=1e-12, plot_title=plot_title)
 
@@ -146,7 +147,7 @@ def num_dim_test_long():
     print("\n ===================================\
           \nTest number of dimension, fixed n per dim\n")
     err_data={}
-    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD"]
+    decomp_methods=["RSVD","SHO_SVD","TT_SVD"]
     solver=["SVD","SVD","SVD","SVD"]
     path='../output/num_dim_test_long/'
 
@@ -168,7 +169,7 @@ def general_test_3D(cases):
     print("\n ===================================\
     \nTest number of dimension, fixed n per dim\n")
     path ="../output/general_3D/"
-    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_POD","PGD"]
 
     if "SVD" in cases:
         solver=["SVD","SVD","SVD","SVD","SVD"]
@@ -254,6 +255,8 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
         else:
             raise AttributeError("reduction_method : '{}' is not a valid method".format(reduction_method))
         print("{} decompostion time: {:.3f} s".format(reduction_method,time.time()-t))
+        print("{} Full rank reconstruction time: {:.2f} s".format(
+            reduction_method,reconstruction_time(Result)))
         t=time.time()
         if Frob_norm:
             M=None
@@ -270,14 +273,30 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
 
         try:
             if output!='':
-                np.savetxt(output+"/"+reduction_method+".csv",np.transpose([approx_data[reduction_method][0],approx_data[reduction_method][1]]), delimiter=',')
+                np.savetxt(output+"/"+reduction_method+".csv",
+                  np.transpose([approx_data[reduction_method][0],approx_data[reduction_method][1]]),
+                  delimiter=',')
         except:
             pass
     if plot:
         benchmark_plotter(approx_data, show_plot, plot_name=plot_name,title=plot_title)
     return approx_data
 
+def reconstruction_time(T_reduced):
+    t=time.time()
+    if type(T_reduced)==TuckerTensor:
+        T_reduced.reconstruction()
+    elif type(T_reduced)==RecursiveTensor:
+        T_reduced.to_full()
+    elif type(T_reduced)==CanonicalTensor:
+        T_reduced.to_full_quick()
+    elif type(T_reduced)==TensorTrain:
+        T_reduced.to_full()
+    t=time.time()-t
+    return t
+
 if __name__ == '__main__':
     avail_test=["general_3D","num_dim_test_short","num_dim_test_long","Vega",'grid_imbalance']
+    # test_list=["general_3D","Vega"]
     test_list=avail_test[-1]
     numerics_for_thesis(test_list)

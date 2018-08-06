@@ -14,10 +14,10 @@ Example :
 3 options are available:
 	- *gprof2dot*
 
->python3 -m profile -o profiling/output.pstats pydecomp/test.py && python3 ../gprof2dot.py -f pstats profiling/output.pstats | dot -Tsvg -o profiling/call_trace.svg
+> python3 -m profile -o ../profiling/output.pstats analysis/numerical_tests.py && python3 ../../gprof2dot.py -f pstats ../profiling/output.pstats | dot -Tsvg -o ../profiling/call_trace.svg
 
 	- graphviz Nice look, buggy
 > pycallgraph graphviz -- ./benchmark_multivariable.py
 
 	- snakeviz Nice looking browser interface.
-> python3 -m cProfile -o bench.prof pydecomp/test.py && snakeviz bench.prof
+> python3 -m cProfile -o bench.prof analysis/numerical_tests.py && snakeviz bench.prof

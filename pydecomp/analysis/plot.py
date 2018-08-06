@@ -100,13 +100,14 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     *show* [bool]        whether the plot is shown or not
     *plot_name* [str]    plot output location, if empty string, no plot
     """
-    styles={"HO_POD":'r+-',
+    styles={"HO_POD":'r+--',
+            "HO_SVD":'r+:',
             "SHO_POD":'g+-',
-            "SHO_SVD":'g*:',
+            "SHO_SVD":'g*-',
             "RPOD":'b+-',
-            "RSVD":'b*',
-            "TT_SVD":'k+-',
-            "TT_POD":"k*",
+            "RSVD":'b*-',
+            "TT_POD":"k+-",
+            "TT_SVD":'k*-',
             "PGD":'mh--'}
     fig=plt.figure()
     xmax=0.1
@@ -154,14 +155,17 @@ def several_d_plotter(approx_data, show=True, plot_name="",**kwargs):
     *show* [bool]        whether the plot is shown or not
     *plot_name* [str]    plot output location, if empty string, no plot
     """
-    styles={"HO_POD":'r',
-            "SHO_POD":'g',
+    styles={"HO_POD":'g',
+            "SHO_POD":'r',
             "RPOD":'b',
+            "HO_SVD":'g',
+            "SHO_SVD":'r',
+            "RSVD":'b',
             "TT_SVD":'k',
             "PGD":'m'}
     linestyles={2:"-",
-               3:"--",
-               4:":",
+               3:":",
+               4:"--",
                5:"-",
                6:"-",
                7:"--",

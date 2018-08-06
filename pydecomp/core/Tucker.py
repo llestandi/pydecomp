@@ -137,7 +137,6 @@ def tucker_error_data(T_tucker, T_full,int_rules=None):
         r=np.minimum(rank,r+1)
         T_trunc=truncate(T_tucker,r)
         comp_rate.append(T_trunc.memory_eval()/F_volume)
-
         T_approx=T_trunc.reconstruction()
         actual_error=norm(T_full-T_approx,int_rules)/norm_full
         error.append(actual_error)
