@@ -144,6 +144,59 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     fig.savefig(plot_name)
     plt.close()
 
+def exp_data_decomp_plotter(approx_data, show=True, plot_name="",**kwargs):
+    """
+    Plotter routine for benchmark function.
+
+    **Parameters**:
+    *approx_data* [dict] whose labels are the lines labels, and data is
+                         a 2-column array with first column compression rate,
+                         second one is the approximation error associated.
+    *show* [bool]        whether the plot is shown or not
+    *plot_name* [str]    plot output location, if empty string, no plot
+    """
+    styles={"density":'r+-',
+            "vorticity":'k+-',
+            "pressure":'g+-',
+            "velocity_u":'b*-',
+            "velocity_v":'b+-'
+            }
+
+    fig=plt.figure()
+    xmax=0.1
+    ylim=[0.1,0.1]
+    k=0
+    plt.yscale('log')
+    plt.xlabel("Compresion rate (%)")
+    plt.ylabel('Relative Error')
+    plt.grid()
+
+    font = {'family' : 'normal',  'size'   : 13}
+    plt.rc('font', **font)
+    linestyle={'linewidth':2}
+    plt.rc('legend', fontsize=12)
+
+    title=kwargs.get('title',None)
+    if title:
+        plt.title(title)
+
+    for label, data in approx_data.items():
+        err=data[0,:]
+        comp_rate=100*data[1,:]
+        xmax=max(xmax,comp_rate[-1])
+        ylim=[min(ylim[0],err[-1]),max(ylim[1],err[0])]
+        ax=fig.add_subplot(111)
+        ax.set_xlim(0,xmax)
+        ax.set_ylim(ylim)
+        plt.plot(comp_rate, err , styles[label], **linestyle, label=label)
+
+    #saving plot as pdf
+    plt.legend()
+    if show:
+        plt.show()
+    fig.savefig(plot_name)
+    plt.close()
+
 def several_d_plotter(approx_data, show=True, plot_name="",**kwargs):
     """
     Plotter routine for benchmark function.

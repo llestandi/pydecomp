@@ -90,7 +90,7 @@ class TuckerTensor():
         return Fresult
 #-----------------------------------------------------------------------------
     def __str__(self):
-        ret = "ttensor of size {0}\n".format(self.shape);
+        ret = "Tucker tensor of size {0}\n".format(self.shape);
         ret += "Core = {0} \n".format(self.core.__str__());
         for i in range(0, len(self.u)):
             ret += "u[{0}] =\n{1}\n".format(i, self.u[i]);
@@ -128,13 +128,24 @@ def tucker_error_data(T_tucker, T_full,int_rules=None):
     F_volume=np.product(shape)
     rank=np.asarray(T_tucker.rank)
     maxrank=max(rank)
+    if maxrank>50:
+        rank_sampling=[i for i in np.arange(11)] +[15,20,25,30,40]\
+                    +[i for i in range(50,min(maxrank,100),10)]\
+                    +[i for i in range(100,min(maxrank,500),20)]\
+                    +[i for i in range(500,min(maxrank,1000),50)]\
+                    +[i for i in range(1000,maxrank,100)]
+
+    else:
+        rank_sampling=[i for i in range(maxrank)]
+
     error=[]
     comp_rate=[]
 
     norm_full=norm(T_full,int_rules)
     r=np.zeros(d)
-    for i in range(maxrank):
-        r=np.minimum(rank,r+1)
+    for i in rank_sampling:
+        print(r)
+        r=np.minimum(rank,i)
         T_trunc=truncate(T_tucker,r)
         comp_rate.append(T_trunc.memory_eval()/F_volume)
         T_approx=T_trunc.reconstruction()

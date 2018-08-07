@@ -298,5 +298,5 @@ def reconstruction_time(T_reduced):
 if __name__ == '__main__':
     avail_test=["general_3D","num_dim_test_short","num_dim_test_long","Vega",'grid_imbalance']
     # test_list=["general_3D","Vega"]
-    test_list=avail_test[-1]
+    test_list=avail_test[-2]
     numerics_for_thesis(test_list)

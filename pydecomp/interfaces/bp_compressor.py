@@ -6,12 +6,15 @@ Created on Fri Jun  8 10:38:16 2018
 @author: diego
 """
 
-from bp_reader import bp_reader
-from SHOPOD import SHOPOD
-import high_order_decomposition_method_functions as hf
+from bp_reader import bp_reader,bp_reader_one_openning_per_file
+from core.tucker_decomp import SHOPOD, STHOSVD
+from core.Tucker import tucker_error_data
+import core.tensor_algebra as ta
+import core.MassMatrices as mm
 import numpy as np
+from interfaces.output_vtk import VTK_save_space_time_field
 
-def bp_compressor(variables,data_dir, Sim_list=-1, tol=1e-7,rank=-1):
+def bp_compressor(variables,data_dir, Sim_list=-1, tol=1e-4,rank=-1):
     """
     In this code we are going to compress the variable data
     contained in a bp folder using the SHOPOD as a reduction method
@@ -40,41 +43,73 @@ def bp_compressor(variables,data_dir, Sim_list=-1, tol=1e-7,rank=-1):
     for v in variables:
         vfield=field[v]
         print("field shape('"+v+"') :\t", vfield.shape)
-        Mass=hf.unit_mass_matrix_creator(vfield)
-        Reduced[v]=SHOPOD(vfield,Mass,tol=tol,rank=rank)
+        MM=mm.MassMatrices([mm.identity_mass_matrix(x) for x in list(vfield.shape)])
+        Reduced[v]=SHOPOD(vfield,MM,tol=tol,rank=rank)
 
-    return field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights
+    return field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights,MM
 
-def Analize_compressed_bp(bp_compressed_out,**kwargs):
+def bp_compressor_variables_as_dim(variables,data_dir, tol=1e-4,rank=-1):
+    """
+    In this code we are going to compress the variable data
+    contained in a bp folder using the STHOPOD as a reduction method
+    with a unitary matrix as mass matrices to simulate the result of
+    high order SVD method to avoid the use of the grid.\n
+    **Parameter:** \n
+
+    *Variable*: string type, the name of the variable to extract is spected
+    such as "pressure", "density", "vitesse" etc. \n
+
+    *data_dir*: string, indicates the position of the interest files
+
+    *tol*: This variable represents an error estimation that is taken from
+    eigen values of the correlation Matrix, this is not the final error.
+    A tolerance in the order of 1e-2 will generate results with much
+    lower errors errors values.
+    """
+    field, nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_reader_one_openning_per_file(variables,data_dir)
+    Reduced={}
+    full_tensor=False
+    for v in variables:
+        print("field shape('"+v+"') :\t", field[v].shape)
+        try:
+            full_tensor=np.stack(full_tensor,field[v])
+        except:
+            full_tensor=field[v]
+    print(full_tensor.shape)
+    return
+    # tensor_approx=STHOSVD(full_tensor,tol=tol,rank=rank)
+    #
+    # return field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights,MM
+
+def Analize_compressed_bp(bp_compressed_out, show_plot=True, plot_name=""):
     """ Encapsulates the analysis to ease the reading. Also provides write function.
-    *bp_compressed_out* is the full output of bp compressed
-    *args* a list of arguments for further use."""
-
-    field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_compressed_out
-
-    plot_err=kwargs.get('plot_err',None)
-    if plot_err:
+    *bp_compressed_out* is the full output of bp compressed"""
+    from analysis.plot import exp_data_decomp_plotter
+    field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights,MM=bp_compressed_out
+    approx_data={}
+    if show_plot or (plot_name!=""):
         for var in Reduced:
-            plot_error_TuckerTensor(Reduced[var],field[var],1, 'Error vs compression rate',
-                            output_variable_name='ouptut/bp_compression')
+            print(Reduced[var])
+            tucker_decomp=Reduced[var]
+            F=field[var]
+            approx_data[var]=np.stack(tucker_error_data(
+                                        tucker_decomp,F,int_rules=MM))
+            exp_data_decomp_plotter(approx_data, show_plot, plot_name=plot_name,
+                              title="Wave simulation ST-HOPOD decomposition")
 
     bp_comp_to_vtk(Reduced,X,Y,time_list,heights,
-                   full_fields=field,baseName="notus_bp_comp")
+                   full_fields=field,base_name="notus_bp_comp")
 
     modes={}
-    # for i in range(Reduced.core.shape[1]):
-    #     modes[var_list+'_mode_'+str(i)]=Reduced.u[1][:,i]
-    # prepare_dic_for_vtk(modes,nxC,nyC)
-    # z=np.asarray([0])
-    # gridToVTK(out_dir+"modes",X,Y,z, cellData = modes)
 
 def bp_comp_to_vtk(fields_approx,X,Y,time_list, param_list,
-                   full_fields=None,baseName="notus_bp_comp"):
+                   full_fields=None,base_name="notus_bp_comp"):
     """
     Wrapper for bp decomposed fields saving to vtk format
     It is assumed that tucker_fields is a dictionnary of tucker format fields
     """
     print(type(param_list))
+    out_dir="../output/compressed_notus_wave/"
     var_dic=FT_dict_to_array(fields_approx)
     for k in range(len(param_list)):
         loc_dic={}
@@ -102,17 +137,17 @@ def FT_dict_to_array(FT_dict):
     array_dict={}
     for var in FT_dict:
         print("field "+str(var)+" has a decomposition rank of "+str(FT_dict[var].core.shape))
-        array_dict[var]=np.copy(FT_dict[var].reconstruction().tondarray(),order='F')
+        array_dict[var]=np.copy(FT_dict[var].reconstruction(),order='F')
     return array_dict
 
 if __name__=='__main__':
-    from evtk.hl import gridToVTK
-    from output_vtk import *
-    from plot_error_tucker import plot_error_tucker
+    from analysis.plot import benchmark_plotter
 
-    var_list=['density']#,'pressure','vorticity','velocity_u','velocity_v']
-    data_dir="data_notus_wave/"
-    out_dir='output/'
-    base_name="Lucas_dL010_"
+    var_list=['density','pressure','vorticity','velocity_u','velocity_v']
+    # var_list=var_list[0:2]
+    data_dir="../data_notus_wave_small/"
+    out_dir='../output/compressed_notus_wave/'
+    # base_name="Lucas_dL010_"
     bp_compressed_out=bp_compressor(var_list,data_dir, tol=1e-6,rank=-1 )
-    Analize_compressed_bp(bp_compressed_out)
+    bp_compressor_variables_as_dim(var_list,data_dir, tol=1e-6,rank=-1 )
+    # Analize_compressed_bp(bp_compressed_out,show_plot=False, plot_name=out_dir+"ST_HOSVD_wave_plot.pdf")
