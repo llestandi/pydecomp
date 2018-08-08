@@ -155,9 +155,20 @@ def error_TT_data(T_tt,T_full, M=None):
     comp_rate=[]
     norm_T=norm(T_full,M)
 
+    if maxrank>50:
+        rank_sampling=[i for i in np.arange(1,11)] +[15,20,25,30,40]\
+                    +[i for i in range(50,min(maxrank,100),10)]\
+                    +[i for i in range(100,min(maxrank,500),20)]\
+                    +[i for i in range(500,min(maxrank,1000),50)]\
+                    +[i for i in range(1000,maxrank,100)]
+
+    else:
+        rank_sampling=[i for i in range(maxrank)]
+
     r=np.zeros(d+1)
-    for i in range(maxrank):
-        r=np.minimum(rank,r+1)
+    for i in rank_sampling:
+        r=np.minimum(rank,i)
+        print(r)
         comp_rate.append(T_tt.mem_eval(r)/F_volume)
         T_approx=T_tt.to_full(r)
         actual_error=norm(T_full-T_approx, M)/norm_T
