@@ -152,7 +152,7 @@ def Analize_compressed_bp_vars_as_dim(bp_compressed_out, show_plot=True, plot_na
         approx_data["TT_SVD"]=np.stack(error_TT_data(tensor_approx["TT_SVD"],full_tensor))
 
         benchmark_plotter(approx_data, show_plot, plot_name=plot_name,
-                            title="Wave simulation ST-HOPOD decomposition")
+                            title="Wave simulation decomposition")
 
     #Export to vtk
     tensor_approx=tensor_approx["SHO_SVD"]

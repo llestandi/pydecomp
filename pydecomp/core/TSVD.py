@@ -54,7 +54,6 @@ def SVD_by_EVD(F,tol=0,rank=-1):
         Transposed_POD=True
 
     C=F.T@F
-
     Lambda , U =np.linalg.eigh(C)
     # Reversing order
     Lambda = Lambda[::-1]

@@ -158,8 +158,8 @@ def error_TT_data(T_tt,T_full, M=None):
     if maxrank>50:
         rank_sampling=[i for i in np.arange(1,11)] +[15,20,25,30,40]\
                     +[i for i in range(50,min(maxrank,100),10)]\
-                    +[i for i in range(100,min(maxrank,500),20)]\
-                    +[i for i in range(500,min(maxrank,1000),50)]\
+                    +[i for i in range(100,min(maxrank,300),20)]\
+                    +[i for i in range(300,min(maxrank,1000),50)]\
                     +[i for i in range(1000,maxrank,100)]
 
     else:
