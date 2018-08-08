@@ -67,7 +67,7 @@ class TensorTrain:
         str+="shape={}\n".format(self.shape)
         str+="rank={}\n".format(self.rank)
         for i in range(self.ndim):
-            str+="\n G[{}]: \n {}".format(i,G[i])
+            str+="\n G[{}]: \n {}".format(i,self.G[i])
         return str
 
     def to_full(self,trunc_rank=[]):
@@ -163,7 +163,7 @@ def error_TT_data(T_tt,T_full, M=None):
                     +[i for i in range(1000,maxrank,100)]
 
     else:
-        rank_sampling=[i for i in range(maxrank)]
+        rank_sampling=[i for i in range(1,maxrank)]
 
     r=np.zeros(d+1)
     for i in rank_sampling:
