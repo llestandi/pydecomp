@@ -55,7 +55,6 @@ def VTK_save_space_time_field(var_dic,X,Y,base_name,time_list):
     nyC=Y.size-1
     var_list=list(var_dic.keys())
     v0=var_list[0]
-    print(var_dic[v0])
     if nxC*nyC != var_dic[v0].shape[0]:
         raise AttributeError('Shape do not matc h'+ str(nxC*nyC)
                              +" "+str(var_dic[v0].shape[0]))
@@ -69,7 +68,7 @@ def VTK_save_space_time_field(var_dic,X,Y,base_name,time_list):
         for var in var_list:
             snapshot[var]=var_dic[var][:,i]
         prepare_dic_for_vtk(snapshot,nxC,nyC)
-        gridToVTK(base_name+time_list[i]+".compr",X,Y,z, cellData = snapshot)
+        gridToVTK(base_name+time_list[i]+"_var_as_dim.compr",X,Y,z, cellData = snapshot)
 
 
 if __name__=="__main__":

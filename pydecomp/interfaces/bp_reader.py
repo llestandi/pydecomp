@@ -74,13 +74,13 @@ def bp_reader_one_openning_per_file(Variables,datadir):
             Tensor_dict[var].append([])
         for j in range(len(name_Tensor[i])):
             f=ad.File(datadir+name_Tensor[i][j])
+            if i==0:
+                time_list.append(name_Tensor[i][j][-9:-3])
             for var in Variables:
                 aux=f[var].read()
                 nxC=aux.shape[0]
                 nyC=aux.shape[1]
                 # aux=aux.reshape([1,(nyC*nxC)])
-                if i==0:
-                    time_list.append(name_Tensor[i][j][-9:-3])
                 if j==0:
                     Tensor_dict[var][i]=[aux]
                 else:
@@ -92,7 +92,7 @@ def bp_reader_one_openning_per_file(Variables,datadir):
     full_tensor=np.stack([Tensor_dict[var] for var in Variables])
     print("global shape",full_tensor.shape)
     print("quick open .bp reading successful")
-    return   Tensor_dict, nxC, nyC, nx_global, ny_global, X, Y,time_list,first_criteria
+    return   full_tensor, nxC, nyC, nx_global, ny_global, X, Y,time_list,first_criteria
 
 def parse_notus_files(path,ext=".bp"):
     """ This function parses the list of .bp files in path and Returns

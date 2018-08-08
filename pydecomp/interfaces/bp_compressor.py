@@ -8,7 +8,9 @@ Created on Fri Jun  8 10:38:16 2018
 
 from interfaces.bp_reader import bp_reader,bp_reader_one_openning_per_file
 from core.tucker_decomp import SHOPOD, STHOSVD
-from core.Tucker import tucker_error_data
+from core.Tucker import tucker_error_data, TuckerTensor
+from core.TensorTrain import TensorTrain, error_TT_data
+from core.TT_SVD import TT_SVD
 import core.tensor_algebra as ta
 import core.MassMatrices as mm
 import numpy as np
@@ -77,7 +79,11 @@ def bp_comp_to_vtk(fields_approx,X,Y,time_list, param_list,
     """
     print(type(param_list))
     out_dir="../output/compressed_notus_wave/"
-    var_dic=FT_dict_to_array(fields_approx)
+    if type(list(fields_approx.values())[0])==TuckerTensor:
+        var_dic=FT_dict_to_array(fields_approx)
+    else:
+        var_dic=fields_approx
+
     for k in range(len(param_list)):
         loc_dic={}
         for var in var_dic:
@@ -87,7 +93,7 @@ def bp_comp_to_vtk(fields_approx,X,Y,time_list, param_list,
                 loc_dic[var+'_diff']=loc_dic[var]-loc_dic[var+'_decomp']
             except:
                 print('no full field')
-    VTK_save_space_time_field(loc_dic,X,Y,out_dir+base_name+param_list[k]+'_',time_list)
+        VTK_save_space_time_field(loc_dic,X,Y,out_dir+base_name+param_list[k]+'_',time_list)
 
     return
 
@@ -125,15 +131,10 @@ def bp_compressor_variables_as_dim(variables,data_dir, tol=1e-4,rank=-1):
     A tolerance in the order of 1e-2 will generate results with much
     lower errors errors values.
     """
-    field, nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_reader_one_openning_per_file(variables,data_dir)
-    Reduced={}
-    full_tensor=False
-    for v in variables:
-        try:
-            full_tensor=np.stack(full_tensor,field[v])
-        except:
-            full_tensor=field[v]
-    tensor_approx=STHOSVD(full_tensor,epsilon=tol,rank=rank)
+    full_tensor, nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_reader_one_openning_per_file(variables,data_dir)
+    tensor_approx={}
+    tensor_approx["SHO_SVD"]=STHOSVD(full_tensor,epsilon=tol,rank=rank)
+    tensor_approx["TT_SVD"]=TT_SVD(full_tensor,eps=tol,rank=rank)
 
     return full_tensor, tensor_approx,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights
 
@@ -142,30 +143,30 @@ def Analize_compressed_bp_vars_as_dim(bp_compressed_out, show_plot=True, plot_na
     *bp_compressed_out* is the full output of bp compressed"""
     from analysis.plot import benchmark_plotter
     full_tensor, tensor_approx,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_compressed_out
+    #Error plot
     approx_data={}
     if show_plot or (plot_name!=""):
-        approx_data["SHO_SVD"]=np.stack(tucker_error_data(tensor_approx,full_tensor))
+        print("{} Rank ST-HOSVD decomposition with tol 1e-2".format(tensor_approx["SHO_SVD"].core.shape))
+        approx_data["SHO_SVD"]=np.stack(tucker_error_data(tensor_approx["SHO_SVD"],full_tensor))
+        print("{} Rank TT decomposition with tol 1e-2".format(tensor_approx["TT_SVD"].rank))
+        approx_data["TT_SVD"]=np.stack(error_TT_data(tensor_approx["TT_SVD"],full_tensor))
+
         benchmark_plotter(approx_data, show_plot, plot_name=plot_name,
                             title="Wave simulation ST-HOPOD decomposition")
 
+    #Export to vtk
+    tensor_approx=tensor_approx["SHO_SVD"]
     data={}
+    field={}
+    buff=tensor_approx.reconstruction()
     for i in range(full_tensor.shape[0]):
         var=variables[i]
-        buff=tensor_approx.reconstruction()
-        print(shape(buff))
-        data[var]=
-
+        data[var]=np.reshape(buff[i],(full_tensor.shape[1],full_tensor.shape[2],-1))
+        field[var]=np.reshape(full_tensor[i],(full_tensor.shape[1],full_tensor.shape[2],-1))
     bp_comp_to_vtk(data,X,Y,time_list,heights,
                    full_fields=field,base_name="notus_bp_comp")
 
 
-def prepare_compressed_var_as_dim(tensor_approx,variables):
-    """Recontruct compressed field to ndarray contained in dictionnary"""
-    array_dict={}
-    for var in FT_dict:
-        print("field "+str(var)+" has a decomposition rank of "+str(FT_dict[var].core.shape))
-        array_dict[var]=np.copy(FT_dict[var].reconstruction(),order='F')
-    return array_dict
 
 
 if __name__=='__main__':
@@ -173,7 +174,7 @@ if __name__=='__main__':
 
     var_list=['density','pressure','vorticity','velocity_u','velocity_v']
     # var_list=var_list[0:2]
-    data_dir="../data_notus_wave_small/"
+    data_dir="../data_notus_wave/"
     out_dir='../output/compressed_notus_wave/'
     # base_name="Lucas_dL010_"
 
