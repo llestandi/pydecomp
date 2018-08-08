@@ -58,7 +58,6 @@ def bp_reader_one_openning_per_file(Variables,datadir):
     variable.
     """
     name_Tensor,first_criteria=parse_notus_files(datadir)
-    print(name_Tensor)
     #We replace each element of name_Tensor for the variable contained in
     #the file with the same name.
     f=ad.File(datadir+name_Tensor[0][0])
