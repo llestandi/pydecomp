@@ -48,4 +48,5 @@ def matlab_file_to_tensor(file_name):
 
 
 if __name__=='__main__':
-    matlab_file_reduction("../exp_data/Exemple_1.mat",tol=1e-6, show_plot=True, plot_name="../output/exp_data/")
+    matlab_file_reduction("../exp_data/Exemple_1.mat",tol=1e-16, show_plot=True,
+                          plot_name="../output/exp_data/matlab_pradere.pdf")

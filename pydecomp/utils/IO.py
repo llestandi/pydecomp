@@ -50,8 +50,6 @@ def save(variable, file_name):
 
     Binary file saved as'example_file'
     """
-
-
     if type(file_name)!=str:
         raise ValueError('Variable file_name must be a string')
     pickle_out=open(file_name,"wb")

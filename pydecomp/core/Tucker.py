@@ -133,7 +133,8 @@ def tucker_error_data(T_tucker, T_full,int_rules=None):
                     +[i for i in range(50,min(maxrank,100),10)]\
                     +[i for i in range(100,min(maxrank,500),20)]\
                     +[i for i in range(500,min(maxrank,1000),50)]\
-                    +[i for i in range(1000,maxrank,100)]
+                    +[i for i in range(1000,maxrank,100)]\
+                    +[maxrank]
 
     else:
         rank_sampling=[i for i in range(maxrank)]

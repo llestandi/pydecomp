@@ -160,8 +160,8 @@ def error_TT_data(T_tt,T_full, M=None):
                     +[i for i in range(50,min(maxrank,100),10)]\
                     +[i for i in range(100,min(maxrank,300),20)]\
                     +[i for i in range(300,min(maxrank,1000),50)]\
-                    +[i for i in range(1000,maxrank,100)]
-
+                    +[i for i in range(1000,maxrank,100)]\
+                    +[maxrank]
     else:
         rank_sampling=[i for i in range(1,maxrank)]
 

@@ -110,7 +110,7 @@ def SHOPOD(F,MM, tol=1e-10,rank=-1):
     return Decomposed_Tensor
 
 
-def STHOSVD(F,epsilon = 1e-13, rank=100, solver='EVD'):
+def STHOSVD(F,epsilon = 1e-13, rank=-1, solver='EVD'):
     """
     This method decomposes a ndarray type data (multivariable) in a Tucker
     class element by using the Secuentialy Tuncated High Order Singular Value
