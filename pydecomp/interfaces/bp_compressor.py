@@ -40,34 +40,33 @@ def bp_compressor(variables,data_dir, Sim_list=-1, tol=1e-4,rank=-1):
     A tolerance in the order of 1e-2 will generate results with much
     lower errors errors values.
     """
-    field, nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_reader(variables,data_dir)
-    field, nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_reader_one_openning_per_file(variables,data_dir)
+    # field, nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_reader(variables,data_dir)
+    field, nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_reader_one_openning_per_file(variables,data_dir,tensorized=False)
     Reduced={}
     for v in variables:
         vfield=field[v]
         print("field shape('"+v+"') :\t", vfield.shape)
-        MM=mm.MassMatrices([mm.identity_mass_matrix(x) for x in list(vfield.shape)])
-        Reduced[v]=SHOPOD(vfield,MM,tol=tol,rank=rank)
+        Reduced[v]=STHOSVD(vfield,epsilon=tol,rank=rank)
 
-    return field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights,MM
+    return field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights
 
 
 def Analize_compressed_bp(bp_compressed_out, show_plot=True, plot_name=""):
     """ Encapsulates the analysis to ease the reading. Also provides write function.
     *bp_compressed_out* is the full output of bp compressed"""
     from analysis.plot import exp_data_decomp_plotter
-    field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights,MM=bp_compressed_out
+    field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_compressed_out
     approx_data={}
     if show_plot or (plot_name!=""):
         for var in Reduced:
-            print(Reduced[var])
             tucker_decomp=Reduced[var]
             F=field[var]
-            approx_data[var]=np.stack(tucker_error_data(
-                                        tucker_decomp,F,int_rules=MM))
+            approx_data[var]=np.stack(tucker_error_data( tucker_decomp,F))
             exp_data_decomp_plotter(approx_data, show_plot, plot_name=plot_name,
-                              title="Wave simulation ST-HOPOD decomposition")
-
+                              title="Wave simulation ST-HOSVD decomposition")
+            new_shape=(F.shape[0],F.shape[1],-1)
+            field[var]=F.reshape(new_shape)
+            Reduced[var]=np.reshape(tucker_decomp.reconstruction(),new_shape)
     bp_comp_to_vtk(Reduced,X,Y,time_list,heights,
                    full_fields=field,base_name="notus_bp_comp")
 
@@ -110,7 +109,14 @@ def FT_dict_to_array(FT_dict):
     array_dict={}
     for var in FT_dict:
         print("field "+str(var)+" has a decomposition rank of "+str(FT_dict[var].core.shape))
-        array_dict[var]=np.copy(FT_dict[var].reconstruction(),order='F')
+        if FT_dict[var].ndim==3:
+            array_dict[var]=np.copy(FT_dict[var].reconstruction(),order='F')
+        elif FT_dict[var].ndim==4:
+            shape=FT_dict[var].shape
+            array_dict[var]=np.reshape(FT_dict[var].reconstruction(),
+                                       (shape[0],shape[1],-1),order='F')
+        else:
+            raise NotImplementedError("Bad number of dimension")
     return array_dict
 
 

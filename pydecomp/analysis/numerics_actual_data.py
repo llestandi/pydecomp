@@ -18,8 +18,8 @@ def test_notus_wave_bp(cases):
                         a comparison between each variable is proposed.
     """
     var_list=['density','pressure','vorticity','velocity_u','velocity_v']
-    # data_dir="../data_notus_wave_small/"
-    data_dir="../data_notus_wave/"
+    data_dir="../data_notus_wave_small/"
+    # data_dir="../data_notus_wave/"
     out_dir='../output/compressed_notus_wave/'
 
     if 'distinct_decomp' in cases:

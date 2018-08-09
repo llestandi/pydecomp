@@ -43,7 +43,11 @@ def load_bp(file,dir,var_list):
 def prepare_dic_for_vtk(var_dic,nx,ny):
     """ This function reorders data inside arrays for vtk output """
     for field in var_dic:
-        var_dic[field]=np.reshape(var_dic[field].T,(nx,ny,1),order='F')
+        try:
+            var_dic[field]=np.reshape(var_dic[field].T,(nx,ny,1),order='F')
+        except:
+            print("Shapes", var_dic[field].shape, nx,ny)
+            raise AttributeError("blabla")
     return
 
 def VTK_save_space_time_field(var_dic,X,Y,base_name,time_list):

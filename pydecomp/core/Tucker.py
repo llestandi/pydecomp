@@ -53,7 +53,7 @@ class TuckerTensor():
             if (k[i] != len((uIn[i])[0])):
                 raise ValueError(b.format(i));
 
-        self._dim = core.ndim
+        self.ndim = core.ndim
         self.core = core.copy();
         self.rank = self.core.shape
         self.u = uIn;
@@ -100,7 +100,7 @@ class TuckerTensor():
     def memory_eval(self):
         "Returns the number of floats required to store self"
         mem=np.product(self.rank)
-        for i in range(self._dim):
+        for i in range(self.ndim):
             mem+=self.shape[i]*self.rank[i]
         return mem
 
@@ -159,7 +159,7 @@ def tucker_error_data(T_tucker, T_full,int_rules=None):
 def truncate(T_tucker,trunc_rank):
     """Returns a truncated rank tucker tensor"""
     r=np.minimum(trunc_rank,T_tucker.rank)
-    d=T_tucker._dim
+    d=T_tucker.ndim
     core_shape=''
     modes=[]
     for j in range(d):

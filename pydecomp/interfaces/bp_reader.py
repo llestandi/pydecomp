@@ -91,7 +91,8 @@ def bp_reader_one_openning_per_file(Variables,datadir,tensorized=True):
     if tensorized:
         full_tensor=np.stack([Tensor_dict[var] for var in Variables])
         print("global shape",full_tensor.shape)
-        
+    else:
+        full_tensor=Tensor_dict
     print("quick open .bp reading successful")
     return   full_tensor, nxC, nyC, nx_global, ny_global, X, Y,time_list,first_criteria
 
