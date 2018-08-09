@@ -128,8 +128,8 @@ def tucker_error_data(T_tucker, T_full,int_rules=None):
     F_volume=np.product(shape)
     rank=np.asarray(T_tucker.rank)
     maxrank=max(rank)
-    if maxrank>50:
-        rank_sampling=[i for i in np.arange(11)] +[15,20,25,30,40]\
+    if maxrank>25:
+        rank_sampling=[i for i in np.arange(1,11)] +[15,20,25,30,40]\
                     +[i for i in range(50,min(maxrank,100),10)]\
                     +[i for i in range(100,min(maxrank,500),20)]\
                     +[i for i in range(500,min(maxrank,1000),50)]\

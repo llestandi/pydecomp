@@ -44,5 +44,5 @@ def test_matlab_data():
 
 if __name__=="__main__":
     cases=['variables_as_dim','distinct_decomp']
-    cases=['variables_as_dim']
+    cases=['distinct_decomp']
     test_notus_wave_bp(cases)

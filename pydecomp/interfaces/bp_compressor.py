@@ -41,6 +41,7 @@ def bp_compressor(variables,data_dir, Sim_list=-1, tol=1e-4,rank=-1):
     lower errors errors values.
     """
     field, nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_reader(variables,data_dir)
+    field, nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_reader_one_openning_per_file(variables,data_dir)
     Reduced={}
     for v in variables:
         vfield=field[v]

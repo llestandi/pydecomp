@@ -52,7 +52,7 @@ def bp_reader(Variables,datadir):
         print(".bp reading successful")
     return   Tensor_dict, nxC, nyC, nx_global, ny_global, X, Y,time_list,first_criteria
 
-def bp_reader_one_openning_per_file(Variables,datadir):
+def bp_reader_one_openning_per_file(Variables,datadir,tensorized=True):
     """
     This functions serts to read data from a bp folder for a specific
     variable.
@@ -88,9 +88,10 @@ def bp_reader_one_openning_per_file(Variables,datadir):
 
     for var in Variables:
         Tensor_dict[var]=np.asarray(Tensor_dict[var])
-
-    full_tensor=np.stack([Tensor_dict[var] for var in Variables])
-    print("global shape",full_tensor.shape)
+    if tensorized:
+        full_tensor=np.stack([Tensor_dict[var] for var in Variables])
+        print("global shape",full_tensor.shape)
+        
     print("quick open .bp reading successful")
     return   full_tensor, nxC, nyC, nx_global, ny_global, X, Y,time_list,first_criteria
 

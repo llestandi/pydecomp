@@ -24,28 +24,39 @@ from core.TT_SVD import TT_SVD
 from analysis.plot import benchmark_plotter
 
 
-def LDC_multi_Re_decomp(path,Re_list,tol=1e-6,show_plot=True,plot_name=""):
+def LDC_multi_Re_decomp(path,Re_list,layouts=['reshaped','vectorized'],
+                        tol=1e-6,show_plot=True,plot_name=""):
     file='LDC_binary_Re_{}.dat'.format(Re_list)
     if file in os.listdir(path):
-        T_full=load(path+file)
+        Tensor=load(path+file)
     else:
-        T_full=read_ldc_data_multiple_Re(path,Re_list)
-        save(T_full, file_name=path+file)
-    shape=T_full.shape
+        Tensor=read_ldc_data_multiple_Re(path,Re_list)
+        save(Tensor, file_name=path+file)
+    shape=Tensor.shape
     print('Read LDC tensor of shape:', shape)
-    nx=ny=np.sqrt(shape[0])
-    T_full=np.reshape(T_full,(nx,ny,shape[1],shape[2]))
 
     T_approx={}
     approx_data={}
+    for layout in layouts:
+        if layout == 'reshaped':
+            nx=ny=np.sqrt(shape[0])
+            T_full=np.reshape(Tensor,(nx,ny,shape[1],shape[2]))
+            key=' reshaped'
+        elif layout == "vectorized":
+            T_full=Tensor
+            key=' vectorized'
+        else :
+            AttributeError("Invalid layour option : {}".format(layout))
 
-    T_approx["SHO_SVD"]=STHOSVD(T_full,epsilon=tol)
-    print("{} Rank ST-HOSVD decomposition with tol {}".format(T_approx["SHO_SVD"].core.shape,tol))
-    approx_data["SHO_SVD"]=np.stack(tucker_error_data(T_approx["SHO_SVD"],T_full))
+        method="SHO_SVD"+key
+        T_approx[method]=STHOSVD(T_full,epsilon=tol)
+        print("{} Rank ST-HOSVD decomposition with tol {}".format(T_approx[method].core.shape,tol))
+        approx_data[method]=np.stack(tucker_error_data(T_approx[method],T_full))
 
-    T_approx["TT_SVD"]=TT_SVD(T_full,eps=tol)
-    print("{} Rank TT decomposition with tol {}".format(T_approx["TT_SVD"].rank,tol))
-    approx_data["TT_SVD"]=np.stack(error_TT_data(T_approx["TT_SVD"],T_full))
+        method="TT_SVD"+key
+        T_approx[method]=TT_SVD(T_full,eps=tol)
+        print("{} Rank TT decomposition with tol {}".format(T_approx[method].rank,tol))
+        approx_data[method]=np.stack(error_TT_data(T_approx[method],T_full))
 
     if show_plot or (plot_name!=""):
         benchmark_plotter(approx_data, show_plot, plot_name=plot_name,
@@ -448,5 +459,6 @@ if __name__ == "__main__":
     # print(w.shape)
     Re_list=[10000,10020,10040,10060,10080,10100]
     path='/home/lestandi/Documents/data_ldc/grid_257x257/'
-    LDC_multi_Re_decomp(path,Re_list,tol=1e-6,show_plot=True,
+    layouts=["vectorized",'reshaped']
+    LDC_multi_Re_decomp(path,Re_list,layouts,tol=1e-16,show_plot=True,
                         plot_name="../output/LDC_compr_data/decomp_error_graph.pdf")
