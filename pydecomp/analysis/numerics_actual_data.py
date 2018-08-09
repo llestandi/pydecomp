@@ -19,7 +19,7 @@ def test_notus_wave_bp(cases):
     """
     var_list=['density','pressure','vorticity','velocity_u','velocity_v']
     data_dir="../data_notus_wave_small/"
-    # data_dir="../data_notus_wave/"
+    data_dir="../data_notus_wave/"
     out_dir='../output/compressed_notus_wave/'
 
     if 'distinct_decomp' in cases:
@@ -27,7 +27,7 @@ def test_notus_wave_bp(cases):
         Analize_compressed_bp(bp_compressed_out,show_plot=False, plot_name=out_dir+"ST_HOSVD_wave_plot.pdf")
 
     if 'variables_as_dim' in cases:
-        bp_compressed_out= bp_compressor_variables_as_dim(var_list,data_dir, tol=1e-6,rank=-1 )
+        bp_compressed_out= bp_compressor_variables_as_dim(var_list,data_dir, tol=1e-16,rank=-1 )
         Analize_compressed_bp_vars_as_dim(bp_compressed_out,show_plot=True,
                                           plot_name=out_dir+"wave_decomposition_plot.pdf"
                                           ,variables=var_list)
@@ -44,5 +44,5 @@ def test_matlab_data():
 
 if __name__=="__main__":
     cases=['variables_as_dim','distinct_decomp']
-    cases=['distinct_decomp']
+    cases=['variables_as_dim']
     test_notus_wave_bp(cases)

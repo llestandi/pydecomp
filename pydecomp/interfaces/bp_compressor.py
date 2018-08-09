@@ -171,7 +171,7 @@ def Analize_compressed_bp_vars_as_dim(bp_compressed_out, show_plot=True, plot_na
         data[var]=np.reshape(buff[i],(full_tensor.shape[1],full_tensor.shape[2],-1))
         field[var]=np.reshape(full_tensor[i],(full_tensor.shape[1],full_tensor.shape[2],-1))
     bp_comp_to_vtk(data,X,Y,time_list,heights,
-                   full_fields=field,base_name="notus_bp_comp")
+                   full_fields=field,base_name="notus_bp_comp_VAR_AS_DIM_")
 
 
 

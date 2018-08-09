@@ -72,7 +72,7 @@ def VTK_save_space_time_field(var_dic,X,Y,base_name,time_list):
         for var in var_list:
             snapshot[var]=var_dic[var][:,i]
         prepare_dic_for_vtk(snapshot,nxC,nyC)
-        gridToVTK(base_name+time_list[i]+"_var_as_dim.compr",X,Y,z, cellData = snapshot)
+        gridToVTK(base_name+time_list[i]+".compr",X,Y,z, cellData = snapshot)
 
 
 if __name__=="__main__":
