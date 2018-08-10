@@ -62,6 +62,8 @@ def LDC_multi_Re_decomp(path,Re_list,layouts=['reshaped','vectorized'],
         benchmark_plotter(approx_data, show_plot, plot_name=plot_name,
                         title="LDC data decomposition error")
 
+
+
 def read_ldc_data_multiple_Re(path, Re_list):
     vort_tensor=[]
     for Re in Re_list:
@@ -130,6 +132,14 @@ def read_file(folder,filename , sep='\t') :
     flux.close()
     return np.squeeze(np.asanyarray(M))
 
+
+
+################################################################################
+################################################################################
+#                              PLOTTING PART
+################################################################################
+################################################################################
+
 from matplotlib import cm
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
@@ -137,14 +147,16 @@ from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.colors import LogNorm
 import numpy as np
 
-def plot_spatial_interp(phi_exact,phi_interp,target_Re,nb_modes=1,path='screen',PLOT_PHI=True,PLOT_ERR=True):
+def plot_spatial_interp(phi_exact,phi_interp,target_Re,nb_modes=1,path='screen',
+                        PLOT_PHI=True,PLOT_ERR=True):
     """ This function returns various plots of phi, phi_exact, error...
         PARAMETERS:
             -phi_exact       2-way array of the exact solution spatial modes
             -phi_interp      2-way array with the interpolated phis
             -nb_modes        the number of modes to be plotted
             -target_Re       Value of the target Re for naming only
-            -path='screen'   where the plot is sent, if screen, on screen, otherwise, to the given location
+            -path='screen'   where the plot is sent, if screen, on screen,
+                             otherwise, to the given location
             -PLOT_PHI=True   If true, phi interp is plotted
             -PLOT_ERR=True   If true, Interpolation error is plotted
         returns

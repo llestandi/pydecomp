@@ -46,7 +46,41 @@ def matlab_file_to_tensor(file_name):
     data=f[list(f.keys())[0]]
     return np.array(data)
 
+def matlab_data_view(tensor,t,freq,show_plot=True,file_name=""):
+    import matplotlib.pyplot as plt
+    slice=tensor[t,freq,:,:]
+
+    if file_name != "":
+        plt.figure(figsize=(7,6))
+    plt.imshow(slice, cmap=plt.cm.gray)
+    if show_plot:
+        plt.show()
+    if file_name != "":
+        plt.savefig(file_name, bbox_inches='tight',pad_inches=0)
+        plt.close()
+
+def matlab_data_view_animate(tensor,wavelength,t_min,t_max):
+    """ This routine provides an animated view (gif) of the matlab data files at
+    wavelength between t_min and t_max
+    """
+    from utils.misc import quick_gif
+    dir="../output/exp_data/visu"
+    for l in wavelength:
+        plt_list=[]
+        for t in range(t_min, t_max):
+            plt_name=dir+"/droplet_{}_{}.png".format(l,t)
+            plt_list.append(plt_name)
+            matlab_data_view(tensor,t,l,show_plot=False,file_name=plt_name)
+        quick_gif(plt_list,dir,'droplet_animate_lambda_{}.gif'.format(l))
+    return
 
 if __name__=='__main__':
-    matlab_file_reduction("../exp_data/Exemple_1.mat",tol=1e-16, show_plot=True,
-                          plot_name="../output/exp_data/matlab_pradere.pdf")
+    path_data="../exp_data/Exemple_1.mat"
+    # matlab_file_reduction("../exp_data/Exemple_1.mat",tol=1e-16, show_plot=True,
+    #                       plot_name="../output/exp_data/matlab_pradere.pdf")
+    tensor=matlab_file_to_tensor(path_data)
+    # matlab_data_view(tensor,0,0,show_plot=False,file_name="../output/exp_data/droplet_view_test.png")
+    freq=[0,20,21,50]
+    t_min=0
+    t_max=29
+    matlab_data_view_animate(tensor,freq,t_min,t_max)

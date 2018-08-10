@@ -5,6 +5,27 @@ Function that might be useful and do not belong to any particular family
 """
 import numpy as np
 
+
+def quick_gif(im_list,path,output_name):
+    """
+        This is a quick and dirty way to create a gif from a list of images
+
+        im_list         a list of images names
+        path            input/output directory
+        output_name     Name of the output
+    """
+    import imageio
+    print("Assembling gif "+path+output_name)
+    k=0
+    with imageio.get_writer(path+output_name, mode='I',duration=0.3) as writer:
+        for filename in im_list:
+            k+=1
+            # print(str((100.*k)/len(im_list))+'%') #print percentage of gif build
+            image = imageio.imread(filename)
+            writer.append_data(image)
+    print(path+output_name+" has been saved")
+    return
+
 def list_transpose(phi):
     # @Diego Overspecialized. What does it work on ?
     # Please move it accordingly. If its used in several context
@@ -56,7 +77,3 @@ if __name__=="__main__":
     F=integration_1dtrap(f,x)
     print(F)
     print(F-1./2)
-
-
-
-  
