@@ -44,6 +44,43 @@ def mode_1D_plot(modes_dict,show=True,plot_name=None):
     plt.close()
     return
 
+def simple_1D_plot(modes,grid,x_label="X",show=True,plot_name=None):
+    """This function plots 1D modes and gives PDF and plot"""
+
+    font = {'family' : 'normal',
+        'size'   : 14}
+
+    plt.rc('font', **font)
+    plt.rc('legend', fontsize=12)
+    linestyle={'linewidth':2,'markersize':6, 'markeredgewidth':2}
+    fig=plt.figure(figsize=(7,6))
+    styles=['r-','b-','g-','k-','c-','m-','r4-','b4-']
+    xlim=[0,0]
+    ylim=[0.1,0.1]
+    k=0
+    plt.xlabel(x_label)
+    plt.ylabel('')
+    plt.grid()
+    print(modes.shape)
+    print(grid.size)
+    for i in range(modes.shape[1]):
+        mode=modes[:,i]
+        ax=fig.add_subplot(111)
+        plt.plot(grid, mode , label="mode {}".format(i+1))
+        # plt.plot(grid, mode , styles[k], label="mode {}".format(i+1))
+        k+=1
+    #saving plot as pdf
+    ax.legend(loc='upper center', bbox_to_anchor=(0.5, 1.05),
+          ncol=4, fancybox=True, shadow=True)
+    # ax.legend(bbox_to_anchor=(1.05, 1), loc=2)
+    # plt.legend()
+    if show:
+        plt.show()
+    if plot_name:
+        fig.savefig(plot_name,bbox_inches='tight')
+    plt.close()
+    return
+
 
 def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pdf",**kwargs):
     """
@@ -110,9 +147,9 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
             "TT_SVD":'k*-',
             "PGD":'mh--',
             "SHO_SVD vectorized":'r+-',
-            "SHO_SVD reshaped":'r*--',
+            "SHO_SVD reshaped":'ro--',
             "TT_SVD vectorized":'k+-',
-            "TT_SVD reshaped":'k*--'}
+            "TT_SVD reshaped":'ko--'}
     fig=plt.figure()
     xmax=0.1
     ylim=[0.1,0.1]
@@ -145,7 +182,7 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     plt.legend()
     if show:
         plt.show()
-    fig.savefig(plot_name)
+    fig.savefig(plot_name, bbox_inches='tight')
     plt.close()
 
 def exp_data_decomp_plotter(approx_data, show=True, plot_name="",**kwargs):

@@ -23,6 +23,8 @@ from core.TT_SVD import TT_SVD
 
 from analysis.plot import benchmark_plotter
 
+from utils.IO import load, save
+
 
 def LDC_multi_Re_decomp(path,Re_list,layouts=['reshaped','vectorized'],
                         tol=1e-6,show_plot=True,plot_name=""):
@@ -62,6 +64,8 @@ def LDC_multi_Re_decomp(path,Re_list,layouts=['reshaped','vectorized'],
         benchmark_plotter(approx_data, show_plot, plot_name=plot_name,
                         title="LDC data decomposition error")
 
+    save(T_approx,"../output/LDC_compr_data/compressions_dict.dat")
+    save(approx_data,"../output/LDC_compr_data/approx_data_dict.dat")
 
 
 def read_ldc_data_multiple_Re(path, Re_list):
@@ -146,6 +150,43 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.colors import LogNorm
 import numpy as np
+from analysis.plot import simple_1D_plot
+from core.Tucker import truncate
+from core.tensor_algebra import norm
+def spatial_plotting_for_manuscript(T_full_path, T_approx_path, plot_path):
+    """ Spatial plotting wrapper script for manuscript ! """
+    T_full=load(T_full_path)
+    T_approx=load(T_approx_path)
+    print(T_full.shape)
+    T_HOSVD_vect=T_approx["SHO_SVD vectorized"]
+    phi_compr=T_HOSVD_vect.u[0].T
+    phi_compr=phi_compr[:min(phi_compr.shape[0],10),:]
+    print('phi_compr shape:',phi_compr.shape)
+    # plot_spatial_modes(phi_compr,path=plot_path,output_name='spatial_modes_plot.pdf',
+    #                    n_contour=51)
+    simple_1D_plot(T_HOSVD_vect.u[2], np.arange(10000,10120,20), x_label="Re",
+                   show=False, plot_name=plot_path+"Re_modes_plot.pdf")
+    simple_1D_plot(T_HOSVD_vect.u[1][:,:5], np.arange(1900,1940,.20), x_label="t",
+                   show=True, plot_name=plot_path+"t_modes_plot.pdf")
+    #
+    # plot_vorticity_exponential_contour(T_full[:,6:10,0],path=plot_path,
+    #                                    output_name='Original_vorticity_contour_plot.pdf'
+    #                                    ,n_contour=21,centered=False,t='1900')
+    # r=(10,10,3)
+    # T_trunc=truncate(T_HOSVD_vect,r).reconstruction()
+    # print("Rec error with r={} : {}".format(r, norm(T_trunc-T_full)/norm(T_full)))
+    # plot_vorticity_exponential_contour(T_trunc[:,6:10,0],path=plot_path,
+    #                                    output_name='reconstructed_vorticity_contour_plot.pdf'
+    #                                    ,n_contour=21,centered=False,t='1900')
+    #
+    # plot_vorticity_exponential_contour(T_trunc[:,6:10,0]-T_full[:,6:10,0],path=plot_path,
+    #                                    output_name='diff_vorticity_contour_plot.pdf'
+    #                                    ,n_contour=21,centered=False,t='1900')
+
+    # print(np.floor(np.log10(np.abs(T_HOSVD_vect.core))))
+
+    # for i in range(10):
+
 
 def plot_spatial_interp(phi_exact,phi_interp,target_Re,nb_modes=1,path='screen',
                         PLOT_PHI=True,PLOT_ERR=True):
@@ -283,13 +324,14 @@ def plot_spatial_interp(phi_exact,phi_interp,target_Re,nb_modes=1,path='screen',
             cbar.ax.set_ylabel('verbosity coefficient')
             cbar.add_lines(CS4)
 
-            plt.savefig(pp,format='pdf')
+            plt.savefig(pp,format='pdf', bbox_inches='tight')
             plt.close()
             print('visu of spatial mode '+str(i)+' complete')
 
         pp.close()
 
-def plot_spatial_modes(phi,path='screen',output_name='phi_range.pdf',min_contour=-0.3, max_contour=0.3,n_contour=51):
+def plot_spatial_modes(phi,path='screen',output_name='phi_range.pdf',
+                       min_contour=-0.3, max_contour=0.3,n_contour=51):
     """ This function returns various plots of phi, phi_exact, error...
 
         PARAMETERS:
@@ -316,7 +358,7 @@ def plot_spatial_modes(phi,path='screen',output_name='phi_range.pdf',min_contour
     origin='lower'
     lev=np.linspace(min_contour,max_contour,n_contour)
 
-    for i in range(2,nb_modes):
+    for i in range(0,nb_modes):
         CS = plt.contourf(X, Y, phi[i,:].reshape([nx,ny]),
                           levels=lev,
                           cmap=plt.cm.seismic,
@@ -333,11 +375,11 @@ def plot_spatial_modes(phi,path='screen',output_name='phi_range.pdf',min_contour
 
         cbar = plt.colorbar(CS)
         cbar.add_lines(CS2)
-        plt.show()
+        # plt.show()
         if path=='screen':
             plt.figure()
         else:
-            plt.savefig(pp,format='pdf')
+            plt.savefig(pp,format='pdf', bbox_inches='tight')
             plt.close()
 
         print('visu of spatial mode '+str(i)+' complete')
@@ -359,8 +401,6 @@ def plot_vorticity_exponential_contour(w,path='screen',output_name='vorticity_co
         returns
             void
     """
-    print(np.shape(w))
-
     plt.rc('text', usetex=True)
     plt.rc('font', family='serif')
 
@@ -370,7 +410,7 @@ def plot_vorticity_exponential_contour(w,path='screen',output_name='vorticity_co
     y=np.linspace(0,1,ny)
     X, Y = np.meshgrid(x, y)
     if path!='screen':
-        pp = PdfPages(path+output_name)
+        # pp = PdfPages(path+output_name)
         fig=plt.figure(figsize=(7,5))
     else:
         fig=plt.figure(figsize=(8,6))
@@ -400,8 +440,8 @@ def plot_vorticity_exponential_contour(w,path='screen',output_name='vorticity_co
     tick=np.append(tick,[w_max])
  #   lev=np.linspace(0,1,10)
     CS = plt.contourf(X,Y, w[:,3].reshape([nx,ny]),
-                      levels=lev,
-                      cmap=plt.cm.jet,spacing='proportional',
+                      levels=lev, cmap=plt.cm.jet,
+                      spacing='proportional',
                       origin=origin,boundaries=tick,
                       extend='both',ticks=tick)
 
@@ -409,12 +449,12 @@ def plot_vorticity_exponential_contour(w,path='screen',output_name='vorticity_co
                       colors='k',spacing='proportional',
                       origin=origin,boundaries=tick,
                       extend='both',ticks=tick)
-    if centered:
-        plt.title('Vorticity contour, t='+t)#+' \n (w_center={:.3f}'.format(w_center)+
-#                  ', min='+str(int(w_min))+', max='+str(int(w_max))+')')
-    else:
-        plt.title('Centered vorticity contour, t='+t)#+' \n ('+
-                  #', min='+str(int(w_min))+', max='+str(int(w_max))+')')
+#     if centered:
+#         plt.title('Vorticity contour, t='+t)#+' \n (w_center={:.3f}'.format(w_center)+
+# #                  ', min='+str(int(w_min))+', max='+str(int(w_max))+')')
+#     else:
+#         plt.title('Centered vorticity contour, t='+t)#+' \n ('+
+#                   #', min='+str(int(w_min))+', max='+str(int(w_max))+')')
 
     plt.xlabel('X')
     plt.ylabel('Y',rotation=0)
@@ -444,15 +484,16 @@ def plot_vorticity_exponential_contour(w,path='screen',output_name='vorticity_co
             arrowprops=dict( color='red')
             )
 #    cbar.ax.
-    plt.show()
+    # plt.show()
     if path!='screen':
-        plt.savefig(pp,format='pdf')
+        plt.savefig(path+output_name,bbox_inches='tight')
         plt.close()
 
     print('visu of vorticity field complete')
 
-    if path!='screen':
-        pp.close()
+    # if path!='screen':
+    #     pp.close()
+
 
     return
 
@@ -469,8 +510,19 @@ if __name__ == "__main__":
     # path='/home/lestandi/Documents/data_ldc/grid_257x257/LDC_10000/'
     # w, t_grid, nx, nt=read_ldc_data(path)
     # print(w.shape)
-    Re_list=[10000,10020,10040,10060,10080,10100]
+    # Re_list=[10000,10020,10040,10060,10080,10100]
+    # path='/home/lestandi/Documents/data_ldc/grid_257x257/'
+    # layouts=["vectorized",'reshaped']
+    # LDC_multi_Re_decomp(path,Re_list,layouts,tol=1e-6,show_plot=True,
+    #                     plot_name="../output/LDC_compr_data/decomp_error_graph.pdf")
     path='/home/lestandi/Documents/data_ldc/grid_257x257/'
-    layouts=["vectorized",'reshaped']
-    LDC_multi_Re_decomp(path,Re_list,layouts,tol=1e-16,show_plot=True,
-                        plot_name="../output/LDC_compr_data/decomp_error_graph.pdf")
+    Re_list=[10000,10020,10040,10060,10080,10100]
+    data_file='LDC_binary_Re_{}.dat'.format(Re_list)
+    decomp_path="../output/LDC_compr_data/compressions_dict.dat"
+    data_path=path+data_file
+    plot_path="../output/LDC_compr_data/"
+    benchmark_plotter(approx_data=load("../output/LDC_compr_data/approx_data_dict.dat"),
+                      show_plot=True,
+                      plot_name="../output/LDC_compr_data/decomp_error_graph.pdf",
+                      title="LDC data decomposition error")
+    spatial_plotting_for_manuscript(data_path,decomp_path, plot_path)

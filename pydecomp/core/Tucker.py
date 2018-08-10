@@ -145,7 +145,6 @@ def tucker_error_data(T_tucker, T_full,int_rules=None):
     norm_full=norm(T_full,int_rules)
     r=np.zeros(d)
     for i in rank_sampling:
-        print(r)
         r=np.minimum(rank,i)
         T_trunc=truncate(T_tucker,r)
         comp_rate.append(T_trunc.memory_eval()/F_volume)

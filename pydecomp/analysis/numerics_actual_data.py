@@ -39,22 +39,32 @@ def test_notus_wave_bp(cases):
 
 def test_LDC_data():
     """ Decomposition of Tapan LDC data: a lot is still to be done ! """
+
     Re_list=[10000,10020,10040,10060,10080,10100]
     path='/home/lestandi/Documents/data_ldc/grid_257x257/'
     layouts=["vectorized",'reshaped']
     LDC_multi_Re_decomp(path,Re_list,layouts,tol=1e-16,show_plot=True,
                         plot_name="../output/LDC_compr_data/decomp_error_graph.pdf")
+
+    data_file='LDC_binary_Re_{}.dat'.format(Re_list)
+    decomp_path="../output/LDC_compr_data/compressions_dict.dat"
+    data_path=path+data_file
+    plot_path="../output/LDC_compr_data/"
+    spatial_plotting_for_manuscript(T_full_path, T_approx_path, plot_path)
+
     return
 
 def test_matlab_data():
     """ Decomposition of C. Pradère data: Adapt Diego's existing work ! """
     data_path="../exp_data/Exemple_1.mat"
     plot_name="../output/exp_data/matlab_pradere.pdf"
-    matlab_file_reduction(data_path,tol=1e-6, show_plot=True,
+    matlab_file_reduction(data_path,tol=1e-8, show_plot=True,
                           plot_name=plot_name)
     return
 
 if __name__=="__main__":
-    cases=['variables_as_dim','distinct_decomp']
-    cases=[cases[1]]
-    test_notus_wave_bp(cases)
+    # cases=['variables_as_dim','distinct_decomp']
+    # cases=[cases[1]]
+    # test_notus_wave_bp(cases)
+
+    test_LDC_data()
