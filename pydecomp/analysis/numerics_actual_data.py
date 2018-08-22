@@ -26,7 +26,7 @@ def test_notus_wave_bp(cases):
     out_dir='../output/compressed_notus_wave/'
 
     if 'distinct_decomp' in cases:
-        bp_compressed_out=bp_compressor(var_list,data_dir, tol=1e-16,rank=-1 )
+        bp_compressed_out=bp_compressor(var_list,data_dir, tol=1e-2,rank=-1 )
         Analize_compressed_bp(bp_compressed_out,show_plot=True, plot_name=out_dir+"ST_HOSVD_wave_plot.pdf")
 
     if 'variables_as_dim' in cases:
@@ -43,7 +43,7 @@ def test_LDC_data():
     Re_list=[10000,10020,10040,10060,10080,10100]
     path='/home/lestandi/Documents/data_ldc/grid_257x257/'
     layouts=["vectorized",'reshaped']
-    LDC_multi_Re_decomp(path,Re_list,layouts,tol=1e-16,show_plot=True,
+    LDC_multi_Re_decomp(path,Re_list,layouts,tol=1e-6,show_plot=True,
                         plot_name="../output/LDC_compr_data/decomp_error_graph.pdf")
 
     data_file='LDC_binary_Re_{}.dat'.format(Re_list)
@@ -63,8 +63,8 @@ def test_matlab_data():
     return
 
 if __name__=="__main__":
-    # cases=['variables_as_dim','distinct_decomp']
-    # cases=[cases[1]]
-    # test_notus_wave_bp(cases)
+    cases=['variables_as_dim','distinct_decomp']
+    cases=[cases[1]]
+    test_notus_wave_bp(cases)
 
-    test_LDC_data()
+    # test_LDC_data()

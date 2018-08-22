@@ -16,6 +16,9 @@ import core.MassMatrices as mm
 import numpy as np
 from interfaces.output_vtk import VTK_save_space_time_field
 
+from utils.IO import save
+from analysis.plot import simple_1D_plot
+
 def bp_compressor(variables,data_dir, Sim_list=-1, tol=1e-4,rank=-1):
     """
     In this code we are going to compress the variable data
@@ -47,7 +50,7 @@ def bp_compressor(variables,data_dir, Sim_list=-1, tol=1e-4,rank=-1):
         vfield=field[v]
         print("field shape('"+v+"') :\t", vfield.shape)
         Reduced[v]=STHOSVD(vfield,epsilon=tol,rank=rank)
-
+    save(Reduced,'../output/compressed_notus_wave/decomp.dat')
     return field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights
 
 
@@ -60,15 +63,28 @@ def Analize_compressed_bp(bp_compressed_out, show_plot=True, plot_name=""):
     if show_plot or (plot_name!=""):
         for var in Reduced:
             tucker_decomp=Reduced[var]
+            print(var,"decomp rank",tucker_decomp.core.shape)
             F=field[var]
-            approx_data[var]=np.stack(tucker_error_data( tucker_decomp,F))
-            exp_data_decomp_plotter(approx_data, show_plot, plot_name=plot_name,
-                              title="Wave simulation ST-HOSVD decomposition")
+            simple_1D_plot(tucker_decomp.u[0][:,:3], np.linspace(9,11,3),
+                        x_label="Wave height", show=False,
+                        plot_name="../output/compressed_notus_wave/"+var+"_height_modes_plot.pdf")
+            simple_1D_plot(tucker_decomp.u[1][:,:5], np.linspace(0,10000,201),
+                        x_label="time", show=False,
+                        plot_name="../output/compressed_notus_wave/"+var+"_time_modes_plot.pdf")
+            simple_1D_plot(tucker_decomp.u[3][:,:5], np.linspace(0,0.6,256),
+                        x_label="X", show=False,
+                        plot_name="../output/compressed_notus_wave/"+var+"_X_modes_plot.pdf")
+            simple_1D_plot(tucker_decomp.u[2][:,:5], np.linspace(0,0.6,256),
+                        x_label="Y", show=False,
+                        plot_name="../output/compressed_notus_wave/"+var+"_Y_modes_plot.pdf")
+            # approx_data[var]=np.stack(tucker_error_data( tucker_decomp,F))
+            # exp_data_decomp_plotter(approx_data, show_plot, plot_name=plot_name,
+            #                   title="Wave simulation ST-HOSVD decomposition")
             new_shape=(F.shape[0],F.shape[1],-1)
             field[var]=F.reshape(new_shape)
             Reduced[var]=np.reshape(tucker_decomp.reconstruction(),new_shape)
-    bp_comp_to_vtk(Reduced,X,Y,time_list,heights,
-                   full_fields=field,base_name="notus_bp_comp")
+    # bp_comp_to_vtk(Reduced,X,Y,time_list,heights,
+    #                full_fields=field,base_name="notus_bp_comp")
 
 
 def bp_comp_to_vtk(fields_approx,X,Y,time_list, param_list,
