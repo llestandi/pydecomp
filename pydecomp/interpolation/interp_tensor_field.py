@@ -9,9 +9,54 @@ This file encompasse the necessary work for multidimensional interpolation.
 """
 # -*- coding: utf-8 -*-
 import numpy as np
-from scipy.interpolate import lagrange
+from scipy.interpolate import lagrange, interp1d
 import time
 
+def interpolate_modes(phi,xi,x_t,method):
+    """
+        This function returns the lagrange interpolation of each column (mode) of X at s_target.
+        typically phi_i is known at xi points and we want its value at x_t with
+        given method
+
+        Parameters :
+            phi       A 2D array (m,r) where columns are different modes
+                      and with values at points xi
+            xi        A set of coordinates (1D array (m,))
+            x_t A target coordinate
+
+        Return:
+            phi_t     A 1D array (N,) containing modes interpolation at target coordinate
+    """
+    r=phi.shape[1]
+    for i in range(r):
+        phi_i_interp= interpolate_with_method(phi[:,0],xi,x_t,method)
+        phi_t=
+
+    return phi_t
+
+def interpolate_with_method(phi,xi,x_t,method):
+    """
+        This function returns the lagrange interpolation of each column (mode) of X at s_target.
+        typically phi_i is known at xi points and we want its value at x_t with
+        given method
+
+        Parameters :
+            phi       A 1D array (m) with values at points xi
+            xi        A set of coordinates (1D array (m,))
+            x_t       A target coordinate
+
+        Return:
+            phi_t     Interpolated value at target coordinate
+    """
+    interp1d_methods=['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic', 'previous', 'next']
+    if method=='lagrange':
+        raise NotImplementedError(method+" is not an available interpolation method")
+    elif method in interp1d_methods:
+        phi_i_interp= interp1d(phi[:,0],xi,method)(x_t)
+    else:
+        raise NotImplementedError(method+" is not an available interpolation method")
+
+    return phi_t
 def interp_field(Fi, Si, s_target):
     """
         This function returns the lagrange interpolation of each line of Fi at s_target.
@@ -73,4 +118,3 @@ if __name__=="__main__":
     int_eval=interp_field(np.reshape(func(X),[nx,1]),X,x_bar)
     print(int_eval)
     print('error'+str(func(x_bar)-int_eval))
-    
