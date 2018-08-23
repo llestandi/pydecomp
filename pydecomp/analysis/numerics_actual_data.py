@@ -8,7 +8,7 @@ Created on Wed Aug 7 10:38:16 2018
 This module encompasses function for decomposition of real data.
 """
 from interfaces.bp_compressor import *
-from interfaces.tapan_LDC_decomp import LDC_multi_Re_decomp
+from interfaces.tapan_LDC_decomp import LDC_multi_Re_decomp, spatial_plotting_for_manuscript
 from interfaces.matlab_reader import matlab_file_reduction
 
 def test_notus_wave_bp(cases):
@@ -43,14 +43,14 @@ def test_LDC_data():
     Re_list=[10000,10020,10040,10060,10080,10100]
     path='/home/lestandi/Documents/data_ldc/grid_257x257/'
     layouts=["vectorized",'reshaped']
-    LDC_multi_Re_decomp(path,Re_list,layouts,tol=1e-6,show_plot=True,
-                        plot_name="../output/LDC_compr_data/decomp_error_graph.pdf")
+    # LDC_multi_Re_decomp(path,Re_list,layouts,tol=1e-6,show_plot=True,
+    #                     plot_name="../output/LDC_compr_data/decomp_error_graph.pdf")
 
     data_file='LDC_binary_Re_{}.dat'.format(Re_list)
     decomp_path="../output/LDC_compr_data/compressions_dict.dat"
     data_path=path+data_file
     plot_path="../output/LDC_compr_data/"
-    spatial_plotting_for_manuscript(T_full_path, T_approx_path, plot_path)
+    spatial_plotting_for_manuscript(data_path, decomp_path, plot_path)
 
     return
 
@@ -65,6 +65,6 @@ def test_matlab_data():
 if __name__=="__main__":
     cases=['variables_as_dim','distinct_decomp']
     cases=[cases[1]]
-    test_notus_wave_bp(cases)
+    # test_notus_wave_bp(cases)
 
-    # test_LDC_data()
+    test_LDC_data()

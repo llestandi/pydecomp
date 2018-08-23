@@ -164,25 +164,29 @@ def spatial_plotting_for_manuscript(T_full_path, T_approx_path, plot_path):
     print('phi_compr shape:',phi_compr.shape)
     # plot_spatial_modes(phi_compr,path=plot_path,output_name='spatial_modes_plot.pdf',
     #                    n_contour=51)
-    simple_1D_plot(T_HOSVD_vect.u[2], np.arange(10000,10120,20), x_label="Re",
+    simple_1D_plot(T_HOSVD_vect.u[2], np.asarray([10000,10020,10040,10060,10080,10100]), x_label="Re",
                    show=False, plot_name=plot_path+"Re_modes_plot.pdf")
     simple_1D_plot(T_HOSVD_vect.u[1][:,:5], np.arange(1900,1940,.20), x_label="t",
-                   show=True, plot_name=plot_path+"t_modes_plot.pdf")
-    #
+                   show=False, plot_name=plot_path+"t_modes_plot.pdf")
+
     # plot_vorticity_exponential_contour(T_full[:,6:10,0],path=plot_path,
     #                                    output_name='Original_vorticity_contour_plot.pdf'
     #                                    ,n_contour=21,centered=False,t='1900')
-    # r=(10,10,3)
-    # T_trunc=truncate(T_HOSVD_vect,r).reconstruction()
-    # print("Rec error with r={} : {}".format(r, norm(T_trunc-T_full)/norm(T_full)))
+    r=(10,10,3)
+    T_trunc=truncate(T_HOSVD_vect,r).reconstruction()
+    print("Rec error with r={} : {}".format(r, norm(T_trunc-T_full)/norm(T_full)))
     # plot_vorticity_exponential_contour(T_trunc[:,6:10,0],path=plot_path,
     #                                    output_name='reconstructed_vorticity_contour_plot.pdf'
     #                                    ,n_contour=21,centered=False,t='1900')
-    #
+
     # plot_vorticity_exponential_contour(T_trunc[:,6:10,0]-T_full[:,6:10,0],path=plot_path,
     #                                    output_name='diff_vorticity_contour_plot.pdf'
     #                                    ,n_contour=21,centered=False,t='1900')
-
+    diff= np.reshape(T_trunc[:,6,0]-T_full[:,6,0],(1,257*257))
+    amp=min(np.abs(diff.max()),np.abs(diff.min()))
+    plot_spatial_modes(diff,path=plot_path,
+                        output_name='diff_vorticity_contour_plot.pdf',
+                        max_contour=amp,min_contour=-amp,n_contour=31)
     # print(np.floor(np.log10(np.abs(T_HOSVD_vect.core))))
 
     # for i in range(10):
@@ -354,7 +358,7 @@ def plot_spatial_modes(phi,path='screen',output_name='phi_range.pdf',
     nb_modes=np.size(phi[:,0])
     if path!='screen':
         pp = PdfPages(path+output_name)
-        plt.figure(figsize=(7,9))
+        plt.figure(figsize=(9,7))
     origin='lower'
     lev=np.linspace(min_contour,max_contour,n_contour)
 
@@ -369,7 +373,8 @@ def plot_spatial_modes(phi,path='screen',output_name='phi_range.pdf',
                           origin=origin,
                           extend='both')
 
-        plt.title('Vorticity contour mode')
+        plt.title(' Vorticity difference contour (min={:.2f},max={:.2f})'.format(
+                phi[i,:].min(),phi[i,:].max()))
         plt.xlabel('X')
         plt.ylabel('Y')
 
@@ -510,13 +515,13 @@ if __name__ == "__main__":
     # path='/home/lestandi/Documents/data_ldc/grid_257x257/LDC_10000/'
     # w, t_grid, nx, nt=read_ldc_data(path)
     # print(w.shape)
-    # Re_list=[10000,10020,10040,10060,10080,10100]
+    # Re_list=[10000,10020,10060,10080,10100]
     # path='/home/lestandi/Documents/data_ldc/grid_257x257/'
-    # layouts=["vectorized",'reshaped']
-    # LDC_multi_Re_decomp(path,Re_list,layouts,tol=1e-6,show_plot=True,
-    #                     plot_name="../output/LDC_compr_data/decomp_error_graph.pdf")
+    layouts=["vectorized",'reshaped']
     path='/home/lestandi/Documents/data_ldc/grid_257x257/'
     Re_list=[10000,10020,10040,10060,10080,10100]
+    # LDC_multi_Re_decomp(path,Re_list,layouts,tol=1e-6,show_plot=True,
+    #                     plot_name="../output/LDC_compr_data/decomp_error_graph.pdf")
     data_file='LDC_binary_Re_{}.dat'.format(Re_list)
     decomp_path="../output/LDC_compr_data/compressions_dict.dat"
     data_path=path+data_file
