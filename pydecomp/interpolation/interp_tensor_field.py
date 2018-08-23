@@ -28,11 +28,12 @@ def interpolate_modes(phi,xi,x_t,method):
             phi_t     A 1D array (N,) containing modes interpolation at target coordinate
     """
     r=phi.shape[1]
+    phi_t=[]
     for i in range(r):
-        phi_i_interp= interpolate_with_method(phi[:,0],xi,x_t,method)
-        phi_t=
+        phi_i_interp= interpolate_with_method(phi[:,i],xi,x_t,method)
+        phi_t.append(phi_i_interp)
 
-    return phi_t
+    return np.asarray(phi_t)
 
 def interpolate_with_method(phi,xi,x_t,method):
     """
@@ -50,13 +51,14 @@ def interpolate_with_method(phi,xi,x_t,method):
     """
     interp1d_methods=['linear', 'nearest', 'zero', 'slinear', 'quadratic', 'cubic', 'previous', 'next']
     if method=='lagrange':
-        raise NotImplementedError(method+" is not an available interpolation method")
+        phi_t= lagrange(xi,phi)(x_t)
     elif method in interp1d_methods:
-        phi_i_interp= interp1d(phi[:,0],xi,method)(x_t)
+        phi_t= interp1d(xi,phi,method)(x_t)
     else:
         raise NotImplementedError(method+" is not an available interpolation method")
 
     return phi_t
+
 def interp_field(Fi, Si, s_target):
     """
         This function returns the lagrange interpolation of each line of Fi at s_target.
@@ -101,20 +103,21 @@ def poly_lagrange_at_target(X, x_bar):
     return l_i
 
 if __name__=="__main__":
-    nx=4
-    ny=5000000
+    nx=5
+    ny=2
     X=np.linspace(0,1,nx)
-    Y=np.linspace(0,1,ny)
-    x_bar=0.3
+    print(X)
+    x_t=0.35
     def func(x):
         return pow(x,3) #  np.exp(x)+np.log(x)
-
-    l=poly_lagrange_at_target(X,x_bar)
-    int_eval=sum([ l[i]*func(X[i]) for i in range(nx)])
-    print(str(func(x_bar)))
-    print(str(int_eval))
-    print('error'+str(func(x_bar)-int_eval))
-    #Fi=np.ones(nx,)
-    int_eval=interp_field(np.reshape(func(X),[nx,1]),X,x_bar)
-    print(int_eval)
-    print('error'+str(func(x_bar)-int_eval))
+    def f2(x):
+        return pow(x,1)+1
+    print(str(func(x_t)))
+    F=np.zeros((nx,ny))
+    F[:,0]=func(X)
+    F[:,1]=f2(X)
+    print(F)
+    f_t=interpolate_modes(F,X,x_t,method="spline")
+    print("f(x_t={})={}".format(x_t,f_t))
+    print('error'+str(func(x_t)-f_t[0]))
+    print('error'+str(f2(x_t)-f_t[1]))
