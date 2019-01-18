@@ -12,7 +12,7 @@ from analysis.benchmark_multivariable import testf
 
 import utils.tensor_creator as tensor_creator
 import core.tensor_algebra as ta
-import utils.MassMatrices as mm
+import core.MassMatrices as mm
 from core.Canonical import CanonicalTensor, canonical_error_data
 from core.cls_POD import cls_POD, init_POD_class_from_decomp, pod_error_data
 from core.PGD import PGD

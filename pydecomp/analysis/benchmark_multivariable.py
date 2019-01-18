@@ -11,7 +11,7 @@ import time
 
 import utils.tensor_creator as tensor_creator
 import core.tensor_algebra as ta
-import utils.MassMatrices as mm
+import core.MassMatrices as mm
 from core.PGD import PGD
 from core.tucker_decomp import HOPOD, SHOPOD, THOSVD, STHOSVD
 from core.TT_SVD import TT_SVD
@@ -20,7 +20,7 @@ from core.Canonical import CanonicalTensor, canonical_error_data
 from core.Tucker import TuckerTensor, tucker_error_data
 from core.TensorTrain import TensorTrain, error_TT_data
 
-from plot import benchmark_plotter
+from analysis.plot import benchmark_plotter
 
 def benchmark_multivariable(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,
@@ -370,9 +370,11 @@ def testf(test_function, shape, dim, domain ):
 
 
 if __name__ == '__main__':
-    decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
-    solver=["trapezes","trapezes","trapezes","SVD",'trapezes']
-    benchmark_multivariable(decomp_methods, solver ,shape=[32,32,32,32],
-                            test_function=2, plot=True,output_decomp='',
+    decomp_methods=["PGD"]
+    solver=["trapezes"]
+    # decomp_methods=["RPOD","HO_POD","SHO_POD","TT_SVD","PGD"]
+    # solver=["trapezes","trapezes","trapezes","SVD",'trapezes']
+    benchmark_multivariable(decomp_methods, solver ,shape=[32,32,32],
+                            test_function=1, plot=True,output_decomp='',
                             plot_name='output/approx_benchmark.pdf',tol=1e-16)
                             # plot_name='')
