@@ -1,5 +1,0 @@
-FIX POINT ALGORITHM
--------------------
-.. automodule:: fixepoint
-	:members:
-

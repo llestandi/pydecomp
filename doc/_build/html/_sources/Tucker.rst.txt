@@ -1,6 +1,0 @@
-Tucker Class 
----------------
-
-.. automodule:: Tucker
-    :members:
-
