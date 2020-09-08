@@ -8,6 +8,7 @@ setup(name = 'pydecomp',
       maintainer = 'Lucas Lestandi',
       maintainer_email = 'lucas.lestandi@gmail.com',
       keywords = 'tensor decomposition package Python POD',
+      url="https://git.notus-cfd.org/llestandi/python_decomposition_library"
       classifiers = ['Topic :: Tensor Decomposition'],
       # packages_dir = {'core':'core/', 'utils':'utils/',
       #                 'deprecated':'deprecated/', 'interfaces':'interfaces/',

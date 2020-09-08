@@ -59,8 +59,8 @@ class cls_POD:
     def __repr__(self):
         repr="Canonical Tensor represenation"
         repr+="\n ------------------------------"
-        repr+="\n N ="+str(self.N)
-        repr+="\n nt="+str(self.nt)
+        # repr+="\n N ="+str(self.N)
+        # repr+="\n nt="+str(self.nt)
         repr+="\n Space dim ="+str(self.dSpace)
         repr+="\n Rank ="+str(self._rank)
         repr+="\n ------------------------------"
