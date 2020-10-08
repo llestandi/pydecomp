@@ -14,7 +14,7 @@ import math
 import core.TensorTrain as TT
 from core.TT_SVD import TT_SVD
 
-class QuanticsTT:
+class QuanticsTensor:
     """
     **Quantics Tensor Train Type Format**
     **Attributes**
@@ -69,7 +69,7 @@ class QuanticsTT:
 
 def approx_with_QTT_SVD(A,q,tol=1e-6):
     """ Take any ndarray A and approxinates it with quantic q QTT SVD, returns approximation"""
-    qA=QuanticsTT(A)
+    qA=QuanticsTensor(A)
     qA.reshape_to_q(q)
 
     qA.applyTTSVD(eps=tol)
@@ -80,7 +80,7 @@ def run_test(d=3,N=64,q=2):
     from analysis.plot import benchmark_plotter
 
     A=np.random.rand(N,N,N)
-    approx_with_QTT_SVD(A,q)
+    qA=approx_with_QTT_SVD(A,q)
     print(qA)
     benchmark_plotter({"QTT_SVD":np.stack(qA.approx_error)})
     return
