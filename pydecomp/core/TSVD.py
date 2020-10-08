@@ -41,6 +41,22 @@ def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
     elif solver=='EVD':
         u,s,v = SVD_by_EVD(F,tol=epsilon,rank=rank)
 
+    elif solver=='PRIMME':
+        print("Selected PRIMME_SVDS solver. This solver is iterative and best\
+               suited for sparse tall skinny matrices. High accuracy requirement\
+               may lead to intractable CPU times.")
+        try :
+            import primme
+        except:
+            print("An error occured importing prime. please make sure the package\
+                  is installed. \n \
+                  # Install a pip package in the current Jupyter kernel\
+                  import sys\
+                  !{sys.executable} -m pip install primme")
+        svecs_left, svals, svecs_right =  primme.svds(F, rank, which='LM', tol=epsilon)
+        u=svecs_left
+        s=svals
+        v=svecs_right.T
     return u,s,v
 
 

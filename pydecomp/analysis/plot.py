@@ -145,6 +145,7 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
             "RSVD":'b*-',
             "TT_POD":"k+-",
             "TT_SVD":'k*-',
+            "QTT_SVD":'k*-',
             "PGD":'mh--',
             "SHO_SVD vectorized":'r+-',
             "SHO_SVD reshaped":'ro--',

@@ -42,7 +42,7 @@ def TT_SVD(F, eps=1e-8, rank=-1, MM=None):
         is_first=True
 
     for i in range(dim-1):
-        Cshape=(r[i]*tshape[i],C.size/(r[i]*tshape[i]))
+        Cshape=(r[i]*tshape[i],C.size//(r[i]*tshape[i]))
         C=np.reshape(C,Cshape)
         if not MM:
             u,sigma,v=TSVD(C,epsilon=eps, rank=rank, solver='EVD')
