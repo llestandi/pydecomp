@@ -66,17 +66,22 @@ class QuanticsTensor:
         self.approx_error=TT.error_TT_data_complete(self.approx_data,self.data, M)
         return
 
-    def eval_approx_error(self,M=None):
-        self.approx_error=TT.error_TT_data(self.approx_data,self.data, M)
+    def eval_approx_error(self,M=None,Norm="L2"):
+        self.approx_error=TT.error_TT_data(self.approx_data,self.data, M, Norm)
         return
 
 
-def approx_with_QTT_SVD(A,q,tol=1e-6):
+def QTT_SVD(A,q,tol=1e-6):
     """ Take any ndarray A and approxinates it with quantic q QTT SVD, returns approximation"""
     qA=QuanticsTensor(A)
     qA.reshape_to_q(q)
 
     qA.applyTTSVD(eps=tol)
+    return qA
+
+def approx_with_QTT_SVD(A,q,tol=1e-6):
+    """ Take any ndarray A and approxinates it with quantic q QTT SVD, returns approximation and it's metrics"""
+    qA=QTT_SVD(A,q,tol=1e-6)
     qA.eval_approx_error_complete()
     return qA
 

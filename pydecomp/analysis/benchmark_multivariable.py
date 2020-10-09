@@ -19,16 +19,15 @@ from core.RPOD import rpod, RecursiveTensor, plot_rpod_approx,rpod_error_data
 from core.Canonical import CanonicalTensor, canonical_error_data
 from core.Tucker import TuckerTensor, tucker_error_data
 from core.TensorTrain import TensorTrain, error_TT_data
+from core.QuanticsTT import QuanticsTensor, QTT_SVD
 
 from analysis.plot import benchmark_plotter
 
 def benchmark_multivariable(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,
                               output_decomp=[],
-                              plot_name='output/approx_benchmark', tol=1e-5):
-
-
-
+                              plot_name='output/approx_benchmark', tol=1e-5,
+                              which_norm="L2"):
     """
     This function allows to see how the differents functions in the python
     decomposition library work. Differents equations (1 to 3) are avaible
@@ -104,7 +103,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
     """
     dim=len(shape)
     domain=[0,1]
-    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'SHO_POD','RPOD','TT_SVD']
+    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'QTT_SVD', 'SHO_POD','RPOD','TT_SVD']
     acepted_integration_methods=['trapezes','SVD']
     number_plot=0
     approx_data={}
@@ -236,6 +235,8 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=tol)
         elif reduction_method=='TT_SVD':
             Result=TT_SVD(F, tol)
+        elif reduction_method=='QTT_SVD':
+            Result=QTT_SVD(F,2,tol=tol)
         print("{} decompostion time: {:.2f} s".format(reduction_method,time.time()-t))
 
         if plot:
@@ -246,7 +247,11 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             elif type(Result)==CanonicalTensor:
                 approx_data[reduction_method]=np.stack(canonical_error_data(Result,F))
             elif type(Result)==TensorTrain:
-                approx_data[reduction_method]=np.stack(error_TT_data(Result,F))
+                approx_data[reduction_method]=np.stack(error_TT_data(Result,F,Norm=which_norm))
+            elif type(Result)==QuanticsTensor:
+                Result.eval_approx_error(Norm=which_norm)
+                approx_data[reduction_method]=np.stack(Result.approx_error)
+
                 # plot_error_canonical(Result,F, number_plot,label_line)
                 # raise NotImplementedError("Canonical plot V2 is not implemented yet")
         try:

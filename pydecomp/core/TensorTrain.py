@@ -125,7 +125,7 @@ def TT_init_from_decomp(G):
     TT.fill(G)
     return TT
 
-def error_TT_data(T_tt,T_full, M=None):
+def error_TT_data(T_tt,T_full, M=None,Norm="L2"):
     """
     @author : Lucas 27/06/18
     Builds a set of approximation error and associated compression rate for a
@@ -153,7 +153,7 @@ def error_TT_data(T_tt,T_full, M=None):
     maxrank=max(rank)
     error=[]
     comp_rate=[]
-    norm_T=norm(T_full,M)
+    norm_T=norm(T_full,M,Norm)
 
     if maxrank>25:
         rank_sampling=[i for i in np.arange(1,11)] +[15,20,25,30,35,40]\
@@ -171,10 +171,11 @@ def error_TT_data(T_tt,T_full, M=None):
         print(r)
         comp_rate.append(T_tt.mem_eval(r)/F_volume)
         T_approx=T_tt.to_full(r)
-        actual_error=norm(T_full-T_approx, M)/norm_T
+        actual_error=norm(T_full-T_approx, M,Norm)/norm_T
         error.append(actual_error)
 
     return np.asarray(error), np.asarray(comp_rate)
+
 def error_TT_data_complete(T_tt,T_full, M=None):
     """
     @author : Lucas 27/06/18
