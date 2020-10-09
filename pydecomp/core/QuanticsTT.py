@@ -62,6 +62,10 @@ class QuanticsTensor:
         self.approx_data=TT_SVD(self.data, eps, rank, MM)
         return
 
+    def eval_approx_error_complete(self,M=None):
+        self.approx_error=TT.error_TT_data_complete(self.approx_data,self.data, M)
+        return
+
     def eval_approx_error(self,M=None):
         self.approx_error=TT.error_TT_data(self.approx_data,self.data, M)
         return
@@ -73,16 +77,16 @@ def approx_with_QTT_SVD(A,q,tol=1e-6):
     qA.reshape_to_q(q)
 
     qA.applyTTSVD(eps=tol)
-    qA.eval_approx_error()
+    qA.eval_approx_error_complete()
     return qA
 
 def run_test(d=3,N=64,q=2):
-    from analysis.plot import benchmark_plotter
+    from analysis.plot import benchmark_norm_plotter
 
     A=np.random.rand(N,N,N)
     qA=approx_with_QTT_SVD(A,q)
     print(qA)
-    benchmark_plotter({"QTT_SVD":np.stack(qA.approx_error)})
+    benchmark_norm_plotter(qA.approx_error)
     return
 
 if __name__=="__main__":

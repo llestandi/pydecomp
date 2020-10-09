@@ -101,7 +101,9 @@ def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
                 modes_dictX[reduction_method]=Result._U[0][:2,:].T
                 modes_dictY[reduction_method]=Result._U[1][:2,:].T
             elif type(Result)==QuanticsTensor:
-                approx_data[reduction_method]=Result.approx_error[0]
+                approx_data["QTT_L1"]=np.asarray(Result.approx_error[0]["L1"])
+                approx_data["QTT_L2"]=np.asarray(Result.approx_error[0]["L2"])
+                approx_data["QTT_Linf"]=np.asarray(Result.approx_error[0]["Linf"])
                 print(Result.approx_error)
             else:
                 approx=init_POD_class_from_decomp(Result[0],Result[1],Result[2])

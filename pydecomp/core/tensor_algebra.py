@@ -125,11 +125,21 @@ def truncate_modes(Lambda,tol,rank,U):
     U=U[::,:i]
     return Lambda, U
 
-def norm(T,MM=None):
-    if MM:
-        return normL2(T,MM)
+def norm(T,MM=None,type="L2"):
+    if type=="L2":
+        if MM:
+            return normL2(T,MM)
+        else:
+            return np.linalg.norm(T)
+    elif type=="L1":
+        if MM:
+            return normL1(T,MM)
+        else:
+            return np.linalg.norm(np.ravel(T),ord=1)
+    elif type=="Linf":
+        return normLinf(T)
     else:
-        return np.linalg.norm(T)
+        raise TypeError("Wrong type {} give. Must be L1, L2 or Linf".format(type))
 
 def scal_prod_1d(Phi,T,M,i):
     """1D scalar product between Phi (a matrix), T (a tensor) with integration
@@ -176,6 +186,23 @@ def normL2(T,M):
                              the tensor dimension number {} /= {}".format(dim, dim2))
 
     return np.sqrt(scal_prod_full_T_weighted(T,T,M))
+
+def normL1(T,M):
+    """
+    This function returns the norm defined in :math:`L^{1}`\n
+    **Parameters**\n
+    T= ndarray type. Tensor which its norme is going to be evaluated.
+    M= MassMatrices , i.e. integration rules
+    """
+    dim=len(T.shape)
+    dim2=len(M)
+    if dim!=dim2:
+        raise AttributeError("Dimentions of the mass list is not coherent with \
+                             the tensor dimension number {} /= {}".format(dim, dim2))
+    return np.sqrt(scal_prod_full_T_weighted(T,np.ones(T.shape),M))
+
+def normLinf(T):
+    return np.max(np.abs(T))
 
 #------------------------------------------------------------------------------
 if __name__=="__main__":
