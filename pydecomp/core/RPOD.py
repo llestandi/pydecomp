@@ -217,11 +217,11 @@ def rpod_size_rec(tree: RpodTree, cutoff_tol=1e-8):
                 size += child.u.size+ rpod_size_rec(child,cutoff_tol)
     return size
 
-def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8,M=None):
+def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8,M=None,Norm="L2"):
     """Computes error and compression rate with given tolerance"""
     err=[]
     comp_rate=[]
-    norm_T=norm(T_full,M)
+    norm_T=norm(T_full,M,type=Norm)
     tol_space=np.logspace(np.log10(min_tol), np.log10(max_tol))
 
     for tol in tol_space:
@@ -232,12 +232,12 @@ def rpod_error_data(T_rec,T_full,min_tol=1.,max_tol=1e-8,M=None):
             pass
         elif loc_rate==comp_rate[-1]:
             continue
-        err.append(norm(T_rec.to_full(tol)-T_full,M)/norm_T)
+        err.append(norm(T_rec.to_full(tol)-T_full,M,type=Norm)/norm_T)
         comp_rate.append(loc_rate)
     return np.asarray(err), np.asarray(comp_rate)
 
-def plot_rpod_approx(T_rec, T_full, out_file='RPOD_approx_error', min_tol=1., max_tol=1e-8):
-    err,comp_rate=rpod_error_data(T_rec,T_full, min_tol,max_tol)
+def plot_rpod_approx(T_rec, T_full, out_file='RPOD_approx_error', min_tol=1., max_tol=1e-8,Norm="L2"):
+    err,comp_rate=rpod_error_data(T_rec,T_full, min_tol,max_tol,Norm=Norm)
     print(err)
     print(comp_rate)
     color_code='m'

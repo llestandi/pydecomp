@@ -241,11 +241,11 @@ def benchmark_multivariable(list_reduction_method, integration_method,
 
         if plot:
             if type(Result)==TuckerTensor:
-                approx_data[reduction_method]=np.stack(tucker_error_data(Result,F))
+                approx_data[reduction_method]=np.stack(tucker_error_data(Result,F,Norm=which_norm))
             elif type(Result)==RecursiveTensor:
-                approx_data[reduction_method]=np.stack(rpod_error_data(Result,F))
+                approx_data[reduction_method]=np.stack(rpod_error_data(Result,F,Norm=which_norm))
             elif type(Result)==CanonicalTensor:
-                approx_data[reduction_method]=np.stack(canonical_error_data(Result,F))
+                approx_data[reduction_method]=np.stack(canonical_error_data(Result,F,Norm=which_norm))
             elif type(Result)==TensorTrain:
                 approx_data[reduction_method]=np.stack(error_TT_data(Result,F,Norm=which_norm))
             elif type(Result)==QuanticsTensor:
@@ -261,8 +261,8 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             pass
 
     if plot:
-        benchmark_plotter(approx_data, show_plot)
-    return Result
+        benchmark_plotter(approx_data, show_plot, plot_name)
+    return
 
 
 

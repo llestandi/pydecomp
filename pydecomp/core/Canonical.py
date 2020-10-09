@@ -227,7 +227,7 @@ class CanonicalTensor(TensorDescriptor):
         return np.sum(self._tshape)*r
 
 
-def canonical_error_data(T_can, T_full,rank_based=False,tol=1e-15,M=None):
+def canonical_error_data(T_can, T_full,rank_based=False,tol=1e-15,M=None,Norm="L2"):
     """
     @author : Lucas 27/06/18
     Builds a set of approximation error and associated compression rate for a
@@ -255,14 +255,14 @@ def canonical_error_data(T_can, T_full,rank_based=False,tol=1e-15,M=None):
         rank_list=build_eval_rank_list(maxrank)
 
     error=[]
-    T_norm=norm(T_full,M)
+    T_norm=norm(T_full,M,type=Norm)
     comp_rate=[]
     for r in rank_list:
         if not rank_based:
             comp_rate.append(T_can.memory_eval(r)/mem_Full)
 
         T_approx=T_can.to_full_quick(r)
-        actual_error=norm(T_full-T_approx,M)/T_norm
+        actual_error=norm(T_full-T_approx,M,type=Norm)/T_norm
         error.append(actual_error)
         try:
             err_var=np.abs(error[-1]-error[-2])/error[-2]
