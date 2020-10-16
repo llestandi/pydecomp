@@ -91,9 +91,9 @@ class TuckerTensor():
 #-----------------------------------------------------------------------------
     def __str__(self):
         ret = "Tucker tensor of size {0}\n".format(self.shape);
-        ret += "Core = {0} \n".format(self.core.__str__());
+        ret += "Rank = {0} \n".format(self.rank);
         for i in range(0, len(self.u)):
-            ret += "u[{0}] =\n{1}\n".format(i, self.u[i]);
+            ret += "u[{0}] =\n{1}\n".format(i, self.u[i].shape);
 
         return ret;
 
@@ -104,7 +104,63 @@ class TuckerTensor():
             mem+=self.shape[i]*self.rank[i]
         return mem
 
-def tucker_error_data(T_tucker, T_full,int_rules=None,Norm="L2"):
+def tucker_error_data_complete(T_tucker, T_full,int_rules=None):
+    """ Computes the error data (error and compression rate) for Tucker
+    decompositions
+
+    **Parameters**
+    T_tucker    [TuckerTensor] truncated tucker decomposition of T_full
+    T_full      [ndarray]      original data
+    int_rules   [MassMatrices] *optional*, if one wants to compute a norm diffrent
+                from the frobenius norm, for discrete L2.
+
+    **return**
+    comp_rate   [list] Contains the compression rates for each error level
+                (compressed_size/ full_size).
+    error       [list] Compression error in 'F' norm or "int_rules" norm
+    """
+    # from numpy.linalg import norm
+    from core.tensor_algebra import norm
+    #We are going to calculate one average value of ranks
+    d=T_full.ndim
+    data_compression=[]
+    shape=T_full.shape
+    F_volume=np.product(shape)
+    rank=np.asarray(T_tucker.rank)
+    maxrank=max(rank)
+    if maxrank>25:
+        rank_sampling=[i for i in np.arange(1,11,2)] +[15,20,30,40]\
+                    +[i for i in range(50,min(maxrank,100),20)]\
+                    +[i for i in range(100,min(maxrank,500),50)]\
+                    +[i for i in range(500,min(maxrank,1000),100)]\
+                    +[i for i in range(1000,maxrank,500)]\
+                    +[maxrank]
+
+    else:
+        rank_sampling=[i for i in range(maxrank)]
+
+    error=[]
+    comp_rate=[]
+    norm_full={"L1":norm(T_full,int_rules,type="L1"),
+            "L2":norm(T_full,int_rules,type="L2"),
+            "Linf":norm(T_full,int_rules,type="Linf")}
+    r=np.zeros(d)
+    actual_error={"L1":[],"L2":[],"Linf":[]}
+    for i in rank_sampling:
+        r=np.minimum(rank,i)
+        print(r)
+        T_trunc=truncate(T_tucker,r)
+        comp_rate.append(T_trunc.memory_eval()/F_volume)
+        T_approx=T_trunc.reconstruction()
+        actual_error["L1"].append(norm(T_full-T_approx,int_rules,type="L1")/norm_full["L1"])
+        actual_error["L2"].append(norm(T_full-T_approx,int_rules,type="L2")/norm_full["L2"])
+        actual_error["Linf"].append(norm(T_full-T_approx,int_rules,type="Linf")/norm_full["Linf"])
+        del(T_approx)
+    return actual_error, np.asarray(comp_rate)
+
+
+
+def tucker_error_data(T_tucker, T_full, int_rules=None, Norm="L2"):
     """ Computes the error data (error and compression rate) for Tucker
     decompositions
 
