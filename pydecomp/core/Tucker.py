@@ -128,6 +128,7 @@ def tucker_error_data_complete(T_tucker, T_full,int_rules=None):
     F_volume=np.product(shape)
     rank=np.asarray(T_tucker.rank)
     maxrank=max(rank)
+    print("computing erorr with maxrank={}".format(maxrank))
     if maxrank>25:
         rank_sampling=[i for i in np.arange(1,11,2)] +[15,20,30,40]\
                     +[i for i in range(50,min(maxrank,100),20)]\
@@ -148,7 +149,6 @@ def tucker_error_data_complete(T_tucker, T_full,int_rules=None):
     actual_error={"L1":[],"L2":[],"Linf":[]}
     for i in rank_sampling:
         r=np.minimum(rank,i)
-        print(r)
         T_trunc=truncate(T_tucker,r)
         comp_rate.append(T_trunc.memory_eval()/F_volume)
         T_approx=T_trunc.reconstruction()

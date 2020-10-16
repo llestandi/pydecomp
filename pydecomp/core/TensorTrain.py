@@ -151,6 +151,7 @@ def error_TT_data(T_tt,T_full, M=None,Norm="L2"):
     F_volume=np.product(shape)
     rank=np.asarray(T_tt.rank)
     maxrank=max(rank)
+    print("computing erorr with maxrank={}".format(maxrank))
     error=[]
     comp_rate=[]
     norm_T=norm(T_full,M,Norm)
@@ -168,7 +169,6 @@ def error_TT_data(T_tt,T_full, M=None,Norm="L2"):
     r=np.zeros(d+1)
     for i in rank_sampling:
         r=np.minimum(rank,i)
-        print(r)
         comp_rate.append(T_tt.mem_eval(r)/F_volume)
         T_approx=T_tt.to_full(r)
         actual_error=norm(T_full-T_approx, M,Norm)/norm_T
