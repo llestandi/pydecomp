@@ -120,11 +120,11 @@ def parse_notus_files(path,ext=".bp"):
     #he we clasify each file name by their first criteria
     for i in range(len(files_list2)):
         for j in range(len(first_criteria)):
-           if files_list2[i].split('_')[1]==first_criteria[j]:
-               if name_Tensor[j]==[]:
-                   name_Tensor[j]=[files_list2[i]]
-               else:
-                   name_Tensor[j].append(files_list2[i])
+            if files_list2[i].split('_')[1]==first_criteria[j]:
+                if name_Tensor[j]==[]:
+                    name_Tensor[j]=[files_list2[i]]
+                else:
+                    name_Tensor[j].append(files_list2[i])
 
     #Looking the time step we re arange in increasing order
     for i in range(len(name_Tensor)):
