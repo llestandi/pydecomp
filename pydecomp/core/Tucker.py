@@ -8,6 +8,7 @@ Created on Wed May  2 09:25:40 2018
 from core.tensor_algebra import multilinear_multiplication
 import pickle
 import numpy as np
+from utils.misc import rank_sampling
 
 # @Diego Need for uniformization with decided structure for full format (ndarray)
 class TuckerTensor():
@@ -88,6 +89,10 @@ class TuckerTensor():
         dim=len(self.u)
         Fresult=multilinear_multiplication(self.u,self.core,dim)
         return Fresult
+
+    def to_full(self):
+        "Alias of reconstruction"
+        return self.reconstruction()
 #-----------------------------------------------------------------------------
     def __str__(self):
         ret = "Tucker tensor of size {0}\n".format(self.shape);
@@ -104,7 +109,7 @@ class TuckerTensor():
             mem+=self.shape[i]*self.rank[i]
         return mem
 
-def tucker_error_data_complete(T_tucker, T_full,int_rules=None,sampling="default"):
+def tucker_error_data_complete(T_tucker, T_full,int_rules=None,sampling="exponential"):
     """ Computes the error data (error and compression rate) for Tucker
     decompositions
 
@@ -128,7 +133,8 @@ def tucker_error_data_complete(T_tucker, T_full,int_rules=None,sampling="default
     F_volume=np.product(shape)
     rank=np.asarray(T_tucker.rank)
     maxrank=max(rank)
-    print("computing erorr with maxrank={}".format(maxrank))
+    print("Computing approximation error chart of TT decomposition with {} sampling\n".format(sampling))
+    print("With maxrank={}".format(maxrank))
 
     error=[]
     comp_rate=[]
@@ -151,7 +157,7 @@ def tucker_error_data_complete(T_tucker, T_full,int_rules=None,sampling="default
 
 
 
-def tucker_error_data(T_tucker, T_full, int_rules=None, Norm="L2",sampling="default"):
+def tucker_error_data(T_tucker, T_full, int_rules=None, Norm="L2",sampling="exponential"):
     """ Computes the error data (error and compression rate) for Tucker
     decompositions
 
@@ -191,42 +197,6 @@ def tucker_error_data(T_tucker, T_full, int_rules=None, Norm="L2",sampling="defa
         del(T_approx)
     return np.asarray(error), np.asarray(comp_rate)
 
-
-
-def rank_sampling(maxrank,sampling="standard"):
-    """Returns a sampling of ranks for approximation error plots"""
-    available_samplings=["sparse","super_sparse"]
-    if sampling not in available_samplings:
-        print("Sampling parameter set to default")
-    if sampling=="sparse":
-        if maxrank>25:
-            rank_sampling=[i for i in np.arange(1,11,2)] +[15,20,30,45]\
-                        +[i for i in range(60,min(maxrank,100),20)]\
-                        +[i for i in range(100,min(maxrank,300),50)]\
-                        +[i for i in range(300,min(maxrank,1000),100)]\
-                        +[i for i in range(1000,maxrank,200)]\
-                        +[maxrank]
-        else:
-            rank_sampling=[i for i in range(1,maxrank,2)]
-    elif sampling=="super_sparse":
-        if rank >40:
-            rank_sampling=[1,2,3,5,7,11,15,25,40]\
-                        +[i for i in range(60,min(maxrank,200),40)]\
-                        +[i for i in range(200,min(maxrank,500),100)]\
-                        +[i for i in range(500,min(maxrank,1000),250)]\
-                        +[i for i in range(1000,maxrank,1000)]\
-                        +[maxrank]
-    else
-        if maxrank>25:
-            rank_sampling=[i for i in np.arange(1,11)] +[15,20,25,30,35,40]\
-                        +[i for i in range(50,min(maxrank,100),10)]\
-                        +[i for i in range(100,min(maxrank,300),20)]\
-                        +[i for i in range(300,min(maxrank,1000),50)]\
-                        +[i for i in range(1000,maxrank,100)]\
-                        +[maxrank]
-        else:
-            rank_sampling=[i for i in range(1,maxrank)]
-    return rank_sampling
 
 def truncate(T_tucker,trunc_rank):
     """Returns a truncated rank tucker tensor"""

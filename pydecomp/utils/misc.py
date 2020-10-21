@@ -62,6 +62,51 @@ def integration_1dtrap(f,x):
 
     return Int
 
+def rank_sampling(maxrank,sampling="default"):
+    """Returns a sampling of ranks for approximation error plots"""
+    print("Sampling parameter set to"+sampling)
+    if sampling=="sparse":
+        if maxrank>25:
+            rank_sampling=[i for i in np.arange(1,11,2)] +[15,20,30,45]\
+                        +[i for i in range(60,min(maxrank,100),20)]\
+                        +[i for i in range(100,min(maxrank,300),50)]\
+                        +[i for i in range(300,min(maxrank,1000),100)]\
+                        +[i for i in range(1000,maxrank,200)]\
+                        +[maxrank]
+        else:
+            rank_sampling=[i for i in range(1,maxrank,2)]
+    elif sampling=="super_sparse":
+        if rank >40:
+            rank_sampling=[1,2,3,5,7,11,15,25,40]\
+                        +[i for i in range(60,min(maxrank,200),40)]\
+                        +[i for i in range(200,min(maxrank,500),100)]\
+                        +[i for i in range(500,min(maxrank,1000),250)]\
+                        +[i for i in range(1000,maxrank,1000)]\
+                        +[maxrank]
+    elif sampling=="exponential":
+        rank_sampling=[1,2]
+        i=1
+        while maxrank>2**i:
+            i+=1
+            rank_sampling.append(min(int(2**i),maxrank))
+    elif sampling=="exponential_fine":
+        rank_sampling=[1,2]
+        i=1
+        while maxrank>2**i:
+            i+=0.5
+            rank_sampling.append(min(int(2**i),maxrank))
+    else:
+        if maxrank>25:
+            rank_sampling=[i for i in np.arange(1,11)] +[15,20,25,30,35,40]\
+                        +[i for i in range(50,min(maxrank,100),10)]\
+                        +[i for i in range(100,min(maxrank,300),20)]\
+                        +[i for i in range(300,min(maxrank,1000),50)]\
+                        +[i for i in range(1000,maxrank,100)]\
+                        +[maxrank]
+        else:
+            rank_sampling=[i for i in range(1,maxrank)]
+    return rank_sampling
+
 
 def test(x):
     return x**1
