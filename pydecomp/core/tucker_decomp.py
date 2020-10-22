@@ -159,7 +159,7 @@ def THOSVD(F,epsilon = 1e-13, rank=100, solver='EVD'):
     dim=len(tshape)
     PHI=[]
     for i in range(dim):
-        Fmat=ta.matricize(F,dim,i)
+        Fmat=ta.matricize(F,i)
         phi,sigma,A=TSVD(Fmat, epsilon=epsilon, rank=rank, solver=solver)
         PHI.append(phi)
     PHIT=misc.list_transpose(PHI)

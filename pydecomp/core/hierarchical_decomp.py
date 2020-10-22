@@ -5,8 +5,10 @@
 
 
 import numpy as np
-from scipy.linalg import svd
+from core.TSVD import TSVD
+import core.tensor_algebra as ta
 import scipy.io as sio
+from scipy.linalg import svd
 from collections import deque
 
 
@@ -79,54 +81,35 @@ class Node:
 
 
 # leaf to root truncation
-def truncate_ltr(x, rmax):
+def truncate_ltr(x, epsilon=1e-4, rmax=100, solver='EVD'):
     x_ = np.copy(x)
     shape = np.array(np.shape(x))
     n_mode = len(shape)
     root, level_max = Node.indices_tree(n_mode)
-
-    # compute leaf decomposition
+    U=[] #shorthand for leaves modes
+    ##compute leaf decomposition by HOSVD first
+    from core.tucker_decomp import THOSVD
+    tucker= THOSVD(x,epsilon, rank=100, solver='EVD')
+    x=x_=tucker.core
     for node in Node.find_leaf(root):
-        other_indices = np.concatenate([np.arange(0, node.indices[0]), np.arange(node.indices[0]+1, n_mode)])
-        trans_indices = np.concatenate([node.indices, other_indices])
-        x_mat = np.transpose(x, trans_indices)
-        x_mat = np.reshape(x_mat, [np.prod(shape[node.indices]), np.prod(shape[other_indices])])
-        u, s, vt = svd(x_mat)
-        if len(s) > rmax:
-            u = u[:, :rmax]
-            s = s[:rmax]
-            vt = vt[:rmax, :]
-            node.rank = rmax
-        else:
-            node.rank = len(s)
-        node.set_u(u)
-        shape_core = np.array(np.shape(x_))
-        if node.indices[0] == 0:
-            trans_indices = np.concatenate([node.indices, other_indices])
-            x_ = np.transpose(x_, trans_indices)
-            x_ = np.reshape(x_, [np.prod(shape_core[node.indices]), np.prod(shape_core[other_indices])])
-            x_ = np.matmul(u.T, x_)
-            shape_core[node.indices[0]] = node.rank
-            x_ = np.reshape(x_, shape_core[trans_indices])
+        dim=node.indices[0]
+        node.rank=tucker.rank[dim]
+        node.set_u(tucker.u[dim])
 
-        else:
-            trans_indices = np.concatenate([other_indices, node.indices])
-            x_ = np.transpose(x_, trans_indices)
-            x_ = np.reshape(x_, [np.prod(shape_core[other_indices]), np.prod(shape_core[node.indices])])
-            x_ = np.matmul(x_, u)
-            shape_core[node.indices[0]] = node.rank
-            x_ = np.reshape(x_, shape_core[trans_indices])
-
-        new_indices = []
-        for i in range(len(shape_core)):
-            for j in range(len(shape_core)):
-                if trans_indices[j] == i:
-                    new_indices.append(j)
-                    break
-
-        x_ = np.transpose(x_, new_indices)
-
-    x = x_
+    # # first step is equivalent to HOSVD first step
+    # for node in Node.find_leaf(root):
+    #     x_mat=ta.matricize(x,node.indices[0])
+    #     u, s, v = TSVD( x_mat, epsilon=epsilon, rank=rmax, solver=solver)
+    #     vt = v.T
+    #     node.rank = s.size
+    #     print("node [{}] rank is {}".format(node.indices,node.rank))
+    #     node.set_u(u)
+    #     U.append(u)
+    #
+    # from utils import misc
+    # PHIT=misc.list_transpose(U)
+    # x_=ta.multilinear_multiplication( PHIT,x,n_mode)
+    # x = x_
 
     rmax -= 1
     # compute cluster decomposition
@@ -230,9 +213,10 @@ def ht_full(root, level_max):
 if __name__ == '__main__':
     # x = sio.loadmat('x.mat')['x']
     n=10
-    x = np.random.random([n, n, n, n, n])
-    sio.savemat('x.mat', {'x':x})
-    root, level_max = truncate_ltr(x, rmax=100)
+    #x = np.random.random([n, n, n, n, n])
+    x = np.random.random([3, 4, 5, 6, 7])
+    #sio.savemat('x.mat', {'x':x})
+    root, level_max = truncate_ltr(x, epsilon=1e-4)
     print(level_max)
     x_ht = ht_full(root, level_max)
 
