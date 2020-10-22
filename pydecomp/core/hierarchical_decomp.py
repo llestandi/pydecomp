@@ -87,6 +87,7 @@ def truncate_ltr(x, epsilon=1e-4, rmax=100, solver='EVD'):
     n_mode = len(shape)
     root, level_max = Node.indices_tree(n_mode)
     U=[] #shorthand for leaves modes
+
     ##compute leaf decomposition by HOSVD first
     from core.tucker_decomp import THOSVD
     tucker= THOSVD(x,epsilon, rank=100, solver='EVD')
@@ -95,21 +96,6 @@ def truncate_ltr(x, epsilon=1e-4, rmax=100, solver='EVD'):
         dim=node.indices[0]
         node.rank=tucker.rank[dim]
         node.set_u(tucker.u[dim])
-
-    # # first step is equivalent to HOSVD first step
-    # for node in Node.find_leaf(root):
-    #     x_mat=ta.matricize(x,node.indices[0])
-    #     u, s, v = TSVD( x_mat, epsilon=epsilon, rank=rmax, solver=solver)
-    #     vt = v.T
-    #     node.rank = s.size
-    #     print("node [{}] rank is {}".format(node.indices,node.rank))
-    #     node.set_u(u)
-    #     U.append(u)
-    #
-    # from utils import misc
-    # PHIT=misc.list_transpose(U)
-    # x_=ta.multilinear_multiplication( PHIT,x,n_mode)
-    # x = x_
 
     rmax -= 1
     # compute cluster decomposition
@@ -122,29 +108,28 @@ def truncate_ltr(x, epsilon=1e-4, rmax=100, solver='EVD'):
             else:
                 cur_indices = node.indices
                 cur_mode = n_mode
+            print (cur_indices,cur_mode,level)
 
+            #rehsaping xmat for particular index, bit more complez than a matricization
             shape_core = np.array(np.shape(x))
             other_indices = np.concatenate([np.arange(0, cur_indices[0]), np.arange(cur_indices[-1]+1, cur_mode)])
             trans_indices = np.concatenate([cur_indices, other_indices])
             x_mat = np.transpose(x, trans_indices)
             x_mat = np.reshape(x_mat, [np.prod(shape_core[cur_indices]), np.prod(shape_core[other_indices])])
+
             if level == 0:
                 node.rank = 1
                 u = x_mat
             else:
-                u, s, vt = svd(x_mat)
-                if len(s) > rmax:
-                    u = u[:, :rmax]
-                    s = s[:rmax]
-                    vt = vt[:rmax, :]
-                    node.rank = rmax
-                else:
-                    node.rank = len(s)
-                    u = u[:, :node.rank]
+                u, s, v = TSVD( x_mat, epsilon=epsilon, rank=rmax, solver=solver)
+                    vt = v.T
+                    node.rank = s.size
 
+            #setting b
             b = np.reshape(u, [node.left.rank, node.right.rank, node.rank])
             node.set_b(b)
 
+            #for each cluster, compute the part of the :projection" Cour certainly be cleaned but not useful for me
             shape_core = np.array(np.shape(x_))
             cur_mode -= count
             cur_indices -= count
@@ -179,6 +164,7 @@ def truncate_ltr(x, epsilon=1e-4, rmax=100, solver='EVD'):
 
     return root, level_max
 
+#TODO improve readability
 
 def ht_full(root, level_max):
     for level in range(level_max, -1, -1):
@@ -212,9 +198,9 @@ def ht_full(root, level_max):
 
 if __name__ == '__main__':
     # x = sio.loadmat('x.mat')['x']
-    n=10
-    #x = np.random.random([n, n, n, n, n])
-    x = np.random.random([3, 4, 5, 6, 7])
+    n=2
+    x = np.random.random([n, n, n, n, n, n, n, n])
+    # x = np.random.random([3, 4, 5, 6, 7,8,1, 1, 1])
     #sio.savemat('x.mat', {'x':x})
     root, level_max = truncate_ltr(x, epsilon=1e-4)
     print(level_max)
