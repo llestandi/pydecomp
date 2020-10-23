@@ -7,13 +7,14 @@
 import numpy as np
 from math import log
 from core.TSVD import TSVD
-import core.tensor_algebra as ta
+from core.tensor_algebra import norm
 from core.tucker_decomp import THOSVD
 from core.Tucker import TuckerTensor
 import scipy.io as sio
 from scipy.linalg import svd
 from collections import deque
 from utils.bytes2human import bytes2human
+from copy import deepcopy
 
 
 class HierarchicalTensor():
@@ -53,6 +54,7 @@ class HierarchicalTensor():
                 mem_basis+=leaf.u.size
         self.memory_use=mem
         self.Tucker_memory_use=np.product(self.rank)+mem_basis
+        self.compression_rate=mem/np.product(self.shape)
 
     def __str__(self):
         rep = "-----------------------------------------------\n"
@@ -65,7 +67,7 @@ class HierarchicalTensor():
         rep+= "-----------------------------------------------\n"
         rep+= "Printing tree structure, strating from root\n"
         rep+= "-----------------------------------------------\n"
-        for level in range(self.depth-1):
+        for level in range(self.depth):
             for node in Node.find_cluster(self.root, level):
                 rep+=str(node)
             rep+= "-----------------------------------------------\n"
@@ -193,7 +195,6 @@ class Node:
 
 # leaf to root truncation
 def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD'):
-
     if type(x)==np.ndarray:
         #x_ = np.copy(x)
         if eps_tuck==None: eps_tuck=epsilon
@@ -202,12 +203,15 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD'):
         print("tucker decomposition CR={:.2f}%".format(100*tucker.memory_eval()/np.product(x.shape)))
         print("Tucker error:{:.2e}".format(np.linalg.norm(tucker.to_full()-x)/np.linalg.norm(x)))
     elif type(x)==TuckerTensor:
-        tucker= np.copy(x)
+        tucker= deepcopy(x)
+    else:
+        raise Exception("something went wrong with x type")
 
     shape = np.array(x.shape)
     n_mode = len(shape)
     root, level_max = Node.indices_tree(n_mode)
-    x=x_=tucker.core
+    x_=tucker.core
+    x=x_
     for node in Node.find_leaf(root):
         dim=node.indices[0]
         node.rank=tucker.rank[dim]
@@ -283,7 +287,7 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD'):
     HT.memory_eval()
     return HT
 
-def build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200):
+def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbose=0):
     """
     Computes approximation for epsilon consequence and return error data.
     Since trunction is not straightforward, HOSVD is kept and a new HT L2R
@@ -297,16 +301,43 @@ def build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200):
 
     **return** dict of relative error for L1,L2,Linf and associated compression rate
     """
+    tucker=THOSVD(x,eps_tuck, rank=100, solver='EVD')
+    HT_list={}
+    norm_full={"L1":norm(x,type="L1"),
+            "L2":norm(x,type="L2"),
+            "Linf":norm(x,type="Linf")}
+    actual_error={"L1":[],"L2":[],"Linf":[]}
+    comp_rate=[]
+    for eps in eps_list:
+        if verbose>0:
+            print("Running HT for eps={}".format(eps))
+        HT_list[eps]=compute_HT_decomp(tucker,eps,rmax=rmax)
+        reconstruction=HT_list[eps].to_full()
+        comp_rate.append(HT_list[eps].compression_rate)
+        actual_error["L1"].append(norm(x-reconstruction,type="L1")/norm_full["L1"])
+        actual_error["L2"].append(norm(x-reconstruction,type="L2")/norm_full["L2"])
+        actual_error["Linf"].append(norm(x-reconstruction,type="Linf")/norm_full["Linf"])
+        if verbose>0:
+            print(HT_list[eps].rank)
+        if verbose>1:
+            print(HT_list[eps])
+    print(HT_list[eps])
+
+    return actual_error, np.asarray(comp_rate)
+
 
 if __name__ == '__main__':
     # x = sio.loadmat('x.mat')['x']
     n=50
     x = np.random.random([n, n, n, n])
-    x = np.random.random([30, 5 ,40, 9, 10])
+    x = np.random.random([30, 5 ,40, 9])
     #sio.savemat('x.mat', {'x':x})
-    HT = compute_HT_decomp(x, epsilon=1e-6,eps_tuck=1e-3, rmax=200)
-    print(HT)
-    x_ht = HT.to_full()
-
-    err = np.linalg.norm(x_ht - x)#/np.linalg.norm(x)
-    print(err)
+    results = build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200)
+    print(results[:1])
+    #
+    # HT = compute_HT_decomp(x, epsilon=1e-6,eps_tuck=1e-3, rmax=200)
+    # print(HT)
+    # x_ht = HT.to_full()
+    #
+    # err = np.linalg.norm(x_ht - x)#/np.linalg.norm(x)
+    # print(err)

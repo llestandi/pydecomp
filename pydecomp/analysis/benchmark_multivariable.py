@@ -20,6 +20,7 @@ from core.Canonical import CanonicalTensor, canonical_error_data
 from core.Tucker import TuckerTensor, tucker_error_data
 from core.TensorTrain import TensorTrain, error_TT_data
 from core.QuanticsTT import QuanticsTensor, QTT_SVD
+from core.hierarchical_decomp import HierarchicalTensor, HT_build_error_data
 
 from analysis.plot import benchmark_plotter
 
@@ -103,7 +104,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
     """
     dim=len(shape)
     domain=[0,1]
-    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'QTT_SVD', 'SHO_POD','RPOD','TT_SVD']
+    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'QTT_SVD', 'SHO_POD','RPOD','TT_SVD','HT']
     acepted_integration_methods=['trapezes','SVD']
     number_plot=0
     approx_data={}
@@ -237,6 +238,12 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             Result=TT_SVD(F, tol)
         elif reduction_method=='QTT_SVD':
             Result=QTT_SVD(F,2,tol=tol)
+        elif reduction_method=='HT':
+            eps_list=[1e-1,1e-2,1e-4,1e-4,1e-5,1e-6,1e-7,1e-8]
+            Result=HT_build_error_data(F,eps_list,eps_tuck=1e-4,rmax=200)
+            print(Result)
+            # by construction we need to evaluate errors before hand
+            approx_data[reduction_method]=np.stack([Result[0][which_norm],Result[1]])
         print("{} decompostion time: {:.2f} s".format(reduction_method,time.time()-t))
 
         if plot:

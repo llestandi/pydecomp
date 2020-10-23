@@ -151,7 +151,8 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
             "SHO_SVD vectorized":'r+-',
             "SHO_SVD reshaped":'ro--',
             "TT_SVD vectorized":'k+-',
-            "TT_SVD reshaped":'ko--'}
+            "TT_SVD reshaped":'ko--',
+            "HT":'b+-'}
     fig=plt.figure()
     xmax=0.1
     ylim=[0.1,0.1]
