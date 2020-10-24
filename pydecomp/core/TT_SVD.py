@@ -12,7 +12,7 @@ from core.POD import POD
 from core.TensorTrain import  TT_init_from_decomp
 from copy import deepcopy
 
-def TT_SVD(F, eps=1e-8, rank=-1, MM=None):
+def TT_SVD(F, eps=1e-8, rank=-1, MM=None,solver='EVD'):
     """
     Returns the decomposed form of a Tensor in the Tensor Train format by
     using the TT-SVD decomposition method described by I. V. Oseledets. \n
@@ -45,7 +45,7 @@ def TT_SVD(F, eps=1e-8, rank=-1, MM=None):
         Cshape=(r[i]*tshape[i],C.size//(r[i]*tshape[i]))
         C=np.reshape(C,Cshape)
         if not MM:
-            u,sigma,v=TSVD(C,epsilon=eps, rank=rank, solver='EVD')
+            u,sigma,v=TSVD(C,epsilon=eps, rank=rank, solver=solver)
         else:
             Mx,Mt = mm.matricize_mass_matrix_for_TT(M,is_first)
             u,sigma,v=POD(C, Mx, Mt, tol=eps, rank=rank)

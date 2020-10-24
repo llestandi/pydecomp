@@ -237,7 +237,11 @@ def benchmark_multivariable(list_reduction_method, integration_method,
         elif reduction_method=='TT_SVD':
             Result=TT_SVD(F, tol)
         elif reduction_method=='QTT_SVD':
-            Result=QTT_SVD(F,2,tol=tol)
+            try:
+                Result=QTT_SVD(np.copy(F),2,tol=tol)
+            except:
+                print("QTT_SVD has been removed since it did not converge. \n It is very sensitive to conditionning and may not converge")
+                continue
         elif reduction_method=='HT':
             eps_list=[1e-1,1e-2,1e-4,1e-4,1e-5,1e-6,1e-7,1e-8,1e-12,1e-14]
             for eps in eps_list:
@@ -259,7 +263,8 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                 approx_data[reduction_method]=np.stack(error_TT_data(Result,F,Norm=which_norm))
             elif type(Result)==QuanticsTensor:
                 Result.eval_approx_error(Norm=which_norm)
-                approx_data[reduction_method]=np.stack(Result.approx_error)
+                approx_data[reduction_method]=np.stack(Result.Approx_error)
+                print(approx_data[reduction_method])
 
                 # plot_error_canonical(Result,F, number_plot,label_line)
                 # raise NotImplementedError("Canonical plot V2 is not implemented yet")

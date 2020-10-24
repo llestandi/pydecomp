@@ -53,7 +53,8 @@ def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
                   # Install a pip package in the current Jupyter kernel\
                   import sys\
                   !{sys.executable} -m pip install primme")
-        svecs_left, svals, svecs_right =  primme.svds(F, rank, which='LM', tol=epsilon)
+        print(min(F.shape))
+        svecs_left, svals, svecs_right =  primme.svds(F, rank=min(F.shape),which='LM', tol=epsilon)
         u=svecs_left
         s=svals
         v=svecs_right.T

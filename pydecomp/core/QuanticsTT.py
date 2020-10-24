@@ -26,8 +26,9 @@ class QuanticsTensor:
         self.qshape=[]
         self.q=None
         self.data=data # can be either a numpy array (init) or pointing to a TensorTrain object (pointer, no copy)
-        self.approx_data=None # can be either a numpy array (init) or pointing to a TensorTrain object
-        self.approx_error=None
+        self.has_been_extended=False
+        self.Approx_data=None # can be either a numpy array (init) or pointing to a TensorTrain object
+        self.Approx_error=None
         self.size=data.size
         self.ndim=len(data.shape)
 
@@ -39,19 +40,67 @@ class QuanticsTensor:
         str+="qshape={}\n".format(self.qshape)
         # str+="data=\n{}\n".format(self.data)
         str+="-------------------------------------------\n"
-        str+="Approx_data rank=\n{}\n".format(self.approx_data.rank)
+        str+="Approx_data rank=\n{}\n".format(self.Approx_data.rank)
         return str
 
     def reshape_to_q(self,q):
         #testing size and q fit
         D=math.log( self.size, q )
-        if not D.is_integer() :
-            raise ValueError("q cannot quantize size")
         self.q=q
-        self.qshape=[q] * int(D)
-        print("reshaping to {}".format(self.qshape))
-        self.data=np.reshape(self.data,self.qshape)
+        if not D.is_integer() :
+            print("Warning data size ({}) is not a power of q ({}), filling with zeros till {}".format(self.size,q, q**(math.ceil(D))))
+            self.reshape_any_to_q(type="flatten")
+        else:
+            self.qshape=[q] * int(D)
+            print("reshaping to {}".format(self.qshape))
+            self.data=np.reshape(self.data,self.qshape)
 
+        return
+
+    def reshape_any_to_q(self,type="flatten"):
+        if type == "flatten":
+            q=self.q
+            D=math.log( self.size, q )
+            self.qshape=[q] * int(math.ceil(D))
+            newData=np.zeros(q**int(math.ceil(D)))
+            newData[:self.size]=np.ravel(self.data)
+            self.data=np.reshape(newData,self.qshape)
+
+        elif type=="per_dim":
+            raise SystemError("itertools not available on my machine")
+            # Construct the base "q" shape
+            # self.qshape = [ self.q**(int(math.log(s-0.5,self.q))+1)  for s in self.original_shape ]
+            # # Resize the array and fill the extended dimensions
+            # # with data on the -1 hyper-faces
+            # Anew = np.zeros(self.qshape)
+            # Anew[ tuple([ slice(0,gs,None) for gs in self.original_shape ]) ] = self.data
+            # for dcube in range(self.ndim):
+            #     cubes = itertools.combinations(range(self.ndim), dcube+1)
+            #     for cube in cubes:
+            #         idxs_out = []
+            #         idxs_in = []
+            #         for i, gs in enumerate(self.original_shape):
+            #             if i in cube:
+            #                 idxs_out.append( slice(gs,None,None) )
+            #                 idxs_in.extend( [-1,np.newaxis] )
+            #             else:
+            #                 idxs_out.append( slice(0,gs,None) )
+            #                 idxs_in.append( slice(0,gs,None) )
+            #         idxs_out = tuple(idxs_out)
+            #         idxs_in = tuple(idxs_in)
+            #         Anew[ idxs_out ] = self.data[ idxs_in ]
+            #     self.data = Anew
+
+            # Set the folded_shape (list of list) for each dimension
+            # self.folded_shape = [ [self.q] * \
+            #                       int(round(math.log(self.data.shape[i],self.q)))
+            #                       for i in range(len(self.original_shape)) ]
+            #
+            # # Folding matrix
+            # new_shape = [self.base] * int(round(math.log( self.data.size, self.q )))
+            # self.data = self.data.reshape(new_shape)
+            print(new_shape)
+            self.has_been_extended=True
         return
 
     def reshape_manual(self,qshape):
@@ -59,15 +108,20 @@ class QuanticsTensor:
         return
 
     def applyTTSVD(self,eps=1e-3,rank=-1,MM=None):
-        self.approx_data=TT_SVD(self.data, eps, rank, MM)
+        # I have observed some comvergence issue, trying with EVD first, then PRIMME
+        try:
+            self.Approx_data=TT_SVD(self.data, eps, rank, MM)
+        except:
+            print("in applyTTSVD, EVD didn't converge, tyring PRIMME")
+            self.Approx_data=TT_SVD(self.data, eps, rank, MM, solver='PRIMME')
         return
 
     def eval_approx_error_complete(self,M=None):
-        self.approx_error=TT.error_TT_data_complete(self.approx_data,self.data, M)
+        self.Approx_error=TT.error_TT_data_complete(self.Approx_data,self.data, M)
         return
 
     def eval_approx_error(self,M=None,Norm="L2"):
-        self.approx_error=TT.error_TT_data(self.approx_data,self.data, M, Norm)
+        self.Approx_error=TT.error_TT_data(self.Approx_data,self.data, M, Norm)
         return
 
 
