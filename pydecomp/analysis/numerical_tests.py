@@ -28,6 +28,8 @@ from core.RPOD import rpod, RecursiveTensor, plot_rpod_approx,rpod_error_data
 from core.Canonical import CanonicalTensor, canonical_error_data
 from core.Tucker import TuckerTensor, tucker_error_data
 from core.TensorTrain import TensorTrain, error_TT_data
+from core.QuanticsTT import QTT_SVD,QuanticsTensor
+from core.hierarchical_decomp import HierarchicalTensor, HT_build_error_data
 
 from analysis.plot import benchmark_plotter, several_d_plotter
 from utils.tensor_creator import testg,testf
@@ -57,20 +59,21 @@ def Vega_test(cases):
     if 1 in cases:
         print("\n ===================================\
               \n Vega function test\n Case 1 \n ==============================")
-        n=40
+        n=16
         d=5
         err_data={}
         decomp_methods=["SHO_POD","SHO_SVD","TT_POD","TT_SVD"]
         decomp_methods=["RPOD",'RSVD',"SHO_POD","SHO_SVD","TT_SVD","TT_POD"]
+        decomp_methods=["TT_SVD","QTT_SVD","HT","SHO_SVD"]
         solver=["trapezes" for i in range(len(decomp_methods))]
         path='../output/vega_func/'
         shape=[n for x in range(d)]
         plot_name=path+'vega_all_methods_n20.pdf'.format(d)
         plot_title="Vega function decomposition, n={}".format(n)
         err_data=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
-                            test_function=2, plot=False,output='../output/num_dim_test/',
+                            test_function="Vega", plot=True,output='../output/num_dim_test/',
                             Frob_norm=True,  plot_name='',
-                            tol=1e-12, plot_title=plot_title)
+                            tol=1e-6, plot_title=plot_title)
     if 2 in cases:
         print("\n ===================================\
               \n Vega function test\n Case 2 \n ==============================")
@@ -84,7 +87,7 @@ def Vega_test(cases):
         plot_name=path+'vega_all_methods_case2.pdf'.format(d)
         plot_title="Vega function decomposition, n={}".format(n)
         err_data=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
-                            test_function=2, plot=False,output='../output/num_dim_test/',
+                            test_function="Vega", plot=False,output='../output/num_dim_test/',
                             Frob_norm=True,  plot_name=plot_name,
                             tol=1e-12, plot_title=plot_title)
 
@@ -243,7 +246,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
         elif reduction_method=='THO_SVD':
             Result=THOSVD(F)
         elif reduction_method=='SHO_SVD':
-            Result=STHOSVD(F)
+            Result=STHOSVD(F,epsilon=tol)
         elif reduction_method=='RPOD':
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=tol)
         elif reduction_method=='TT_POD':
@@ -252,6 +255,15 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
             Result=rpod(F, POD_tol=1e-16,cutoff_tol=tol)
         elif reduction_method=='TT_SVD':
             Result=TT_SVD(F, tol)
+        elif reduction_method=='QTT_SVD':
+            Result=QTT_SVD(F,2,tol=tol)
+        elif reduction_method=='HT':
+            eps_list=[1e-1,1e-2,1e-4,1e-4,1e-5,1e-6,1e-7,1e-8,1e-12,1e-14]
+            for eps in eps_list:
+                if eps < tol: eps_list.remove(eps)
+            Result=HT_build_error_data(F,eps_list,eps_tuck=tol,rmax=200)
+            # by construction we need to evaluate errors before hand
+            approx_data[reduction_method]=np.stack([Result[0]["L2"],Result[1]])
         else:
             raise AttributeError("reduction_method : '{}' is not a valid method".format(reduction_method))
         print("{} decompostion time: {:.3f} s".format(reduction_method,time.time()-t))
@@ -269,6 +281,9 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                 approx_data[reduction_method]=np.stack(canonical_error_data(Result,F,tol=tol,M=M))
             elif type(Result)==TensorTrain:
                 approx_data[reduction_method]=np.stack(error_TT_data(Result,F,M=M))
+            elif type(Result)==QuanticsTensor:
+                Result.eval_approx_error(Norm="L2")
+                approx_data[reduction_method]=np.stack(Result.approx_error)
             print("{} Error evaluation time: {:.2f} s".format(reduction_method,time.time()-t))
 
         try:
@@ -278,6 +293,8 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                   delimiter=',')
         except:
             pass
+    print(plot_name)
+    print(plot)
     if plot:
         benchmark_plotter(approx_data, show_plot, plot_name=plot_name,title=plot_title)
     return approx_data

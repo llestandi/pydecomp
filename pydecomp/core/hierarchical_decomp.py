@@ -319,9 +319,10 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbo
         actual_error["Linf"].append(norm(x-reconstruction,type="Linf")/norm_full["Linf"])
         if verbose>0:
             print(HT_list[eps].rank)
-        if verbose>1:
+        elif verbose>1:
             print(HT_list[eps])
-    print(HT_list[eps])
+    if verbose>1:
+        print(HT_list[eps])
 
     return actual_error, np.asarray(comp_rate)
 
@@ -332,7 +333,7 @@ if __name__ == '__main__':
     x = np.random.random([n, n, n, n])
     x = np.random.random([30, 5 ,40, 9])
     #sio.savemat('x.mat', {'x':x})
-    results = build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200)
+    results = build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-16,rmax=200)
     print(results[:1])
     #
     # HT = compute_HT_decomp(x, epsilon=1e-6,eps_tuck=1e-3, rmax=200)

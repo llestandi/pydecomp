@@ -239,8 +239,10 @@ def benchmark_multivariable(list_reduction_method, integration_method,
         elif reduction_method=='QTT_SVD':
             Result=QTT_SVD(F,2,tol=tol)
         elif reduction_method=='HT':
-            eps_list=[1e-1,1e-2,1e-4,1e-4,1e-5,1e-6,1e-7,1e-8]
-            Result=HT_build_error_data(F,eps_list,eps_tuck=1e-4,rmax=200)
+            eps_list=[1e-1,1e-2,1e-4,1e-4,1e-5,1e-6,1e-7,1e-8,1e-12,1e-14]
+            for eps in eps_list:
+                if eps < tol: eps_list.remove(eps)
+            Result=HT_build_error_data(F,eps_list,eps_tuck=tol,rmax=200)
             print(Result)
             # by construction we need to evaluate errors before hand
             approx_data[reduction_method]=np.stack([Result[0][which_norm],Result[1]])
