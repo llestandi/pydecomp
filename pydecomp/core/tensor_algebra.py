@@ -13,7 +13,6 @@ import numpy as np
 import scipy.sparse
 from scipy.sparse import diags
 from core.MassMatrices import MassMatrices, DiaMatrix, Kronecker
-
 def multilinear_multiplication(PHI,F,dim):
     """
     **Parameters**:_ \n
@@ -34,6 +33,9 @@ def multilinear_multiplication(PHI,F,dim):
     where
     :math:`\otimes` represents the Kronecker product.
     """
+    if F.size > 1e6:
+        print("Very large multilinear multiplication of size :")
+        print(F.shape)
     if type(PHI)==MassMatrices:
         PHI2=[PHI.Mat_list[i] for i in range(len(PHI))]
     else :
@@ -43,10 +45,12 @@ def multilinear_multiplication(PHI,F,dim):
     for i in range(dim):
         shape_W[0],shape_W[i]=shape_W[i],shape_W[0]
         W=np.swapaxes(W,0,i)
-        W=PHI2[i]@matricize(W, 0)
+        F_mat=matricize(W, 0)
+        W=np.matmul(PHI2[i],F_mat)
+        #W=PHI2[i]@matricize(W, 0)
         shape_W[0]=W.shape[0]
         W = W.reshape(shape_W)
-
+        
     W  =np.moveaxis(W,0,-1)
     return W
 

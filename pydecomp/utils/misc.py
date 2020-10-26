@@ -85,13 +85,13 @@ def rank_sampling(maxrank,sampling="default"):
                         +[maxrank]
     elif sampling=="exponential":
         rank_sampling=[1,2]
-        i=1
+        i=2
         while maxrank>2**i:
             i+=1
             rank_sampling.append(min(int(2**i),maxrank))
     elif sampling=="exponential_fine":
         rank_sampling=[1,2]
-        i=1
+        i=2
         while maxrank>2**i:
             i+=0.5
             rank_sampling.append(min(int(2**i),maxrank))

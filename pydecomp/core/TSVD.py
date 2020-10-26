@@ -5,8 +5,10 @@ Created on Tue Apr  3 14:19:09 2018
 @author: Diego Britez
 """
 import numpy as np
+import warnings
 from scipy.sparse import diags
 from core.tensor_algebra import truncate_modes
+
 def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
     """
     This function calculates a matrix decomposition by using the truncated SVD
@@ -39,7 +41,13 @@ def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
         s,v=truncate_modes(S, epsilon, rank, V)
 
     elif solver=='EVD':
-        u,s,v = SVD_by_EVD(F,tol=epsilon,rank=rank)
+        try:
+            print("trying SVD by EVD")
+            u,s,v = SVD_by_EVD(F,tol=epsilon,rank=rank)
+        except:
+            print("it failed, trying the direct solver")
+            u,s,v= TSVD(F, epsilon, rank, solver='PRIMME')
+            print("new singular values :{}".format(s))
 
     elif solver=='PRIMME':
         print("Selected PRIMME_SVDS solver. This solver is iterative and best\
@@ -54,7 +62,11 @@ def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
                   import sys\
                   !{sys.executable} -m pip install primme")
         print(min(F.shape))
-        svecs_left, svals, svecs_right =  primme.svds(F, rank=min(F.shape),which='LM', tol=epsilon)
+        if rank > 0 :
+            k=min(rank,min(F.shape))
+        else :
+            k=min(F.shape)
+        svecs_left, svals, svecs_right =  primme.svds(F, k,which='LM', tol=epsilon)
         u=svecs_left
         s=svals
         v=svecs_right.T
@@ -78,6 +90,10 @@ def SVD_by_EVD(F,tol=0,rank=-1):
 
     Lambda, U=truncate_modes(Lambda,tol,rank,U)
     sigma=np.sqrt(Lambda)
+    if np.isnan(sigma).any():
+        print(Lambda)
+        print("EVD returns negative number leading to nan in sigma")
+        return
     r=sigma.size
     inv_sigma=np.reshape(1/sigma,(r,1))
 

@@ -240,7 +240,8 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD'):
                 node.rank = 1
                 u = x_mat
             else:
-                u, s, v = TSVD( x_mat, epsilon=epsilon, rank=rmax, solver=solver)
+                u, s, v = TSVD( x_mat, epsilon=epsilon, rank=rmax, solver='EVD')
+                print(np.log10(s))
                 vt = v.T
                 node.rank = s.size
 
@@ -301,7 +302,7 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbo
 
     **return** dict of relative error for L1,L2,Linf and associated compression rate
     """
-    tucker=THOSVD(x,eps_tuck, rank=100, solver='EVD')
+    tucker=THOSVD(x,eps_tuck, rank=rmax, solver='EVD')
     HT_list={}
     norm_full={"L1":norm(x,type="L1"),
             "L2":norm(x,type="L2"),
@@ -324,7 +325,7 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbo
     if verbose>1:
         print(HT_list[eps])
 
-    return actual_error, np.asarray(comp_rate)
+    return actual_error, np.asarray(comp_rate), reconstruction
 
 
 if __name__ == '__main__':
