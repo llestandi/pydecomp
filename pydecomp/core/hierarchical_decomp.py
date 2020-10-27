@@ -77,12 +77,12 @@ class HierarchicalTensor():
             rep+=str(leaf)
         return rep
 
-    def plot_singular_values(self,show=True,plot_name=""):
+    def plot_singular_values(self,show=True,plot_name="figures/HT_sing_vals"):
         for level in range(self.depth):
             for node in Node.find_cluster(self.root, level):
-
+                node.plot_singular_values(show,plot_name)
         for leaf in Node.find_leaf(self.root):
-
+            node.plot_singular_values(show,plot_name)
         return
 
 
@@ -156,8 +156,10 @@ class Node:
         return rep
 
     def plot_singular_values(self,show=True,plot_name=""):
-        rank_data={str(self.indices)=self.s}
-        rank_benchmark_plotter(rank_data, show=True, plot_name="plots/benchmark.pdf",**kwargs))
+        index=str(self.indices)
+        rank_data={index:self.s}
+        plot_name+=index+".pdf"
+        rank_benchmark_plotter(rank_data, show=True, plot_name=plot_name)
 
     @staticmethod
     def indices_tree(n_mode):
@@ -233,7 +235,10 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
         dim=node.indices[0]
         node.rank=tucker.rank[dim]
         node.set_u(tucker.u[dim])
-        node.s=sigma[dim]
+        try:
+            node.s=sigma[dim]
+        except:
+            node.s=None
 
     rmax -= 1
     # compute cluster decomposition
@@ -327,7 +332,6 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbo
     else :
         print("computing Tucker decomposition with eps={}".format(eps_tuck))
         tucker=THOSVD(x,eps_tuck, rank=rmax, solver='EVD')
-    HT_list={}
     norm_full={"L1":norm(x,type="L1"),
             "L2":norm(x,type="L2"),
             "Linf":norm(x,type="Linf")}
@@ -336,18 +340,16 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbo
     for eps in eps_list:
         if verbose>0:
             print("Running HT for eps={}".format(eps))
-        HT_list[eps]=compute_HT_decomp(tucker,eps,rmax=rmax)
-        reconstruction=HT_list[eps].to_full()
-        comp_rate.append(HT_list[eps].compression_rate)
+        HT=compute_HT_decomp(tucker,eps,rmax=rmax)
+        reconstruction=HT.to_full()
+        comp_rate.append(HT.compression_rate)
         actual_error["L1"].append(norm(x-reconstruction,type="L1")/norm_full["L1"])
         actual_error["L2"].append(norm(x-reconstruction,type="L2")/norm_full["L2"])
         actual_error["Linf"].append(norm(x-reconstruction,type="Linf")/norm_full["Linf"])
         if verbose>0:
-            print(HT_list[eps].rank)
-        elif verbose>1:
-            print(HT_list[eps])
+            print(HT.rank)
 
-    return actual_error, np.asarray(comp_rate), reconstruction
+    return actual_error, np.asarray(comp_rate), HT
 
 
 if __name__ == '__main__':
