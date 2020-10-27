@@ -139,6 +139,7 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     """
     styles={"HO_POD":'r+--',
             "HO_SVD":'r+:',
+            "HOSVD":'r+:',
             "SHO_POD":'g+-',
             "ST_HOSVD":'g*-',
             "STHO_SVD":'g*-',
@@ -147,6 +148,7 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
             "RSVD":'b*-',
             "TT_POD":"k+-",
             "TT_SVD":'k*-',
+            "TT":'k*-',
             "QTT_SVD":'c+:',
             "PGD":'mh--',
             "SHO_SVD vectorized":'r+-',
@@ -186,6 +188,7 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     plt.legend()
     if show:
         plt.show()
+    print(plot_name)
     fig.savefig(plot_name, bbox_inches='tight')
     plt.close()
 

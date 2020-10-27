@@ -208,6 +208,13 @@ def normL1(T,M):
 def normLinf(T):
     return np.max(np.abs(T))
 
+def vector_outer_product(vectors):
+    import string
+    subscripts = string.ascii_letters[:len(vectors)]
+    subscripts = ','.join(subscripts) + '->' + subscripts
+    # expands to `numpy.einsum('a,b,c,d,e->abcde', v[0], v[1], v[2], v[3], v[4])`
+    return np.einsum(subscripts, *vectors)
+
 #------------------------------------------------------------------------------
 if __name__=="__main__":
     A=np.random.rand(3,4)
