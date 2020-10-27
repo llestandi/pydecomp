@@ -42,17 +42,14 @@ def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
 
     elif solver=='EVD':
         try:
-            print("trying SVD by EVD")
             u,s,v = SVD_by_EVD(F,tol=epsilon,rank=rank)
         except:
-            print("it failed, trying the direct solver")
+            print("Try EVD but it failed, trying the iterative solver")
             u,s,v= TSVD(F, epsilon, rank, solver='PRIMME')
             print("new singular values :{}".format(s))
 
     elif solver=='PRIMME':
-        print("Selected PRIMME_SVDS solver. This solver is iterative and best\
-               suited for sparse tall skinny matrices. High accuracy requirement\
-               may lead to intractable CPU times.")
+        print("Selected PRIMME_SVDS solver. This solver is iterative and best suited for sparse tall skinny matrices. High accuracy requirement may lead to intractable CPU times.")
         try :
             import primme
         except:

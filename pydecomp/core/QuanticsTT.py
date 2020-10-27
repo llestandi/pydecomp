@@ -31,6 +31,7 @@ class QuanticsTensor:
         self.Approx_error=None
         self.size=data.size
         self.ndim=len(data.shape)
+        self.rank=None
 
     def __str__(self):
         str="QuanticsTT\n"
@@ -114,10 +115,11 @@ class QuanticsTensor:
         except:
             print("in applyTTSVD, EVD didn't converge, tyring PRIMME")
             self.Approx_data=TT_SVD(self.data, eps, rank, MM, solver='PRIMME')
+        self.rank=self.Approx_data.rank
         return
 
-    def eval_approx_error_complete(self,M=None):
-        self.Approx_error=TT.error_TT_data_complete(self.Approx_data,self.data, M)
+    def eval_approx_error_complete(self,M=None,sampling="quadratic"):
+        self.Approx_error=TT.error_TT_data_complete(self.Approx_data,self.data, M, sampling=sampling)
         return
 
     def eval_approx_error(self,M=None,Norm="L2"):

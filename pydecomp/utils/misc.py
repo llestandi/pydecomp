@@ -95,6 +95,14 @@ def rank_sampling(maxrank,sampling="default"):
         while maxrank>2**i:
             i+=0.5
             rank_sampling.append(min(int(2**i),maxrank))
+    elif sampling=="quadratic":
+        rank_sampling=[]
+        i=4
+        rank=0
+        while rank<maxrank:
+            i+=3
+            rank=min(int(i**2),maxrank)
+            rank_sampling.append(rank)
     else:
         if maxrank>25:
             rank_sampling=[i for i in np.arange(1,11)] +[15,20,25,30,35,40]\
@@ -105,6 +113,7 @@ def rank_sampling(maxrank,sampling="default"):
                         +[maxrank]
         else:
             rank_sampling=[i for i in range(1,maxrank)]
+    print("sampling {}",rank_sampling)
     return rank_sampling
 
 
