@@ -105,9 +105,11 @@ def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pd
     k=0
     plt.yscale('log')
     plt.xlabel("rank")
+    ylabel=kwargs.get('ylable',"Relative Error")
     plt.ylabel('Relative Error')
     plt.grid()
-
+    title=kwargs.get('title',None)
+    plt.title(title)
     for label, err in approx_data.items():
         ranks=np.arange(1,err.size+1)
         xmax=max(xmax,ranks[-1])

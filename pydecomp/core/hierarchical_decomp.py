@@ -15,6 +15,7 @@ from scipy.linalg import svd
 from collections import deque
 from utils.bytes2human import bytes2human
 from copy import deepcopy
+from analysis.plot import rank_benchmark_plotter
 
 
 class HierarchicalTensor():
@@ -67,22 +68,60 @@ class HierarchicalTensor():
         rep+= "-----------------------------------------------\n"
         rep+= "Printing tree structure, strating from root\n"
         rep+= "-----------------------------------------------\n"
-        for level in range(self.depth):
+        for level in range(self.depth+1):
+            rep+="Level {}\n".format(level+1)
             for node in Node.find_cluster(self.root, level):
                 rep+=str(node)
+            for leaf in Node.find_leaf(self.root):
+                if leaf.level == level:
+                    rep+=str(leaf)
             rep+= "-----------------------------------------------\n"
-            rep+="Increasing depth to {}\n".format(level+1)
-        rep+= "Printing leaves\n"
-        for leaf in Node.find_leaf(self.root):
-            rep+=str(leaf)
+        # for leaf in Node.find_leaf(self.root):
+            # rep+=str(leaf)
         return rep
 
-    def plot_singular_values(self,show=True,plot_name="figures/HT_sing_vals"):
-        for level in range(self.depth):
-            for node in Node.find_cluster(self.root, level):
-                node.plot_singular_values(show,plot_name)
-        for leaf in Node.find_leaf(self.root):
-            node.plot_singular_values(show,plot_name)
+    def plot_singular_values(self,show=True,type="interpretation",plot_name="figures/HT_sing_vals"):
+        if type=="level":
+            #pure level loop
+            for level in range(1,self.depth+1):
+                rank_data={}
+                for node in Node.find_cluster(self.root, level):
+                    index=str(node.indices)
+                    rank_data[index]=node.s
+                for leaf in Node.find_leaf(self.root):
+                    if leaf.level == level:
+                        index=str(leaf.indices)
+                        rank_data[index]=leaf.s
+                rank_benchmark_plotter(rank_data, show=True,
+                                    plot_name=plot_name+"level_{}.pdf".format(level),
+                                    title="Level {} nodes and leaves".format(level),
+                                    ylabel="Singular Values")
+
+        if type=="interpretation":
+            #looping on clusters per level
+            for level in range(1,self.depth):
+                rank_data={}
+                for node in Node.find_cluster(self.root, level):
+                    index=str(node.indices)
+                    rank_data[index]=node.s
+                try:
+                    rank_benchmark_plotter(rank_data, show=True,
+                                        plot_name=plot_name+"level_{}.pdf".format(level),
+                                        title="level {} nodes".format(level),
+                                        ylabel="Singular Values")
+                except:
+                    print("Nothing to plot, skipping "+index)
+
+            rank_data={}
+            for leaf in Node.find_leaf(self.root):
+                index=str(leaf.indices)
+                rank_data[index]=leaf.s
+                plot_name+="leaves.pdf"
+            rank_benchmark_plotter(rank_data, show=True,
+                        plot_name=plot_name+"leaf_plot.pdf".format(level),
+                        title="Leaf plot nodes".format(level),
+                        ylabel="Singular Values")
+
         return
 
 
@@ -148,7 +187,10 @@ class Node:
         rep ="Node {}\n".format(self.indices)
         rep+="is leaf :{}\n".format(self.is_leaf)
         rep+="rank:{}\n".format(self.rank)
-        rep+="Sigma:{}\n".format(self.s[:min(self.s.size,8)])
+        try:
+            rep+="Sigma[0:8]:{}\n".format(self.s[0:8])
+        except:
+            rep+="No Sigma"
         if self.is_leaf:
             rep+="With U.shape={}\n".format(self.u.shape)
         else:
@@ -156,10 +198,14 @@ class Node:
         return rep
 
     def plot_singular_values(self,show=True,plot_name=""):
-        index=str(self.indices)
+        index="node_"+str(self.indices)
         rank_data={index:self.s}
+        print(index)
         plot_name+=index+".pdf"
-        rank_benchmark_plotter(rank_data, show=True, plot_name=plot_name)
+        try:
+            rank_benchmark_plotter(rank_data, show=True, plot_name=plot_name)
+        except:
+            print("Nothing to plot, skipping "+index)
 
     @staticmethod
     def indices_tree(n_mode):
@@ -215,18 +261,21 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
         #x_ = np.copy(x)
         if eps_tuck==None: eps_tuck=epsilon
         ##compute leaf decomposition by HOSVD first
-        tucker,s= THOSVD(x,eps_tuck, rank=rmax, solver='EVD',export_s=True)
+        tucker,sigma= THOSVD(x,eps_tuck, rank=rmax, solver='EVD',export_s=True)
         print("tucker decomposition CR={:.2f}%".format(100*tucker.memory_eval()/np.product(x.shape)))
         print("Tucker error:{:.2e}".format(np.linalg.norm(tucker.to_full()-x)/np.linalg.norm(x)))
     elif type(x)==TuckerTensor:
+        print("Tucker alone")
         tucker= deepcopy(x)
-    elif type(x)==list:
+    elif type(x)==list or type(x)==tuple:
+        print("Tucker and s")
         tucker= deepcopy(x[0])
         sigma= x[1]
     else:
+        print(type(x))
         raise Exception("something went wrong with x type")
 
-    shape = np.array(x.shape)
+    shape = np.array(tucker.shape)
     n_mode = len(shape)
     root, level_max = Node.indices_tree(n_mode)
     x_=tucker.core
@@ -262,6 +311,7 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
             if level == 0:
                 node.rank = 1
                 u = x_mat
+                node.s=1
             else:
                 u, s, v = TSVD( x_mat, epsilon=epsilon, rank=rmax, solver='EVD')
                 if verbose>1:
@@ -331,7 +381,8 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbo
         tucker=x
     else :
         print("computing Tucker decomposition with eps={}".format(eps_tuck))
-        tucker=THOSVD(x,eps_tuck, rank=rmax, solver='EVD')
+        tucker=THOSVD(x,eps_tuck, rank=rmax, solver='EVD',export_s=True)
+
     norm_full={"L1":norm(x,type="L1"),
             "L2":norm(x,type="L2"),
             "Linf":norm(x,type="Linf")}

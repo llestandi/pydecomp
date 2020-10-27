@@ -168,6 +168,6 @@ def THOSVD(F,epsilon = 1e-13, rank=100, solver='EVD',export_s=False):
     W=ta.multilinear_multiplication(PHIT,F,dim)
     Decomposed_Tensor=TuckerTensor(W,PHI)
     if export_s:
-        return Decomposed_Tensor, s
+        return Decomposed_Tensor, sigma
     else:
         return Decomposed_Tensor
