@@ -190,11 +190,13 @@ class Node:
         try:
             rep+="Sigma[0:8]:{}\n".format(self.s[0:8])
         except:
-            rep+="No Sigma"
+            rep+="No Sigma\n"
         if self.is_leaf:
             rep+="With U.shape={}\n".format(self.u.shape)
         else:
             rep+="with B.shape={}\n".format(self.b.shape)
+            if self.level==0:
+                rep+=str(self.b)    
         return rep
 
     def plot_singular_values(self,show=True,plot_name=""):
