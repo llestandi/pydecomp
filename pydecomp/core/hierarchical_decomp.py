@@ -77,6 +77,14 @@ class HierarchicalTensor():
             rep+=str(leaf)
         return rep
 
+    def plot_singular_values(self,show=True,plot_name=""):
+        for level in range(self.depth):
+            for node in Node.find_cluster(self.root, level):
+
+        for leaf in Node.find_leaf(self.root):
+
+        return
+
 
     def to_full(self):
         """ leaf to root reconstruction HT tensor.
@@ -124,6 +132,7 @@ class Node:
         self.is_leaf = is_leaf
         self.level = level
         self.u = None
+        self.s=None
         self.b = None
 
     def set_rank(self, rank):
@@ -139,11 +148,16 @@ class Node:
         rep ="Node {}\n".format(self.indices)
         rep+="is leaf :{}\n".format(self.is_leaf)
         rep+="rank:{}\n".format(self.rank)
+        rep+="Sigma:{}\n".format(self.s[:min(self.s.size,8)])
         if self.is_leaf:
             rep+="With U.shape={}\n".format(self.u.shape)
         else:
             rep+="with B.shape={}\n".format(self.b.shape)
         return rep
+
+    def plot_singular_values(self,show=True,plot_name=""):
+        rank_data={str(self.indices)=self.s}
+        rank_benchmark_plotter(rank_data, show=True, plot_name="plots/benchmark.pdf",**kwargs))
 
     @staticmethod
     def indices_tree(n_mode):
@@ -194,16 +208,19 @@ class Node:
 
 
 # leaf to root truncation
-def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD'):
+def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',verbose=0):
     if type(x)==np.ndarray:
         #x_ = np.copy(x)
         if eps_tuck==None: eps_tuck=epsilon
         ##compute leaf decomposition by HOSVD first
-        tucker= THOSVD(x,eps_tuck, rank=100, solver='EVD')
+        tucker,s= THOSVD(x,eps_tuck, rank=rmax, solver='EVD',export_s=True)
         print("tucker decomposition CR={:.2f}%".format(100*tucker.memory_eval()/np.product(x.shape)))
         print("Tucker error:{:.2e}".format(np.linalg.norm(tucker.to_full()-x)/np.linalg.norm(x)))
     elif type(x)==TuckerTensor:
         tucker= deepcopy(x)
+    elif type(x)==list:
+        tucker= deepcopy(x[0])
+        sigma= x[1]
     else:
         raise Exception("something went wrong with x type")
 
@@ -216,6 +233,7 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD'):
         dim=node.indices[0]
         node.rank=tucker.rank[dim]
         node.set_u(tucker.u[dim])
+        node.s=sigma[dim]
 
     rmax -= 1
     # compute cluster decomposition
@@ -241,9 +259,11 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD'):
                 u = x_mat
             else:
                 u, s, v = TSVD( x_mat, epsilon=epsilon, rank=rmax, solver='EVD')
-                print(np.log10(s))
+                if verbose>1:
+                    print(np.log10(s))
                 vt = v.T
                 node.rank = s.size
+                node.s=s
 
             #setting b
             b = np.reshape(u, [node.left.rank, node.right.rank, node.rank])
@@ -302,7 +322,11 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbo
 
     **return** dict of relative error for L1,L2,Linf and associated compression rate
     """
-    tucker=THOSVD(x,eps_tuck, rank=rmax, solver='EVD')
+    if type(x)==TuckerTensor:
+        tucker=x
+    else :
+        print("computing Tucker decomposition with eps={}".format(eps_tuck))
+        tucker=THOSVD(x,eps_tuck, rank=rmax, solver='EVD')
     HT_list={}
     norm_full={"L1":norm(x,type="L1"),
             "L2":norm(x,type="L2"),
@@ -322,8 +346,6 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbo
             print(HT_list[eps].rank)
         elif verbose>1:
             print(HT_list[eps])
-    if verbose>1:
-        print(HT_list[eps])
 
     return actual_error, np.asarray(comp_rate), reconstruction
 

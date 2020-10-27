@@ -142,7 +142,7 @@ def STHOSVD(F,epsilon = 1e-13, rank=-1, solver='EVD'):
     return Decomposed_Tensor
 
 
-def THOSVD(F,epsilon = 1e-13, rank=100, solver='EVD'):
+def THOSVD(F,epsilon = 1e-13, rank=100, solver='EVD',export_s=False):
     """
     This method decomposes a ndarray type data (multivariable) in a Tucker
     class element by using the Tuncated High Order Singular Value Decomposition
@@ -158,12 +158,16 @@ def THOSVD(F,epsilon = 1e-13, rank=100, solver='EVD'):
     tshape=F.shape
     dim=len(tshape)
     PHI=[]
+    sigma=[]
     for i in range(dim):
         Fmat=ta.matricize(F,i)
-        phi,sigma,A=TSVD(Fmat, epsilon=epsilon, rank=rank, solver=solver)
+        phi,s,A=TSVD(Fmat, epsilon=epsilon, rank=rank, solver=solver)
         PHI.append(phi)
+        sigma.append(s)
     PHIT=misc.list_transpose(PHI)
     W=ta.multilinear_multiplication(PHIT,F,dim)
     Decomposed_Tensor=TuckerTensor(W,PHI)
-
-    return Decomposed_Tensor
+    if export_s:
+        return Decomposed_Tensor, s
+    else:
+        return Decomposed_Tensor
