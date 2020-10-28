@@ -100,7 +100,6 @@ def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pd
     plt.rc('legend', fontsize=12)
     styles=['r+-','bx--','k1-','g2--','m3--']
     fig=plt.figure(figsize=(7,6))
-    xmax=1
     ylim=[0.1,0.1]
     k=0
     plt.yscale('log')
@@ -110,6 +109,7 @@ def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pd
     plt.grid()
     title=kwargs.get('title',None)
     plt.title(title)
+    xmax=0
     for label, err in approx_data.items():
         ranks=np.arange(1,err.size+1)
         xmax=max(xmax,ranks[-1])
@@ -157,7 +157,10 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
             "SHO_SVD reshaped":'ro--',
             "TT_SVD vectorized":'k+-',
             "TT_SVD reshaped":'ko--',
-            "HT":'b+-'}
+            "HT":'b+-',
+            "HT_2":'m+--'
+            }
+
     fig=plt.figure()
     xmax=0.1
     ylim=[0.1,0.1]
@@ -182,6 +185,9 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
         xmax=max(xmax,comp_rate[-1])
         ylim=[min(ylim[0],err[-1]),max(ylim[1],err[0])]
         ax=fig.add_subplot(111)
+        #user superseed
+        xmax=kwargs.get('xmax',xmax)
+        ylim[0]=kwargs.get('ymin',ylim[0])
         ax.set_xlim(0,xmax)
         ax.set_ylim(ylim)
         plt.plot(comp_rate, err , styles[label], **linestyle, label=label)

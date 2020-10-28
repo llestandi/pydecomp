@@ -9,7 +9,7 @@ from math import log
 from core.TSVD import TSVD
 from core.tensor_algebra import norm
 from core.tucker_decomp import THOSVD
-from core.Tucker import TuckerTensor
+from core.Tucker import TuckerTensor, truncate
 import scipy.io as sio
 from scipy.linalg import svd
 from collections import deque
@@ -79,6 +79,19 @@ class HierarchicalTensor():
         # for leaf in Node.find_leaf(self.root):
             # rep+=str(leaf)
         return rep
+
+    def get_rank(self):
+        "return a dictionnary of nodes with their rank"
+        rank={}
+        for level in range(1,self.depth+1):
+            for node in Node.find_cluster(self.root, level):
+                try:
+                    rank[str(node.indices)]=node.rank
+                except:
+                    rank[str(node.indices)]=node.s.size
+            for node in Node.find_leaf(self.root, level):
+                rank[str(node.indices)]=node.rank
+        return rank
 
     def plot_singular_values(self,show=True,type="interpretation",plot_name="figures/HT_sing_vals"):
         if type=="level":
@@ -196,7 +209,7 @@ class Node:
         else:
             rep+="with B.shape={}\n".format(self.b.shape)
             if self.level==0:
-                rep+=str(self.b)    
+                rep+=str(self.b[:,:,0])+"\n"
         return rep
 
     def plot_singular_values(self,show=True,plot_name=""):
@@ -365,7 +378,7 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
     HT.memory_eval()
     return HT
 
-def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbose=0):
+def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],mode="heterogenous",eps_tuck=1e-4,rmax=200,verbose=0):
     """
     Computes approximation for epsilon consequence and return error data.
     Since trunction is not straightforward, HOSVD is kept and a new HT L2R
@@ -374,6 +387,7 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbo
     **inputs**
         - x : ndarray containing data of intest
         - eps_list : list of epsilon to be sampled
+        - mode :["heterogenous" for a single fine eps_tuck, "homogenous" for eps_tuck=eps]
         - eps_tuck : epsilon used in the unique HOSVD
         - rmax : is the maximum rank for any node, particularly restrictive for middle nodes
 
@@ -383,17 +397,32 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],eps_tuck=1e-4,rmax=200,verbo
         tucker=x
     else :
         print("computing Tucker decomposition with eps={}".format(eps_tuck))
-        tucker=THOSVD(x,eps_tuck, rank=rmax, solver='EVD',export_s=True)
+        tucker,sigma=THOSVD(x,eps_tuck, rank=rmax, solver='EVD',export_s=True)
+    print("Computed Common Tucker decomposition")
+    print("Tucker rank :{}".format(tucker.rank))
 
     norm_full={"L1":norm(x,type="L1"),
             "L2":norm(x,type="L2"),
             "Linf":norm(x,type="Linf")}
+    print("Tucker approx error is {:.2e}".format(norm(x-tucker.to_full(),type="L2"),norm_full["L2"]))
+    print("Now computing HT "+mode)
     actual_error={"L1":[],"L2":[],"Linf":[]}
     comp_rate=[]
     for eps in eps_list:
+        if mode=="homogenous":
+            #cutting to epsilon
+            sigma_work=[s/s[0] for s in sigma]
+            sigma_work=[s[(s>eps)] for s in sigma_work]
+            trunc_rank=[len(s) for s in sigma_work]
+            tucker_work=truncate(tucker,trunc_rank)
+        else:
+            tucker_work=tucker
+            sigma_work=sigma
         if verbose>0:
+            print("-----------------------------------")
             print("Running HT for eps={}".format(eps))
-        HT=compute_HT_decomp(tucker,eps,rmax=rmax)
+            print("With leaf rank: ".format(tucker_work.rank))
+        HT=compute_HT_decomp([tucker_work,sigma_work],eps,rmax=rmax)
         reconstruction=HT.to_full()
         comp_rate.append(HT.compression_rate)
         actual_error["L1"].append(norm(x-reconstruction,type="L1")/norm_full["L1"])
