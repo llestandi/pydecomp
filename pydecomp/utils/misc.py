@@ -65,6 +65,11 @@ def integration_1dtrap(f,x):
 def rank_sampling(maxrank,sampling="default"):
     """Returns a sampling of ranks for approximation error plots"""
     print("Sampling parameter set to"+sampling)
+    if maxrank<16:
+        rank_sampling=[i+1 for i in range(maxrank)]
+        print("overriding sampling method due to very small rank: {}".format(rank_sampling))
+        return rank_sampling
+
     if sampling=="sparse":
         if maxrank>25:
             rank_sampling=[i for i in np.arange(1,11,2)] +[15,20,30,45]\

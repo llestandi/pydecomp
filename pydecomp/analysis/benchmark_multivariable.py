@@ -28,7 +28,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,
                               output_decomp=[],
                               plot_name='output/approx_benchmark', tol=1e-5,
-                              which_norm="L2"):
+                              which_norm="L2",**kwargs):
     """
     This function allows to see how the differents functions in the python
     decomposition library work. Differents equations (1 to 3) are avaible
@@ -104,7 +104,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
     """
     dim=len(shape)
     domain=[0,1]
-    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'QTT_SVD', 'SHO_POD','RPOD','TT_SVD','HT']
+    acepted_reduction_method=['PGD','THO_SVD','STHO_SVD','HO_POD', 'QTT_SVD', 'SHO_POD','RPOD','TT_SVD','HT','HT_2']
     acepted_integration_methods=['trapezes','SVD']
     number_plot=0
     approx_data={}
@@ -242,25 +242,29 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             except:
                 print("QTT_SVD has been removed since it did not converge. \n It is very sensitive to conditionning and may not converge")
                 continue
-        elif reduction_method=='HT':
-            eps_list=[1e-1,1e-2,1e-4,1e-4,1e-5,1e-6,1e-7,1e-8,1e-12,1e-14]
-            for eps in eps_list:
-                if eps < tol: eps_list.remove(eps)
+        elif reduction_method=='HT_2':
+            eps_list=[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7,1e-8,1e-9,1e-10,1e-12,1e-13,1e-14]
+            eps_list=[item for item in eps_list if item>tol]
             Result=HT_build_error_data(F,eps_list,eps_tuck=tol,rmax=200)
-            print(Result)
             # by construction we need to evaluate errors before hand
             approx_data[reduction_method]=np.stack([Result[0][which_norm],Result[1]])
+        if reduction_method=="HT":
+            eps_list=[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7,1e-8,1e-9,1e-10,1e-12,1e-13,1e-14]
+            eps_list=[item for item in eps_list if item>tol]
+            Result=HT_build_error_data(F,eps_list,mode="homogenous",eps_tuck=tol,rmax=200)
+            approx_data[reduction_method]=np.stack([Result[0][which_norm],Result[1]])
+
         print("{} decompostion time: {:.2f} s".format(reduction_method,time.time()-t))
 
         if plot:
             if type(Result)==TuckerTensor:
-                approx_data[reduction_method]=np.stack(tucker_error_data(Result,F,Norm=which_norm))
+                approx_data[reduction_method]=np.stack(tucker_error_data(Result,F,Norm=which_norm,sampling="exponential_fine"))
             elif type(Result)==RecursiveTensor:
                 approx_data[reduction_method]=np.stack(rpod_error_data(Result,F,Norm=which_norm))
             elif type(Result)==CanonicalTensor:
                 approx_data[reduction_method]=np.stack(canonical_error_data(Result,F,Norm=which_norm))
             elif type(Result)==TensorTrain:
-                approx_data[reduction_method]=np.stack(error_TT_data(Result,F,Norm=which_norm))
+                approx_data[reduction_method]=np.stack(error_TT_data(Result,F,Norm=which_norm,sampling="exponential_fine"))
             elif type(Result)==QuanticsTensor:
                 Result.eval_approx_error(Norm=which_norm)
                 approx_data[reduction_method]=np.stack(Result.Approx_error)
@@ -275,7 +279,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
             pass
 
     if plot:
-        benchmark_plotter(approx_data, show_plot, plot_name)
+        benchmark_plotter(approx_data, show_plot, plot_name,**kwargs)
     return
 
 
@@ -364,6 +368,17 @@ def testf(test_function, shape, dim, domain ):
                 equation=equation+aux
         equation=equation+')'
     elif test_function==3:
+        equation='1./(np.sqrt(1.1 -'
+        for i in range(dim):
+            if i<dim-1:
+                aux='V['+str(i)+']*'
+                equation+=aux
+            else:
+                aux='V['+str(i)+']'
+                equation=equation+aux
+        equation+="))"
+        print(equation)
+    elif test_function==4:
         equation=''
         for i in range(dim):
             if i<dim-1:
@@ -372,7 +387,6 @@ def testf(test_function, shape, dim, domain ):
             else:
                 aux='V['+str(i)+']'
                 equation=equation+aux
-
 
     Function=tensor_creator.TensorCreator()
     #Creating the variables required for TensorCreator from the data

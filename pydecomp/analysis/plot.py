@@ -4,7 +4,7 @@ import numpy as np
 def mode_1D_plot(modes_dict,show=True,plot_name=None):
     """This function plots 1D modes and gives PDF and plot"""
 
-    font = {'family' : 'normal',
+    font = {'family' : 'serif',
         'size'   : 14}
 
     plt.rc('font', **font)
@@ -47,7 +47,7 @@ def mode_1D_plot(modes_dict,show=True,plot_name=None):
 def simple_1D_plot(modes,grid,x_label="X",show=True,plot_name=None):
     """This function plots 1D modes and gives PDF and plot"""
 
-    font = {'family' : 'normal',
+    font = {'family' : 'serif',
         'size'   : 14}
 
     plt.rc('font', **font)
@@ -93,7 +93,7 @@ def rank_benchmark_plotter(approx_data, show=True, plot_name="plots/benchmark.pd
     *show* [bool]        whether the plot is shown or not
     *plot_name* [str]    plot output location, if empty string, no plot
     """
-    font = {'family' : 'normal',  'size'   : 13}
+    font = {'family' : 'serif',  'size'   : 13}
 
     plt.rc('font', **font)
     linestyle={'linewidth':2,'markersize':6, 'markeredgewidth':2}
@@ -139,26 +139,27 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     *show* [bool]        whether the plot is shown or not
     *plot_name* [str]    plot output location, if empty string, no plot
     """
-    styles={"HO_POD":'r+--',
-            "HO_SVD":'r+:',
-            "HOSVD":'r+:',
+    styles={"HO_POD":'go--',
+            "HO_SVD":'co:',
+            "HOSVD":'co:',
+            "THO_SVD":'c+-',
             "SHO_POD":'g+-',
             "ST_HOSVD":'g*-',
-            "STHO_SVD":'g*-',
+            "STHO_SVD":'g*--',
             "SHO_SVD":'g*-',
-            "RPOD":'b+-',
-            "RSVD":'b*-',
-            "TT_POD":"k+-",
-            "TT_SVD":'k*-',
-            "TT":'k*-',
-            "QTT_SVD":'c+:',
-            "PGD":'mh--',
             "SHO_SVD vectorized":'r+-',
             "SHO_SVD reshaped":'ro--',
             "TT_SVD vectorized":'k+-',
             "TT_SVD reshaped":'ko--',
-            "HT":'b+-',
-            "HT_2":'m+--'
+            "TT_POD":"k+-",
+            "TT_SVD":'k+-',
+            "TT":'k+-',
+            "QTT_SVD":'k*:',
+            "RPOD":'b+-',
+            "RSVD":'b*-',
+            "PGD":'y--',
+            "HT":'r+-',
+            "HT_2":'rx--'
             }
 
     fig=plt.figure()
@@ -167,10 +168,11 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
     k=0
     plt.yscale('log')
     plt.xlabel("Compresion rate (%)")
-    plt.ylabel('Relative Error')
+    ylabel=kwargs.get('ylabel','Relative Error')
+    plt.ylabel(ylabel)
     plt.grid()
 
-    font = {'family' : 'normal',  'size'   : 13}
+    font = {'family' : 'serif',  'size'   : 13}
     plt.rc('font', **font)
     linestyle={'linewidth':2}
     plt.rc('legend', fontsize=12)
@@ -223,7 +225,7 @@ def benchmark_norm_plotter(approx_data, show=True, plot_name="",**kwargs):
     plt.ylabel('Relative Error')
     plt.grid()
 
-    font = {'family' : 'normal',  'size'   : 13}
+    font = {'family' : 'serif',  'size'   : 13}
     plt.rc('font', **font)
     linestyle={'linewidth':2}
     plt.rc('legend', fontsize=12)
@@ -279,7 +281,7 @@ def exp_data_decomp_plotter(approx_data, show=True, plot_name="",**kwargs):
     plt.ylabel('Relative Error')
     plt.grid()
 
-    font = {'family' : 'normal',  'size'   : 13}
+    font = {'family' : 'serif',  'size'   : 13}
     plt.rc('font', **font)
     linestyle={'linewidth':2}
     plt.rc('legend', fontsize=12)
@@ -288,12 +290,12 @@ def exp_data_decomp_plotter(approx_data, show=True, plot_name="",**kwargs):
     if title:
         plt.title(title)
 
+    ax=fig.add_subplot(111)
     for label, data in approx_data.items():
         err=data[0,:]
         comp_rate=100*data[1,:]
         xmax=max(xmax,comp_rate[-1])
         ylim=[min(ylim[0],err[-1]),max(ylim[1],err[0])]
-        ax=fig.add_subplot(111)
         ax.set_xlim(0,xmax)
         ax.set_ylim(ylim)
         plt.plot(comp_rate, err , styles[label], **linestyle, label=label)

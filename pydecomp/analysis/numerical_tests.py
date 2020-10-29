@@ -62,17 +62,17 @@ def Vega_test(cases):
         n=16
         d=5
         err_data={}
-        decomp_methods=["SHO_POD","SHO_SVD","TT_POD","TT_SVD"]
-        decomp_methods=["RPOD",'RSVD',"SHO_POD","SHO_SVD","TT_SVD","TT_POD"]
-        decomp_methods=["TT_SVD","QTT_SVD","HT","SHO_SVD"]
-        solver=["trapezes" for i in range(len(decomp_methods))]
-        path='../output/vega_func/'
+        # decomp_methods=["SHO_POD","SHO_SVD","TT_POD","TT_SVD"]
+        # decomp_methods=["RPOD",'RSVD',"SHO_POD","SHO_SVD","TT_SVD","TT_POD"]
+        decomp_methods=["HT","SHO_SVD",'TT_SVD',"QTT_SVD"]
+        solver=["SVD" for i in range(len(decomp_methods))]
+        path='../output/'
         shape=[n for x in range(d)]
-        plot_name=path+'vega_all_methods_n20.pdf'.format(d)
+        plot_name=path+'vega_all_methods_n={}.pdf'.format(n)
         plot_title="Vega function decomposition, n={}".format(n)
         err_data=multi_var_decomp_analysis(decomp_methods, solver ,shape=shape,
-                            test_function="Vega", plot=True,output='../output/num_dim_test/',
-                            Frob_norm=True,  plot_name='',
+                            test_function="Vega", plot=True,output='../output/num_dim_test',
+                            Frob_norm=True,  plot_name=plot_name,
                             tol=1e-6, plot_title=plot_title)
     if 2 in cases:
         print("\n ===================================\
@@ -237,6 +237,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                                       not implemented".format(integration_method))
 
         t=time.time()
+        print(reduction_method)
         if reduction_method=='PGD':
             Result=PGD(M,F,epenri=np.sqrt(tol))
         elif reduction_method=='HO_POD':
@@ -245,7 +246,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
             Result=SHOPOD(F,M,tol=tol)
         elif reduction_method=='THO_SVD':
             Result=THOSVD(F)
-        elif reduction_method=='SHO_SVD':
+        elif reduction_method in ["SHO_SVD","ST_HOSVD","STHO_SVD"]:
             Result=STHOSVD(F,epsilon=tol)
         elif reduction_method=='RPOD':
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=tol)
@@ -257,12 +258,10 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
             Result=TT_SVD(F, tol)
         elif reduction_method=='QTT_SVD':
             Result=QTT_SVD(F,2,tol=tol)
-        elif reduction_method=='HT':
-            eps_list=[1e-1,1e-2,1e-4,1e-4,1e-5,1e-6,1e-7,1e-8,1e-12,1e-14]
-            for eps in eps_list:
-                if eps < tol: eps_list.remove(eps)
-            Result=HT_build_error_data(F,eps_list,eps_tuck=tol,rmax=200)
-            # by construction we need to evaluate errors before hand
+        elif reduction_method=="HT":
+            eps_list=[1e-1,1e-2,1e-3,1e-4,1e-5,1e-6,1e-7,1e-8,1e-9,1e-10,1e-12,1e-13,1e-14]
+            eps_list=[item for item in eps_list if item>tol]
+            Result=HT_build_error_data(F,eps_list,mode="homogenous",eps_tuck=tol,rmax=200)
             approx_data[reduction_method]=np.stack([Result[0]["L2"],Result[1]])
         else:
             raise AttributeError("reduction_method : '{}' is not a valid method".format(reduction_method))
@@ -283,7 +282,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                 approx_data[reduction_method]=np.stack(error_TT_data(Result,F,M=M))
             elif type(Result)==QuanticsTensor:
                 Result.eval_approx_error(Norm="L2")
-                approx_data[reduction_method]=np.stack(Result.approx_error)
+                approx_data[reduction_method]=np.stack(Result.Approx_error)
             print("{} Error evaluation time: {:.2f} s".format(reduction_method,time.time()-t))
 
         try:

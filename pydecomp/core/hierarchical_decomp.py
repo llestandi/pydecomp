@@ -280,10 +280,8 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
         print("tucker decomposition CR={:.2f}%".format(100*tucker.memory_eval()/np.product(x.shape)))
         print("Tucker error:{:.2e}".format(np.linalg.norm(tucker.to_full()-x)/np.linalg.norm(x)))
     elif type(x)==TuckerTensor:
-        print("Tucker alone")
         tucker= deepcopy(x)
     elif type(x)==list or type(x)==tuple:
-        print("Tucker and s")
         tucker= deepcopy(x[0])
         sigma= x[1]
     else:
@@ -428,7 +426,7 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],mode="heterogenous",eps_tuck
         actual_error["L1"].append(norm(x-reconstruction,type="L1")/norm_full["L1"])
         actual_error["L2"].append(norm(x-reconstruction,type="L2")/norm_full["L2"])
         actual_error["Linf"].append(norm(x-reconstruction,type="Linf")/norm_full["Linf"])
-        if verbose>0:
+        if verbose>2:
             print(HT.rank)
 
     return actual_error, np.asarray(comp_rate), HT
