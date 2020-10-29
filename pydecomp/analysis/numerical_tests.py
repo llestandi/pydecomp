@@ -263,6 +263,7 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
             eps_list=[item for item in eps_list if item>tol]
             Result=HT_build_error_data(F,eps_list,mode="homogenous",eps_tuck=tol,rmax=200)
             approx_data[reduction_method]=np.stack([Result[0]["L2"],Result[1]])
+
         else:
             raise AttributeError("reduction_method : '{}' is not a valid method".format(reduction_method))
         print("{} decompostion time: {:.3f} s".format(reduction_method,time.time()-t))
@@ -284,7 +285,10 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                 Result.eval_approx_error(Norm="L2")
                 approx_data[reduction_method]=np.stack(Result.Approx_error)
             print("{} Error evaluation time: {:.2f} s".format(reduction_method,time.time()-t))
-
+            benchmark_norm_plotter(error_data[method], show=show,
+                plot_name="output_{}_decomp_error_{}d_powderscale".format(method,len(shape)),
+                plot_title="Singular Function {} approximation errors"
+                )
         try:
             if output!='':
                 np.savetxt(output+"/"+reduction_method+".csv",
@@ -292,8 +296,6 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                   delimiter=',')
         except:
             pass
-    print(plot_name)
-    print(plot)
     if plot:
         benchmark_plotter(approx_data, show_plot, plot_name=plot_name,title=plot_title)
     return approx_data
