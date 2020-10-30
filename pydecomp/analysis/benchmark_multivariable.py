@@ -231,7 +231,7 @@ def benchmark_multivariable(list_reduction_method, integration_method,
         elif reduction_method=='THO_SVD':
             Result=THOSVD(F)
         elif reduction_method=='STHO_SVD':
-            Result=STHOSVD(F)
+            Result=STHOSVD(F,tol=tol)
         elif reduction_method=='RPOD':
             Result=rpod(F, int_weights=M, POD_tol=1e-16,cutoff_tol=tol)
         elif reduction_method=='TT_SVD':

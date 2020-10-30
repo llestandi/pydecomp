@@ -89,8 +89,8 @@ class HierarchicalTensor():
                     rank[str(node.indices)]=node.rank
                 except:
                     rank[str(node.indices)]=node.s.size
-            for node in Node.find_leaf(self.root, level):
-                rank[str(node.indices)]=node.rank
+        for node in Node.find_leaf(self.root):
+            rank[str(node.indices)]=node.rank
         return rank
 
     def plot_singular_values(self,show=True,type="interpretation",plot_name="figures/HT_sing_vals"):
@@ -277,8 +277,9 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
         if eps_tuck==None: eps_tuck=epsilon
         ##compute leaf decomposition by HOSVD first
         tucker,sigma= THOSVD(x,eps_tuck, rank=rmax, solver='EVD',export_s=True)
-        print("tucker decomposition CR={:.2f}%".format(100*tucker.memory_eval()/np.product(x.shape)))
-        print("Tucker error:{:.2e}".format(np.linalg.norm(tucker.to_full()-x)/np.linalg.norm(x)))
+        if verbose>0:
+            print("tucker decomposition CR={:.2f}%".format(100*tucker.memory_eval()/np.product(x.shape)))
+            print("Tucker error:{:.2e}".format(np.linalg.norm(tucker.to_full()-x)/np.linalg.norm(x)))
     elif type(x)==TuckerTensor:
         tucker= deepcopy(x)
     elif type(x)==list or type(x)==tuple:
