@@ -44,8 +44,9 @@ def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
         try:
             u,s,v = SVD_by_EVD(F,tol=epsilon,rank=rank)
         except:
-            print("Try EVD but it failed, trying the iterative solver")
-            u,s,v= TSVD(F, epsilon, rank, solver='PRIMME')
+            print("Try EVD but it failed, the iterative solver")
+            raise RuntimeError("not willing to try primme on gigantic data")
+            #u,s,v= TSVD(F, epsilon, rank, solver='PRIMME')
             print("new singular values :{}".format(s))
 
     elif solver=='PRIMME':
@@ -89,8 +90,9 @@ def SVD_by_EVD(F,tol=0,rank=-1):
     sigma=np.sqrt(Lambda)
     if np.isnan(sigma).any():
         print(Lambda)
-        print("EVD returns negative number leading to nan in sigma")
-        return
+        print("EVD returns negative number leading to nan \
+              in sigma going to shorten")      
+        
     r=sigma.size
     inv_sigma=np.reshape(1/sigma,(r,1))
 

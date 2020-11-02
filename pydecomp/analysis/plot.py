@@ -251,6 +251,7 @@ def benchmark_norm_plotter(approx_data, show=True, plot_name="",**kwargs):
     plt.legend()
     if show:
         plt.show()
+    print(plot_name)
     fig.savefig(plot_name, bbox_inches='tight')
     plt.close()
 
