@@ -45,8 +45,10 @@ def multilinear_multiplication(PHI,F,dim):
     for i in range(dim):
         shape_W[0],shape_W[i]=shape_W[i],shape_W[0]
         W=np.swapaxes(W,0,i)
-        F_mat=matricize(W, 0)
-        W=np.matmul(PHI2[i],F_mat)
+        F_mat=matricize(W, 0) 
+        #this copy greatly improves the speed of the multilinear multiplication at very little cost
+        phi=np.copy(PHI2[i])
+        W=phi @ F_mat
         #W=PHI2[i]@matricize(W, 0)
         shape_W[0]=W.shape[0]
         W = W.reshape(shape_W)

@@ -16,6 +16,7 @@ from collections import deque
 from utils.bytes2human import bytes2human
 from copy import deepcopy
 from analysis.plot import rank_benchmark_plotter
+import time
 
 
 class HierarchicalTensor():
@@ -138,40 +139,47 @@ class HierarchicalTensor():
         return
 
 
-    def to_full(self):
+    def to_full(self,clean=True):
         """ leaf to root reconstruction HT tensor.
         for each node, building U_t space from children U_l, U_r AND cluster tensor B
         **return** [ndarray], full order representation of HT"""
-        for level in range(self.depth, -1, -1):
-            for node in Node.find_cluster(self.root, level):
-                #for each node, building U_t space from children U_l, U_r AND cluster tensor B
-                shape_b = np.array(np.shape(node.b))
-                b_mat = np.reshape(node.b, [node.left.rank, np.prod(shape_b[1:])])
+        
+        if self.root.u is None:
+            for level in range(self.depth, -1, -1):
+                for node in Node.find_cluster(self.root, level):
+                    #for each node, building U_t space from children U_l, U_r AND cluster tensor B
+                    shape_b = np.array(np.shape(node.b))
+                    b_mat = np.reshape(node.b, [node.left.rank, np.prod(shape_b[1:])])
 
-                shape_left = np.array(np.shape(node.left.u))
-                left_mat = np.reshape(node.left.u, [np.prod(shape_left[:-1]), node.left.rank])
+                    shape_left = np.array(np.shape(node.left.u))
+                    left_mat = np.reshape(node.left.u, [np.prod(shape_left[:-1]), node.left.rank])
 
-                left_b_mat = np.matmul(left_mat, b_mat)
-                left_b_mat = np.reshape(left_b_mat, [np.prod(shape_left[:-1]), node.right.rank, node.rank])
-                left_b_mat = np.transpose(left_b_mat, [0, 2, 1])
-                left_b_mat = np.reshape(left_b_mat, [np.prod(shape_left[:-1])*node.rank, node.right.rank])
+                    left_b_mat = np.matmul(left_mat, b_mat)
+                    left_b_mat = np.reshape(left_b_mat, [np.prod(shape_left[:-1]), node.right.rank, node.rank])
+                    left_b_mat = np.transpose(left_b_mat, [0, 2, 1])
+                    left_b_mat = np.reshape(left_b_mat, [np.prod(shape_left[:-1])*node.rank, node.right.rank])
 
-                shape_right = np.array(np.shape(node.right.u))
-                right_mat = np.reshape(node.right.u, [np.prod(shape_right[:-1]), node.right.rank])
-                right_mat = np.transpose(right_mat)
+                    shape_right = np.array(np.shape(node.right.u))
+                    right_mat = np.reshape(node.right.u, [np.prod(shape_right[:-1]), node.right.rank])
+                    right_mat = np.transpose(right_mat)
 
-                left_b_right_mat = np.matmul(left_b_mat, right_mat)
-                left_b_right_mat = np.reshape(left_b_right_mat, [np.prod(shape_left[:-1]), node.rank, np.prod(shape_right[:-1])])
+                    left_b_right_mat = np.matmul(left_b_mat, right_mat)
+                    left_b_right_mat = np.reshape(left_b_right_mat, [np.prod(shape_left[:-1]), node.rank, np.prod(shape_right[:-1])])
 
-                new_shape = np.concatenate([shape_left[:-1], [node.rank], shape_right[:-1]])
-                left_b_right = np.reshape(left_b_right_mat, new_shape)
-                rank_index = len(shape_left[:-1])
-                new_indices = np.concatenate([np.arange(0, rank_index), np.arange(rank_index+1, len(new_shape)), [rank_index]])
-                left_b_right = np.transpose(left_b_right, new_indices)
+                    new_shape = np.concatenate([shape_left[:-1], [node.rank], shape_right[:-1]])
+                    left_b_right = np.reshape(left_b_right_mat, new_shape)
+                    rank_index = len(shape_left[:-1])
+                    new_indices = np.concatenate([np.arange(0, rank_index), np.arange(rank_index+1, len(new_shape)), [rank_index]])
+                    left_b_right = np.transpose(left_b_right, new_indices)
 
-                node.set_u(left_b_right) # for internal nodes, u is a representation of the whole U_t space, with t={set of dimension}
-
+                    node.set_u(left_b_right) # for internal nodes, u is a representation of the whole U_t space, with t={set of dimension}        
         x_ht = np.squeeze(self.root.u)
+        #cleaning up so as not to clog the memory
+        if clean:
+            for level in range(self.depth, -1, -1):
+                for node in Node.find_cluster(self.root, level):
+                    node.set_u(None)
+            
         return x_ht
 
 
@@ -207,6 +215,10 @@ class Node:
         if self.is_leaf:
             rep+="With U.shape={}\n".format(self.u.shape)
         else:
+            try: 
+                rep+="With U.shape={}\n".format(self.u.shape)
+            except :
+                pass
             rep+="with B.shape={}\n".format(self.b.shape)
             if self.level==0:
                 rep+=str(self.b[:,:,0])+"\n"
@@ -308,6 +320,7 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
     for level in range(level_max, -1, -1):
         count = 0
         for node in Node.find_cluster(root, level):
+            start_time=time.time()
             if level < (level_max - 1):
                 cur_indices = np.arange(2*count, 2*(count+1))
                 cur_mode = 2 ** (level + 1)
@@ -346,8 +359,9 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
             trans_indices = np.concatenate([cur_indices, other_indices])
 
             x_mat_ = np.transpose(x_, trans_indices)
-            x_mat_ = np.reshape(x_mat_, [np.prod(shape_core[cur_indices]), np.prod(shape_core[other_indices])])
-            u_x_mat_ = np.matmul(u.T, x_mat_)
+            x_mat_ = np.reshape(x_mat_, [np.prod(shape_core[cur_indices]), np.prod(shape_core[other_indices])]) #this one needs not be copied (good news since it may be large)
+            uT=np.copy(u.T) #significantly speedup next matmul
+            u_x_mat_ = uT @ x_mat_
 
             new_indices = []
             for i in range(len(trans_indices)):
@@ -369,6 +383,8 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
             x_ = np.reshape(u_x_mat_, new_shape)
             x_ = np.transpose(x_, trans_indices)
             count += 1
+            if verbose>0:
+                print("Node {} has been computed in {}".format(node.indices, time.time()-start_time))
 
         x = x_
 
@@ -422,6 +438,7 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],mode="heterogenous",eps_tuck
             print("Running HT for eps={}".format(eps))
             print("With leaf rank: ".format(tucker_work.rank))
         HT=compute_HT_decomp([tucker_work,sigma_work],eps,rmax=rmax)
+        print(HT.get_rank())
         reconstruction=HT.to_full()
         comp_rate.append(HT.compression_rate)
         actual_error["L1"].append(norm(x-reconstruction,type="L1")/norm_full["L1"])

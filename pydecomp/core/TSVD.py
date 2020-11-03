@@ -71,7 +71,7 @@ def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
     return u,s,v
 
 
-def SVD_by_EVD(F,tol=0,rank=-1):
+def SVD_by_EVD(F,tol=0,rank=-1,test=False):
     """ This function returns the SVD by solving the EVD problem on F.T F or F F.T"""
 
     shape=F.shape
@@ -79,7 +79,8 @@ def SVD_by_EVD(F,tol=0,rank=-1):
     if shape[1]>shape[0]:
         F=F.T
         Transposed_POD=True
-
+    if max(F.shape) >1000 :
+        print("large SVD by EVD {}".format(F.shape))
     C=F.T@F
     Lambda , U =np.linalg.eigh(C)
     # Reversing order
