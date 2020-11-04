@@ -13,7 +13,8 @@ import numpy as np
 import math
 import core.TensorTrain as TT
 from core.TT_SVD import TT_SVD
-
+from time import time
+from core.tensor_algebra import norm
 class QuanticsTensor:
     """
     **Quantics Tensor Train Type Format**
@@ -108,13 +109,13 @@ class QuanticsTensor:
         raise NotImplementedError("not programmed yet")
         return
 
-    def applyTTSVD(self,eps=1e-3,rank=-1,MM=None):
+    def applyTTSVD(self,eps=1e-3,rank=-1,MM=None, cutoff=0.9):
         # I have observed some comvergence issue, trying with EVD first, then PRIMME
         try:
-            self.Approx_data=TT_SVD(self.data, eps, rank, MM)
+            self.Approx_data=TT_SVD(self.data, eps, rank, MM,QTTcutoff=cutoff)
         except:
             print("in applyTTSVD, EVD didn't converge, tyring PRIMME")
-            self.Approx_data=TT_SVD(self.data, eps, rank, MM, solver='PRIMME')
+            self.Approx_data=TT_SVD(self.data, eps, rank, MM, solver='PRIMME',cutoff=cutoff)
         self.rank=self.Approx_data.rank
         return
 
@@ -125,15 +126,45 @@ class QuanticsTensor:
     def eval_approx_error(self,M=None,Norm="L2"):
         self.Approx_error=TT.error_TT_data(self.Approx_data,self.data, M, Norm)
         return
+    
+    def to_full(self,trunc_rank=[]):
+        return self.Approx_data.to_full(trunc_rank)
 
 
-def QTT_SVD(A,q,tol=1e-6):
+def QTT_SVD(A,q,tol=1e-6,cutoff=1):
     """ Take any ndarray A and approxinates it with quantic q QTT SVD, returns approximation"""
     qA=QuanticsTensor(A)
     qA.reshape_to_q(q)
 
-    qA.applyTTSVD(eps=tol)
+    qA.applyTTSVD(eps=tol,cutoff=cutoff)
     return qA
+
+def approx_QTT_SVD_epilon_based(A,q,tolmin=1e-2,tolmax=1e-16,cutoff=1):
+    """ Take any ndarray A and approxinates it with quantic q QTT SVD, returns approximation stats
+    for a list of epsilons"""
+    qA=QuanticsTensor(A)
+    qA.reshape_to_q(q)
+    A_volume=np.product(A.shape)
+    eps_list=[1e-1,1e-2,1e-3,1e-4,1e-5, 1e-6,1e-7,1e-8,1e-9, 
+              1e-10, 1e-11,1e-12,1e-13,1e-14,1e-15,1e-16]
+    eps_list=[item for item in eps_list if (item>=tolmax and item <tolmin)]
+    norm_T={"L1":norm(A,type="L1"),
+            "L2":norm(A,type="L2"),
+            "Linf":norm(A,type="Linf")}
+    error={"L1":[],"L2":[],"Linf":[]}
+    comp_rate=[]
+    for eps in eps_list:
+        print("Computing QTT for eps={}".format(eps))
+        start=time()
+        qA.applyTTSVD(eps=eps,cutoff=cutoff)
+        print("Approximation walltime={:.2f}".format(time()-start))
+        T_approx=qA.to_full()
+        E=qA.data-T_approx
+        error["L1"].append(norm(E,type="L1")/norm_T["L1"])
+        error["L2"].append(norm(E,type="L2")/norm_T["L2"])
+        error["Linf"].append(norm(E,type="Linf")/norm_T["Linf"])
+        comp_rate.append(qA.Approx_data.mem_eval()/A_volume)
+    return error, np.asarray(comp_rate)
 
 def approx_with_QTT_SVD(A,q,tol=1e-6):
     """ Take any ndarray A and approxinates it with quantic q QTT SVD, returns approximation and it's metrics"""

@@ -79,7 +79,7 @@ def SVD_by_EVD(F,tol=0,rank=-1,test=False):
     if shape[1]>shape[0]:
         F=F.T
         Transposed_POD=True
-    if max(F.shape) >1000 :
+    if min(F.shape) >3000 :
         print("large SVD by EVD {}".format(F.shape))
     C=F.T@F
     Lambda , U =np.linalg.eigh(C)

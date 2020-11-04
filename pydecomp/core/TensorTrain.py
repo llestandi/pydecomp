@@ -102,7 +102,7 @@ class TensorTrain:
         """Truncation of Tensor Train at rank"""
         raise NotImplementedError("Truncation function not implemented yet!")
 
-    def mem_eval(self,rank):
+    def mem_eval(self,rank=[]):
         """ Evaluates memory use of self at given rank (list of integer)"""
         mem_use=0
         r=self.check_rank(rank)

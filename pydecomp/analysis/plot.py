@@ -155,6 +155,7 @@ def benchmark_plotter(approx_data, show=True, plot_name="",**kwargs):
             "TT_SVD":'k+-',
             "TT":'k+-',
             "QTT_SVD":'k*:',
+            "QTT_SVD2":'c.--',
             "RPOD":'b+-',
             "RSVD":'b*-',
             "PGD":'y--',
