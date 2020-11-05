@@ -8,6 +8,7 @@ Created on Thu Jun 14 11:20:10 2018
 import numpy as np
 from core.tensor_algebra import norm
 from utils.misc import rank_sampling
+import pickle
 
 
 class TensorTrain:
@@ -119,6 +120,11 @@ class TensorTrain:
             r=self.rank
         r=[int(rk) for rk in r]
         return r
+    
+    def save(self,path):
+        with open(path,'wb') as f:
+            pickle.dump(self,f)
+        return
 
 def TT_init_from_decomp(G):
     """ Initializes and fills a tensor train TT from data obtained in TTSVD

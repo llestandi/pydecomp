@@ -74,7 +74,7 @@ def rank_sampling(maxrank,sampling="default"):
         rank_sampling=[i for i in range(1,maxrank+1,2)]
         print("overriding sampling method due to very small rank: {}".format(rank_sampling))
         return rank_sampling
-
+    
 
     if sampling=="sparse":
         if maxrank>25:
@@ -120,6 +120,8 @@ def rank_sampling(maxrank,sampling="default"):
             rank=min(int(i**2),maxrank)
             rank_sampling.append(rank)
             print(rank_sampling)
+    elif sampling=="linear10":
+        rank_sampling=[ int(i) for i in (np.linspace(10,maxrank,num=10,endpoint=True))]
     else:
         if maxrank>25:
             rank_sampling=[i for i in np.arange(1,11)] +[15,20,25,30,35,40]\

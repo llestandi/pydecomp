@@ -108,6 +108,11 @@ class TuckerTensor():
         for i in range(self.ndim):
             mem+=self.shape[i]*self.rank[i]
         return mem
+    
+    def save(self,path):
+        with open(path,"wb") as f:
+            pickle.dump(self,f)
+        return
 
 def tucker_error_data_complete(T_tucker, T_full,int_rules=None,sampling="exponential"):
     """ Computes the error data (error and compression rate) for Tucker

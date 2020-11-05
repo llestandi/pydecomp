@@ -17,7 +17,7 @@ from utils.bytes2human import bytes2human
 from copy import deepcopy
 from analysis.plot import rank_benchmark_plotter
 import time
-
+import pickle
 
 class HierarchicalTensor():
     """
@@ -176,11 +176,22 @@ class HierarchicalTensor():
         x_ht = np.squeeze(self.root.u)
         #cleaning up so as not to clog the memory
         if clean:
-            for level in range(self.depth, -1, -1):
+            self.clean_extra_u()
+        return x_ht
+    
+    def clean_extra_u(self):
+        "Removing unwanted u"
+        for level in range(self.depth, -1, -1):
                 for node in Node.find_cluster(self.root, level):
                     node.set_u(None)
-            
-        return x_ht
+        return
+    
+    def save(self,path):
+        self.clean_extra_u()
+        file = open(path,'wb')
+        pickle.dump(self,file)
+        file.close()
+        return
 
 
 class Node:

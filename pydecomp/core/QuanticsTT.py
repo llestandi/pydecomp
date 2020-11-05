@@ -14,6 +14,7 @@ import math
 import core.TensorTrain as TT
 from core.TT_SVD import TT_SVD
 from time import time
+import pickle
 from core.tensor_algebra import norm
 class QuanticsTensor:
     """
@@ -129,14 +130,34 @@ class QuanticsTensor:
     
     def to_full(self,trunc_rank=[]):
         return self.Approx_data.to_full(trunc_rank)
+    
+    def save_to_file(self,path):
+        #copy might not fit in memory
+        try:
+            QTT_light=self
+            QTT_light.data=None
+        except:
+            self.data=None
+            QTT_light=self
+        file = open(path,'wb')
+        pickle.dump(QTT_light,file)
+        file.close()
+        return
+    
+    def save(self,path):
+        "simple alias of save_to_file"
+        self.save_to_file(path)
+        return
 
-
-def QTT_SVD(A,q,tol=1e-6,cutoff=1):
+def QTT_SVD(A,q,tol=1e-6,cutoff=1,verbose=1):
     """ Take any ndarray A and approxinates it with quantic q QTT SVD, returns approximation"""
+    start=time()
     qA=QuanticsTensor(A)
     qA.reshape_to_q(q)
 
     qA.applyTTSVD(eps=tol,cutoff=cutoff)
+    if verbose > 0:
+        print("QTT_SVD walltime : {:.2f}s")
     return qA
 
 def approx_QTT_SVD_epilon_based(A,q,tolmin=1e-2,tolmax=1e-16,cutoff=1):

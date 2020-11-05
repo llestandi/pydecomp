@@ -12,7 +12,9 @@ from core.POD import POD
 from core.TensorTrain import  TT_init_from_decomp
 from copy import deepcopy
 from math import floor
-def TT_SVD(F, eps=1e-8, rank=-1, MM=None,solver='EVD',QTTcutoff=1):
+from time import time
+
+def TT_SVD(F, eps=1e-8, rank=-1, MM=None,solver='EVD',QTTcutoff=1,verbose=0):
     """
     Returns the decomposed form of a Tensor in the Tensor Train format by
     using the TT-SVD decomposition method described by I. V. Oseledets. \n
@@ -44,6 +46,9 @@ def TT_SVD(F, eps=1e-8, rank=-1, MM=None,solver='EVD',QTTcutoff=1):
     for i in range(dim-1):
         Cshape=(r[i]*tshape[i],C.size//(r[i]*tshape[i]))
         C=np.reshape(C,Cshape)
+        if verbose>0:
+            print("Dim {} of {}".format(i,dim-1))
+            start=time()
         if not MM:
             if min(Cshape)>1000:
                 #trick for cutting very large ranks in QTT (enbable SVD to be computed in a reasonable time)
@@ -63,6 +68,10 @@ def TT_SVD(F, eps=1e-8, rank=-1, MM=None,solver='EVD',QTTcutoff=1):
                 M=mm.pop_1_MM(M)
             M.update_mass_matrix(0, mm.identity_mass_matrix(C.shape[0],M.is_sparse))
             is_first=False
+            
+        if verbose>0:
+            start=time()
+            print("Walltime : {:.2f}s".format(time()-start))
 
     G.append(C)
     Gdshape=list(G[dim-1].shape)
