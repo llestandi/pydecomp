@@ -167,7 +167,7 @@ def approx_QTT_SVD_epilon_based(A,q,tolmin=1e-2,tolmax=1e-16,cutoff=1):
     qA.reshape_to_q(q)
     A_volume=np.product(A.shape)
     eps_list=[1e-1,1e-2,1e-3,1e-4,1e-5, 1e-6,1e-7,1e-8,1e-9, 
-              1e-10, 1e-11,1e-12,1e-13,1e-14,1e-15,1e-16]
+              1e-10, 1e-11,1e-12,1e-14,1e-16]
     eps_list=[item for item in eps_list if (item>=tolmax and item <tolmin)]
     norm_T={"L1":norm(A,type="L1"),
             "L2":norm(A,type="L2"),
@@ -185,6 +185,9 @@ def approx_QTT_SVD_epilon_based(A,q,tolmin=1e-2,tolmax=1e-16,cutoff=1):
         error["L2"].append(norm(E,type="L2")/norm_T["L2"])
         error["Linf"].append(norm(E,type="Linf")/norm_T["Linf"])
         comp_rate.append(qA.Approx_data.mem_eval()/A_volume)
+        if comp_rate[-1]>1:
+            # no point continuing to compute if compression rate above 100
+            break 
     return error, np.asarray(comp_rate)
 
 def approx_with_QTT_SVD(A,q,tol=1e-6):

@@ -7,6 +7,7 @@ Created on Tue Apr  3 14:19:09 2018
 import numpy as np
 import warnings
 from scipy.sparse import diags
+import scipy
 from core.tensor_algebra import truncate_modes
 
 def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
@@ -82,7 +83,11 @@ def SVD_by_EVD(F,tol=0,rank=-1,test=False):
     if min(F.shape) >3000 :
         print("large SVD by EVD {}".format(F.shape))
     C=F.T@F
-    Lambda , U =np.linalg.eigh(C)
+    if C.shape[0] < 2**14:
+        Lambda , U =np.linalg.eigh(C)
+    else : 
+        print("Switched to scipy eigh solver since {} > 2**14")
+        Lambda , U =scipy.linalg.eigh(C)
     # Reversing order
     Lambda = Lambda[::-1]
     U=U[::,::-1]

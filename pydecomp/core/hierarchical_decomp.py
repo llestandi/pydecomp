@@ -16,8 +16,10 @@ from collections import deque
 from utils.bytes2human import bytes2human
 from copy import deepcopy
 from analysis.plot import rank_benchmark_plotter
-import time
+
+from time import time
 import pickle
+import gc
 
 class HierarchicalTensor():
     """
@@ -331,7 +333,7 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
     for level in range(level_max, -1, -1):
         count = 0
         for node in Node.find_cluster(root, level):
-            start_time=time.time()
+            start_time=time()
             if level < (level_max - 1):
                 cur_indices = np.arange(2*count, 2*(count+1))
                 cur_mode = 2 ** (level + 1)
@@ -371,9 +373,13 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
 
             x_mat_ = np.transpose(x_, trans_indices)
             x_mat_ = np.reshape(x_mat_, [np.prod(shape_core[cur_indices]), np.prod(shape_core[other_indices])]) #this one needs not be copied (good news since it may be large)
-            uT=np.copy(u.T) #significantly speedup next matmul
+            try:
+                uT=np.copy(u.T) #significantly speedup next matmul
+            except:
+                uT=u.T
             u_x_mat_ = uT @ x_mat_
-
+            del(uT)
+            gc.collect()
             new_indices = []
             for i in range(len(trans_indices)):
                 if trans_indices[i] < cur_indices[0]:
@@ -395,7 +401,7 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
             x_ = np.transpose(x_, trans_indices)
             count += 1
             if verbose>0:
-                print("Node {} has been computed in {}".format(node.indices, time.time()-start_time))
+                print("Node {} has been computed in {}".format(node.indices, time()-start_time))
 
         x = x_
 
@@ -460,6 +466,70 @@ def HT_build_error_data(x,eps_list=[1e-2,1e-4,1e-8],mode="heterogenous",eps_tuck
 
     return actual_error, np.asarray(comp_rate), HT
 
+def HT_build_error_data_out_of_core_data(data_path,eps_list=[1e-2,1e-4,1e-8],mode="heterogenous",eps_tuck=1e-4,rmax=200,verbose=0):
+    """
+    Computes approximation for epsilon consequence and return error data.
+    Since trunction is not straightforward, HOSVD is kept and a new HT L2R
+    truncation is computed for each epsilon.
+
+    **inputs**
+        - data_path : storage location for ndarray containing data of intest
+        - eps_list : list of epsilon to be sampled
+        - mode :["heterogenous" for a single fine eps_tuck, "homogenous" for eps_tuck=eps]
+        - eps_tuck : epsilon used in the unique HOSVD
+        - rmax : is the maximum rank for any node, particularly restrictive for middle nodes
+
+    **return** dict of relative error for L1,L2,Linf and associated compression rate
+    """
+
+    x=np.load(data_path)
+    print("computing Tucker decomposition with eps={}".format(eps_tuck))
+    tucker,sigma=THOSVD(x,eps_tuck, rank=rmax, solver='EVD',export_s=True)
+    print("Computed Common Tucker decomposition")
+    print("Tucker rank :{}".format(tucker.rank))
+
+    norm_full={"L1":norm(x,type="L1"),
+            "L2":norm(x,type="L2"),
+            "Linf":norm(x,type="Linf")}
+    print("Tucker approx error is {:.2e}".format(norm(x-tucker.to_full(),type="L2"),norm_full["L2"]))
+    del(x)
+    gc.collect()
+    
+    print("Now computing HT "+mode)
+    actual_error={"L1":[],"L2":[],"Linf":[]}
+    comp_rate=[]
+    for eps in eps_list:
+        try:
+            del(HT) #flushing memory before running 
+        except:
+            pass
+        if mode=="homogenous":
+            #cutting to epsilon
+            sigma_work=[s/s[0] for s in sigma]
+            sigma_work=[s[(s>eps)] for s in sigma_work]
+            trunc_rank=[len(s) for s in sigma_work]
+            tucker_work=truncate(tucker,trunc_rank)
+        else:
+            tucker_work=tucker
+            sigma_work=sigma
+        if verbose>0:
+            print("-----------------------------------")
+            print("Running HT for eps={}".format(eps))
+            print("With leaf rank: ".format(tucker_work.rank))
+        HT=compute_HT_decomp([tucker_work,sigma_work],eps,rmax=rmax)
+        print(HT.get_rank())
+        reconstruction=HT.to_full()
+        comp_rate.append(HT.compression_rate)
+        x=np.load(data_path)
+        actual_error["L1"].append(norm(x-reconstruction,type="L1")/norm_full["L1"])
+        actual_error["L2"].append(norm(x-reconstruction,type="L2")/norm_full["L2"])
+        actual_error["Linf"].append(norm(x-reconstruction,type="Linf")/norm_full["Linf"])
+        del(x,reconstruction)
+        gc.collect()
+        if verbose>2:
+            print(HT.rank)
+
+    return actual_error, np.asarray(comp_rate), HT
 
 if __name__ == '__main__':
     # x = sio.loadmat('x.mat')['x']

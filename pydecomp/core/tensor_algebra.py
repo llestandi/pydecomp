@@ -111,11 +111,12 @@ def matricize(F,i):
     F1=F1.reshape((F1shape[0],np.prod(F1shape[1:])))
     return F1
 #------------------------------------------------------------------------------
-def truncate_modes(Lambda,tol,rank,U):
+def truncate_modes(Lambda,tol,rank=16383,U):
     """
     This function evaluates the values of eingenvalues comparing to the maximal
     tolerance or the maximal number of rank(modes) in order to avoid nan values
     and unnecesary calcul, the final number of modes will be reduced.
+    rank value preset is a hack to ovoid overflow of lapack routine
     """
     imax=len(Lambda)
     if rank>=0:
