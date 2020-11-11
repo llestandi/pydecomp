@@ -83,10 +83,10 @@ def SVD_by_EVD(F,tol=0,rank=-1,test=False):
     if min(F.shape) >3000 :
         print("large SVD by EVD {}".format(F.shape))
     C=F.T@F
-    if C.shape[0] < 2**14:
+    if C.shape[0] < 2**15:
         Lambda , U =np.linalg.eigh(C)
     else : 
-        print("Switched to scipy eigh solver since {} > 2**14")
+        print("Switched to scipy eigh solver since {} > 2**14".format(C.shape[0]))
         Lambda , U =scipy.linalg.eigh(C)
     # Reversing order
     Lambda = Lambda[::-1]

@@ -149,7 +149,7 @@ class QuanticsTensor:
         self.save_to_file(path)
         return
 
-def QTT_SVD(A,q,tol=1e-6,cutoff=1,verbose=1):
+def QTT_SVD(A,q,tol=1e-6,maxramk=-1,cutoff=1,verbose=1):
     """ Take any ndarray A and approxinates it with quantic q QTT SVD, returns approximation"""
     start=time()
     qA=QuanticsTensor(A)

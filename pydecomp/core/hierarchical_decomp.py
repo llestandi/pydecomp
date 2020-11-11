@@ -327,7 +327,7 @@ def compute_HT_decomp(x, epsilon=1e-4, eps_tuck=None, rmax=100, solver='EVD',ver
             node.s=sigma[dim]
         except:
             node.s=None
-
+    del(tucker)
     rmax -= 1
     # compute cluster decomposition
     for level in range(level_max, -1, -1):
