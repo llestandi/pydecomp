@@ -18,32 +18,42 @@ time but the code has been documented while being developed which should be
 sufficient for users already familiar with python and data decomposition
 techniques.
 
+## Installation
+ - clone the present repository
+ - either link manually or install by running `setup.py`
+
 ## Acknowledgements
 This program was developed by Diego Britez and Lucas Lestandi at I2M Bordeaux,
 Laboratoire TREFLE. The authors would like to thank the many members of the lab
 that contributed indirectly to the development of this program. In particular
 Mejdi Azaiez for his mathematical guidance.
 
+
 ## Code organization
 Here, we present, the current organization of the software. It is separated in the following softwares.
-	* /: 		setup, licence, and test shortcut
-	* /core: the basic features of pydecomp, easy to export, almost standalone.
-	 	* the required data formats including **canonical**, **tucker**, **TT**
-	 	and **recursive**
-		* the decomposition methods including **PGD**, **HOSVD**, **TTSVD**, **RPOD**
-		, **SVD** and **POD**
-	* /utils: many routines that are actually very important for running the code including basic inouts, integration rules, synthetic data generation
-	* /interfaces: interfaces with common data format for importing and exporting
+ - `/`: 		setup, licence, and test shortcut
+ - `/core`: the basic features of pydecomp, easy to export, almost standalone.
+	 - the required data formats including **canonical**, **tucker**, **TT**, **QTT**, **Hierarchical** 	and **recursive**
+	 - the decomposition methods including **PGD**, **HOSVD**, **TTSVD**, **RPOD**
+		, **HT-SVD**, **QTT-SVD**, **SVD** and **POD**
+ - `/utils`: many routines that are actually very important for running the code including basic inouts, integration rules, synthetic data generation
+ - `/interfaces`: interfaces with common data format for importing and exporting
 	of scientific data (matlab, vtk, adios bp)
-	* /analysis: prewritten benchmarks together with plotting and tests on output
+ - `/analysis`: prewritten benchmarks together with plotting and tests on output
 	data
-	* /interpolation: a simple interpolation ROM for those interested.
-	* /deprecated: deprecated files that should disappear.
+ - `/interpolation`: a simple interpolation ROM for those interested.
+ - `/deprecated`: deprecated files that should disappear.
 
+## Documentation
+The code is mostly documented internally, with relavant name and
+many docstrings. The initial attempt at sphinx documentation was abandonned. Relevant details can be found in the below publications
 
+## More information on the science
+[1] L. Lestandi, *“Low rank approximation techniques and reduced order modeling applied to some fluid dynamics problems”* Université de Bordeaux, 2018.
 
+[2] M. Azaïez, L. Lestandi, and T. C. Rebollo, *“Low Rank Approximation of Multidimensional Data In: Pirozzoli S., Sengupta T. (eds) High-Performance Computing of Big Data for Turbulence and Combustion.,”* CISM Inter., vol. 592, T. K. Sengupta and S. Pirozzoli, Eds. Springer International Publishing, 2019.
 
-
+[3] L. Lestandi, *Numerical Study of Low Rank Approximation Methods for Mechanics Data and its Analysis*, preprint submitted to JCOMP,2020
 ## Profiling techniques
 As CPU time is a pressing issue for many in HPC fields, we provide with this code
 simple methods for profiling our methods. It is left to the user discretion to
