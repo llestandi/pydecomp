@@ -31,7 +31,7 @@ from core.TensorTrain import TensorTrain, error_TT_data
 from core.QuanticsTT import QTT_SVD,QuanticsTensor
 from core.hierarchical_decomp import HierarchicalTensor, HT_build_error_data
 
-from analysis.plot import benchmark_plotter, several_d_plotter
+from analysis.plot import benchmark_plotter, several_d_plotter, benchmark_norm_plotter
 from utils.tensor_creator import testg,testf
 import utils.IO as IO
 
@@ -194,7 +194,7 @@ def general_test_3D(cases):
                                 plot_name=plot_name,tol=1e-12)
 
 def multi_var_decomp_analysis(list_reduction_method, integration_methods,
-                              shape,test_function=1, plot=False,
+                              shape,test_function=1, plot=False,show=False,
                               output=None,Frob_norm=False,
                               plot_name='output/approx_benchmark',
                               tol=1e-5, plot_title=None):
@@ -285,8 +285,8 @@ def multi_var_decomp_analysis(list_reduction_method, integration_methods,
                 Result.eval_approx_error(Norm="L2")
                 approx_data[reduction_method]=np.stack(Result.Approx_error)
             print("{} Error evaluation time: {:.2f} s".format(reduction_method,time.time()-t))
-            benchmark_norm_plotter(error_data[method], show=show,
-                plot_name="output_{}_decomp_error_{}d_powderscale".format(method,len(shape)),
+            benchmark_norm_plotter(approx_data[reduction_method], show=show,
+                plot_name="output_{}_decomp_error_{}d_powderscale".format(reduction_method,len(shape)),
                 plot_title="Singular Function {} approximation errors"
                 )
         try:
