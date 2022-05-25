@@ -1,5 +1,10 @@
+#from sys import 
 from setuptools import setup, find_packages
 import os
+
+with open('requirements.txt') as f:
+    required = f.read().splitlines()
+
 
 setup(name = 'pydecomp',
       version = "0.1",
@@ -15,6 +20,7 @@ setup(name = 'pydecomp',
       #                'interfaces':'interfaces/',
       #                'analysis':'analysis/'},
       packages = find_packages(where="."),
+      #install_requires=required,
       description = 'Tensor decomposition library',
       long_description = open(os.path.join(os.path.dirname(__file__), 'README.md')).read(),
       license = 'GPL V3',

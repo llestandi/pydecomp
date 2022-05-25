@@ -8,3 +8,12 @@ and its Analysis" *Lucas Lestandi* submitted to Journal of Scientific Computing.
 
 Some typical output graphs are provided.
 
+## Quick install
+If you intend to use `adios`, it is recommended to install with conda using: 
+```bash
+$ conda install -c conda-forge adios 
+```
+Same for `h5py` with
+```bash
+$ conda install -c conda-forge h5py
+```
