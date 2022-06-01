@@ -11,11 +11,11 @@ Wrapping TT operation on a quantized tensor/vector
 
 import numpy as np
 import math
-import core.TensorTrain as TT
-from core.TT_SVD import TT_SVD
+import pydecomp.core.TensorTrain as TT
+from pydecomp.core.TT_SVD import TT_SVD
 from time import time
 import pickle
-from core.tensor_algebra import norm
+from pydecomp.core.tensor_algebra import norm
 class QuanticsTensor:
     """
     **Quantics Tensor Train Type Format**
@@ -197,7 +197,7 @@ def approx_with_QTT_SVD(A,q,tol=1e-6):
     return qA
 
 def run_test(d=3,N=64,q=2):
-    from analysis.plot import benchmark_norm_plotter
+    from pydecomp.analysis.plot import benchmark_norm_plotter
 
     A=np.random.rand(N,N,N)
     qA=approx_with_QTT_SVD(A,q)

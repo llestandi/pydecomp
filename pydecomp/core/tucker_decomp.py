@@ -9,13 +9,13 @@ from scipy.sparse import diags
 import scipy.sparse
 import numpy as np
 import timeit
-from core.Tucker import TuckerTensor
-from core.POD import POD
-from core.TSVD import TSVD
-import core.tensor_algebra as ta
-import core.MassMatrices as mm
-from core.MassMatrices import identity_mass_matrix
-import utils.misc as misc
+from pydecomp.core.Tucker import TuckerTensor
+from pydecomp.core.POD import POD
+from pydecomp.core.TSVD import TSVD
+import pydecomp.core.tensor_algebra as ta
+import pydecomp.core.MassMatrices as mm
+from pydecomp.core.MassMatrices import identity_mass_matrix
+import pydecomp.utils.misc as misc
 
 from copy import deepcopy
 

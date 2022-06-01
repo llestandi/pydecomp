@@ -7,17 +7,17 @@ Created on Fri Jun  8 10:38:16 2018
 """
 
 from interfaces.bp_reader import bp_reader,bp_reader_one_openning_per_file
-from core.tucker_decomp import SHOPOD, STHOSVD
-from core.Tucker import tucker_error_data, TuckerTensor
-from core.TensorTrain import TensorTrain, error_TT_data
-from core.TT_SVD import TT_SVD
-import core.tensor_algebra as ta
-import core.MassMatrices as mm
+from pydecomp.core.tucker_decomp import SHOPOD, STHOSVD
+from pydecomp.core.Tucker import tucker_error_data, TuckerTensor
+from pydecomp.core.TensorTrain import TensorTrain, error_TT_data
+from pydecomp.core.TT_SVD import TT_SVD
+import pydecomp.core.tensor_algebra as ta
+import pydecomp.core.MassMatrices as mm
 import numpy as np
 from interfaces.output_vtk import VTK_save_space_time_field
 
-from utils.IO import save
-from analysis.plot import simple_1D_plot
+from pydecomp.utils.IO import save
+from pydecomp.analysis.plot import simple_1D_plot
 
 def bp_compressor(variables,data_dir, Sim_list=-1, tol=1e-4,rank=-1):
     """
@@ -57,7 +57,7 @@ def bp_compressor(variables,data_dir, Sim_list=-1, tol=1e-4,rank=-1):
 def Analize_compressed_bp(bp_compressed_out, show_plot=True, plot_name=""):
     """ Encapsulates the analysis to ease the reading. Also provides write function.
     *bp_compressed_out* is the full output of bp compressed"""
-    from analysis.plot import exp_data_decomp_plotter
+    from pydecomp.analysis.plot import exp_data_decomp_plotter
     field, Reduced,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_compressed_out
     approx_data={}
     if show_plot or (plot_name!=""):
@@ -164,7 +164,7 @@ def bp_compressor_variables_as_dim(variables,data_dir, tol=1e-4,rank=-1):
 def Analize_compressed_bp_vars_as_dim(bp_compressed_out, show_plot=True, plot_name="",variables=[]):
     """ Encapsulates the analysis to ease the reading. Also provides write function.
     *bp_compressed_out* is the full output of bp compressed"""
-    from analysis.plot import benchmark_plotter
+    from pydecomp.analysis.plot import benchmark_plotter
     full_tensor, tensor_approx,nxC,nyC,nx_glob,ny_glob, X,Y,time_list,heights=bp_compressed_out
     #Error plot
     approx_data={}
@@ -193,7 +193,7 @@ def Analize_compressed_bp_vars_as_dim(bp_compressed_out, show_plot=True, plot_na
 
 
 if __name__=='__main__':
-    from analysis.plot import benchmark_plotter
+    from pydecomp.analysis.plot import benchmark_plotter
 
     var_list=['density','pressure','vorticity','velocity_u','velocity_v']
     # var_list=var_list[0:2]

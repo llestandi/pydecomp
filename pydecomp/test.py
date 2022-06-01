@@ -6,7 +6,7 @@ Created on 28/06/2018
 
 Simple test procedure for pydecomp library
 """
-from analysis.benchmark_multivariable import benchmark_multivariable
+from pydecomp.analysis.benchmark_multivariable import benchmark_multivariable
 
 decomp_methods=["RPOD","SHO_POD","TT_SVD"]#,"PGD"]"HO_POD",
 decomp_methods=["PGD"]

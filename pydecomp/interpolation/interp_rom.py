@@ -8,10 +8,10 @@ Created on Tue Aug  21 18:34:31 2018
 This file encompasse the necessary work for multidimensional interpolation ROM.
 """
 from interp_tensor_field import interpolate_modes
-from core.Tucker import TuckerTensor
+from pydecomp.core.Tucker import TuckerTensor
 from interfaces.tapan_LDC_decomp import *
-from utils.IO import load,save
-from core.tensor_algebra import norm
+from pydecomp.utils.IO import load,save
+from pydecomp.core.tensor_algebra import norm
 
 import numpy as np
 

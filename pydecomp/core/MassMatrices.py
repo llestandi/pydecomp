@@ -9,7 +9,7 @@ import numpy as np
 from scipy.sparse import diags
 import scipy.sparse
 import sys
-import utils.integrationpoints as ip
+import pydecomp.utils.integrationpoints as ip
 
 class DiaMatrix:
     """

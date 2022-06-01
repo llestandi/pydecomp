@@ -6,10 +6,10 @@ Created on Tue Jun 19 13:19:41 2018
 @author: diego
 """
 import numpy as np
-from core.TSVD import TSVD
-import core.MassMatrices as mm
-from core.POD import POD
-from core.TensorTrain import  TT_init_from_decomp
+from pydecomp.core.TSVD import TSVD
+import pydecomp.core.MassMatrices as mm
+from pydecomp.core.POD import POD
+from pydecomp.core.TensorTrain import  TT_init_from_decomp
 from copy import deepcopy
 from math import floor
 from time import time

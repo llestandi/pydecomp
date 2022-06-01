@@ -7,11 +7,11 @@ Major # REVIEW:  on 28/06/18
 """
 import numpy as np
 from scipy.linalg import norm
-from core.Canonical import CanonicalTensor
-import utils.CartesianGrid as cg
-import core.tensor_algebra as ta
+from pydecomp.core.Canonical import CanonicalTensor
+import pydecomp.utils.CartesianGrid as cg
+import pydecomp.core.tensor_algebra as ta
 import timeit
-import core.MassMatrices
+import pydecomp.core.MassMatrices
 
 def PGD(M,F, epenri=1e-10, maxfix=10):
     """

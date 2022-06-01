@@ -10,14 +10,14 @@ import numpy as np
 import h5py
 import matplotlib.pyplot as plt
 
-import core.tensor_algebra as ta
-from core.Tucker import tucker_error_data, TuckerTensor
-from core.tucker_decomp import STHOSVD
-from core.TensorTrain import TensorTrain, error_TT_data
-from core.TT_SVD import TT_SVD
+import pydecomp.core.tensor_algebra as ta
+from pydecomp.core.Tucker import tucker_error_data, TuckerTensor
+from pydecomp.core.tucker_decomp import STHOSVD
+from pydecomp.core.TensorTrain import TensorTrain, error_TT_data
+from pydecomp.core.TT_SVD import TT_SVD
 
-from analysis.plot import benchmark_plotter, simple_1D_plot
-from utils.IO import save,load
+from pydecomp.analysis.plot import benchmark_plotter, simple_1D_plot
+from pydecomp.utils.IO import save,load
 
 def matlab_file_reduction(file_name, tol=1e-4,
                           show_plot=True, plot_name=""):
@@ -103,7 +103,7 @@ def matlab_data_view_animate(tensor,wavelength,t_min,t_max,
     """ This routine provides an animated view (gif) of the matlab data files at
     wavelength between t_min and t_max
     """
-    from utils.misc import quick_gif
+    from pydecomp.utils.misc import quick_gif
     dir="../output/exp_data/visu/"
     for l in wavelength:
         plt_list=[]

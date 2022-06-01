@@ -16,14 +16,14 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.colors import LogNorm
 
-from core.Tucker import tucker_error_data, TuckerTensor
-from core.tucker_decomp import STHOSVD
-from core.TensorTrain import TensorTrain, error_TT_data
-from core.TT_SVD import TT_SVD
+from pydecomp.core.Tucker import tucker_error_data, TuckerTensor
+from pydecomp.core.tucker_decomp import STHOSVD
+from pydecomp.core.TensorTrain import TensorTrain, error_TT_data
+from pydecomp.core.TT_SVD import TT_SVD
 
-from analysis.plot import benchmark_plotter
+from pydecomp.analysis.plot import benchmark_plotter
 
-from utils.IO import load, save
+from pydecomp.utils.IO import load, save
 
 
 def LDC_multi_Re_decomp(path,Re_list,layouts=['reshaped','vectorized'],
@@ -150,9 +150,9 @@ from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.legend_handler import HandlerLine2D
 from matplotlib.colors import LogNorm
 import numpy as np
-from analysis.plot import simple_1D_plot
-from core.Tucker import truncate
-from core.tensor_algebra import norm
+from pydecomp.analysis.plot import simple_1D_plot
+from pydecomp.core.Tucker import truncate
+from pydecomp.core.tensor_algebra import norm
 def spatial_plotting_for_manuscript(T_full_path, T_approx_path, plot_path):
     """ Spatial plotting wrapper script for manuscript ! """
     T_full=load(T_full_path)
@@ -503,7 +503,7 @@ def plot_vorticity_exponential_contour(w,path='screen',output_name='vorticity_co
     return
 
 if __name__ == "__main__":
-    from utils.IO import save, load
+    from pydecomp.utils.IO import save, load
     from time import time
     # path_dns="/home/lestandi/Documents/data_ldc/grid_257x257/LDC_9800/"
     # n_levels=16

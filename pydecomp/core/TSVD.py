@@ -8,7 +8,7 @@ import numpy as np
 import warnings
 from scipy.sparse import diags
 import scipy
-from core.tensor_algebra import truncate_modes
+from pydecomp.core.tensor_algebra import truncate_modes
 
 def TSVD(F, epsilon = 1e-10, rank=100, solver='EVD'):
     """

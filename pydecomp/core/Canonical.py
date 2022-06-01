@@ -9,7 +9,7 @@ import csv
 import pickle
 
 from deprecated.tensor_descriptor_class import TensorDescriptor
-import core.tensor_algebra as ta
+import pydecomp.core.tensor_algebra as ta
 import deprecated.full_format
 import timeit
 #------------------------------------------------------------------------
@@ -242,7 +242,7 @@ def canonical_error_data(T_can, T_full,rank_based=False,tol=1e-15,M=None,Norm="L
     **Todo** Add integration matrices to compute actual error associated with
     discrete integration operator
     """
-    from core.tensor_algebra import norm
+    from pydecomp.core.tensor_algebra import norm
     data_compression=[]
     shape=T_full.shape
     mem_Full=np.product(shape)

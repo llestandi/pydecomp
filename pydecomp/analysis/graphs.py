@@ -1,6 +1,6 @@
 from graphviz import Digraph
-from core.RPOD import RecursiveTensor
-from core.cls_RpodTree import RpodTree
+from pydecomp.core.RPOD import RecursiveTensor
+from pydecomp.core.cls_RpodTree import RpodTree
 import numpy as np
 
 def graph_example_rpod(r):

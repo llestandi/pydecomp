@@ -7,18 +7,18 @@ Created on Fri May 18 15:09:32 2018
 import numpy as np
 from scipy.sparse import diags
 import time
-from analysis.plot import mode_1D_plot, rank_benchmark_plotter
-from analysis.benchmark_multivariable import testf
+from pydecomp.analysis.plot import mode_1D_plot, rank_benchmark_plotter
+from pydecomp.analysis.benchmark_multivariable import testf
 
-import utils.tensor_creator as tensor_creator
-import core.tensor_algebra as ta
-import core.MassMatrices as mm
-from core.Canonical import CanonicalTensor, canonical_error_data
-from core.cls_POD import cls_POD, init_POD_class_from_decomp, pod_error_data
-from core.PGD import PGD
-from core.POD import POD
-from core.TSVD import TSVD
-from core.QuanticsTT import QuanticsTensor, approx_with_QTT_SVD
+import pydecomp.utils.tensor_creator as tensor_creator
+import pydecomp.core.tensor_algebra as ta
+import pydecomp.core.MassMatrices as mm
+from pydecomp.core.Canonical import CanonicalTensor, canonical_error_data
+from pydecomp.core.cls_POD import cls_POD, init_POD_class_from_decomp, pod_error_data
+from pydecomp.core.PGD import PGD
+from pydecomp.core.POD import POD
+from pydecomp.core.TSVD import TSVD
+from pydecomp.core.QuanticsTT import QuanticsTensor, approx_with_QTT_SVD
 
 def benchmark_2D(list_reduction_method, shape,test_function=1, plot=False,
                 plot_name='output/approx_benchmark', tol=1e-5):

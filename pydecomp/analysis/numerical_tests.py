@@ -18,22 +18,22 @@ from scipy.sparse import diags
 import time
 import os
 
-import utils.tensor_creator as tensor_creator
-import core.tensor_algebra as ta
-import core.MassMatrices as mm
-from core.PGD import PGD
-from core.tucker_decomp import HOPOD, SHOPOD, THOSVD, STHOSVD
-from core.TT_SVD import TT_SVD
-from core.RPOD import rpod, RecursiveTensor, plot_rpod_approx,rpod_error_data
-from core.Canonical import CanonicalTensor, canonical_error_data
-from core.Tucker import TuckerTensor, tucker_error_data
-from core.TensorTrain import TensorTrain, error_TT_data
-from core.QuanticsTT import QTT_SVD,QuanticsTensor
-from core.hierarchical_decomp import HierarchicalTensor, HT_build_error_data
+import pydecomp.utils.tensor_creator as tensor_creator
+import pydecomp.core.tensor_algebra as ta
+import pydecomp.core.MassMatrices as mm
+from pydecomp.core.PGD import PGD
+from pydecomp.core.tucker_decomp import HOPOD, SHOPOD, THOSVD, STHOSVD
+from pydecomp.core.TT_SVD import TT_SVD
+from pydecomp.core.RPOD import rpod, RecursiveTensor, plot_rpod_approx,rpod_error_data
+from pydecomp.core.Canonical import CanonicalTensor, canonical_error_data
+from pydecomp.core.Tucker import TuckerTensor, tucker_error_data
+from pydecomp.core.TensorTrain import TensorTrain, error_TT_data
+from pydecomp.core.QuanticsTT import QTT_SVD,QuanticsTensor
+from pydecomp.core.hierarchical_decomp import HierarchicalTensor, HT_build_error_data
 
-from analysis.plot import benchmark_plotter, several_d_plotter, benchmark_norm_plotter
-from utils.tensor_creator import testg,testf
-import utils.IO as IO
+from pydecomp.analysis.plot import benchmark_plotter, several_d_plotter, benchmark_norm_plotter
+from pydecomp.utils.tensor_creator import testg,testf
+import pydecomp.utils.IO as IO
 
 def numerics_for_thesis(test_list):
     # General comparison separable function SVD everywhere

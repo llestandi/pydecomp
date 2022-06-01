@@ -5,10 +5,10 @@ Created on Wed May  2 09:25:40 2018
 @author: Diego Britez
 """
 
-from core.tensor_algebra import multilinear_multiplication
+from pydecomp.core.tensor_algebra import multilinear_multiplication
 import pickle
 import numpy as np
-from utils.misc import rank_sampling
+from pydecomp.utils.misc import rank_sampling
 
 # @Diego Need for uniformization with decided structure for full format (ndarray)
 class TuckerTensor():
@@ -130,7 +130,7 @@ def tucker_error_data_complete(T_tucker, T_full,int_rules=None,sampling="exponen
     error       [list] Compression error in 'F' norm or "int_rules" norm
     """
     # from numpy.linalg import norm
-    from core.tensor_algebra import norm
+    from pydecomp.core.tensor_algebra import norm
     #We are going to calculate one average value of ranks
     d=T_full.ndim
     data_compression=[]
@@ -178,7 +178,7 @@ def tucker_error_data(T_tucker, T_full, int_rules=None, Norm="L2",sampling="expo
     error       [list] Compression error in 'F' norm or "int_rules" norm
     """
     # from numpy.linalg import norm
-    from core.tensor_algebra import norm
+    from pydecomp.core.tensor_algebra import norm
     #We are going to calculate one average value of ranks
     d=T_full.ndim
     data_compression=[]

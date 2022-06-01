@@ -6,16 +6,16 @@
 
 import numpy as np
 from math import log
-from core.TSVD import TSVD
-from core.tensor_algebra import norm
-from core.tucker_decomp import THOSVD
-from core.Tucker import TuckerTensor, truncate
+from pydecomp.core.TSVD import TSVD
+from pydecomp.core.tensor_algebra import norm
+from pydecomp.core.tucker_decomp import THOSVD
+from pydecomp.core.Tucker import TuckerTensor, truncate
 import scipy.io as sio
 from scipy.linalg import svd
 from collections import deque
-from utils.bytes2human import bytes2human
+from pydecomp.utils.bytes2human import bytes2human
 from copy import deepcopy
-from analysis.plot import rank_benchmark_plotter
+from pydecomp.analysis.plot import rank_benchmark_plotter
 
 from time import time
 import pickle

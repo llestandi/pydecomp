@@ -6,7 +6,7 @@ Created on Tue Mar 27 17:24:54 2018
 """
 
 import numpy as np
-import utils.CartesianGrid as cg
+import pydecomp.utils.CartesianGrid as cg
 
 """
 This code serve to create a tensor with its grid of any dimention from

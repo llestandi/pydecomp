@@ -11,12 +11,12 @@ import scipy
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_pdf import PdfPages
 
-import core.MassMatrices as mm
+import pydecomp.core.MassMatrices as mm
 from deprecated.tensor_descriptor_class import TensorDescriptor
-from core.cls_RpodTree import  RpodTree
-from core.POD import POD
-from core.MassMatrices import pop_1_MM
-from core.tensor_algebra import norm
+from pydecomp.core.cls_RpodTree import  RpodTree
+from pydecomp.core.POD import POD
+from pydecomp.core.MassMatrices import pop_1_MM
+from pydecomp.core.tensor_algebra import norm
 
 class RecursiveTensor(TensorDescriptor):
     """

@@ -6,8 +6,8 @@ Created on Thu Jun 14 11:20:10 2018
 @author: diego
 """
 import numpy as np
-from core.tensor_algebra import norm
-from utils.misc import rank_sampling
+from pydecomp.core.tensor_algebra import norm
+from pydecomp.utils.misc import rank_sampling
 import pickle
 
 

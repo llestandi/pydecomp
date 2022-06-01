@@ -9,9 +9,9 @@ from scipy.sparse import diags
 import scipy.sparse
 import numpy as np
 from scipy.linalg import norm
-from core.tensor_algebra import truncate_modes
-from core.MassMatrices import DiaMatrix
-from core.TSVD import TSVD
+from pydecomp.core.tensor_algebra import truncate_modes
+from pydecomp.core.MassMatrices import DiaMatrix
+from pydecomp.core.TSVD import TSVD
 import timeit
 #import MassMatrix
 

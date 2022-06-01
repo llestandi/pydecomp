@@ -9,20 +9,20 @@ import matplotlib.pyplot as plt
 from scipy.sparse import diags
 import time
 
-import utils.tensor_creator as tensor_creator
-import core.tensor_algebra as ta
-import core.MassMatrices as mm
-from core.PGD import PGD
-from core.tucker_decomp import HOPOD, SHOPOD, THOSVD, STHOSVD
-from core.TT_SVD import TT_SVD
-from core.RPOD import rpod, RecursiveTensor, plot_rpod_approx,rpod_error_data
-from core.Canonical import CanonicalTensor, canonical_error_data
-from core.Tucker import TuckerTensor, tucker_error_data
-from core.TensorTrain import TensorTrain, error_TT_data
-from core.QuanticsTT import QuanticsTensor, QTT_SVD
-from core.hierarchical_decomp import HierarchicalTensor, HT_build_error_data
+import pydecomp.utils.tensor_creator as tensor_creator
+import pydecomp.core.tensor_algebra as ta
+import pydecomp.core.MassMatrices as mm
+from pydecomp.core.PGD import PGD
+from pydecomp.core.tucker_decomp import HOPOD, SHOPOD, THOSVD, STHOSVD
+from pydecomp.core.TT_SVD import TT_SVD
+from pydecomp.core.RPOD import rpod, RecursiveTensor, plot_rpod_approx,rpod_error_data
+from pydecomp.core.Canonical import CanonicalTensor, canonical_error_data
+from pydecomp.core.Tucker import TuckerTensor, tucker_error_data
+from pydecomp.core.TensorTrain import TensorTrain, error_TT_data
+from pydecomp.core.QuanticsTT import QuanticsTensor, QTT_SVD
+from pydecomp.core.hierarchical_decomp import HierarchicalTensor, HT_build_error_data
 
-from analysis.plot import benchmark_plotter
+from pydecomp.analysis.plot import benchmark_plotter
 
 def benchmark_multivariable(list_reduction_method, integration_method,
                               shape,test_function=1, plot=False,

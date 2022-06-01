@@ -12,7 +12,7 @@ Created on Thu May  3 10:30:18 2018
 import numpy as np
 import scipy.sparse
 from scipy.sparse import diags
-from core.MassMatrices import MassMatrices, DiaMatrix, Kronecker
+from pydecomp.core.MassMatrices import MassMatrices, DiaMatrix, Kronecker
 def multilinear_multiplication(PHI,F,dim):
     """
     **Parameters**:_ \n
