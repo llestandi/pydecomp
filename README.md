@@ -1,4 +1,6 @@
 # Python Decomposition Library
+**/!\ Warning** : This is a work in progress distribution of this package
+
 
 This repository host `pydecomp`, a python decomposition library. Details are given in the relevant folder.
 
@@ -16,4 +18,10 @@ $ conda install -c conda-forge adios
 Same for `h5py` with
 ```bash
 $ conda install -c conda-forge h5py
+```
+
+## Install using pip
+In the `setup.py` directory, simply run
+```bash
+$ pip install .
 ```
