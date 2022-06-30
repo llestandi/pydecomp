@@ -127,7 +127,7 @@ def truncate_modes(Lambda,tol,rank,U):
     while (stop_criteria>tol) & (i<imax) :
         stop_criteria=abs(Lambda[i]/Lambda1)
         if Lambda[i]<0 :
-            print("Warning, detected negative lambda, breaking")
+            #print("Warning, detected negative lambda, breaking")
             break
         i+=1
     Lambda=Lambda[:i]

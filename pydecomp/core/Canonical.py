@@ -8,9 +8,9 @@ import numpy as np
 import csv
 import pickle
 
-from deprecated.tensor_descriptor_class import TensorDescriptor
+#from deprecated.tensor_descriptor_class import TensorDescriptor
 import pydecomp.core.tensor_algebra as ta
-import deprecated.full_format
+#import deprecated.full_format
 import timeit
 #------------------------------------------------------------------------
 # @Diego, class is working but a lot of simplification work is needed with your
